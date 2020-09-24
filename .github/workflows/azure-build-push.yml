@@ -29,6 +29,6 @@ jobs:
             username: ${{ secrets.REGISTRY_USERNAME }}
             password: ${{ secrets.REGISTRY_PASSWORD }}
         - run: |
-            docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/holistic-tsdb-data-generator:${{ steps.bumptag.outputs.new_tag }} .
-            docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/holistic-tsdb-data-generator:${{ steps.bumptag.outputs.new_tag }}
+            docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/data-generator:${{ steps.bumptag.outputs.new_tag }} .
+            docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/data-generator:${{ steps.bumptag.outputs.new_tag }}
 

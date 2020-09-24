@@ -11,7 +11,7 @@ def test_config_constructor_no_env_set():
     assert config.id_start == 1
     assert config.id_end == 500
     assert config.ingest_mode == 1
-    assert config.ingest_size == 100
+    assert config.ingest_size == 1000
     assert config.ingest_ts == pytest.approx(time.time(), abs=0.3)
     assert config.ingest_delta == 0.5
     assert config.model_path == ""

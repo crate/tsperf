@@ -352,7 +352,7 @@ Type: Integer
 
 Values: A positive number
 
-Default: 100
+Default: 1000
 
 `INGEST_SIZE` defines how many values for each edge will be created. When setting `INGEST_SIZE` to `0` an endless amount of values is created until the Data Generator is terminated.
 
@@ -360,9 +360,9 @@ Example:
 
 + ID_START: 1
 + ID_END: 500
-+ INGEST_SIZE: 1000
++ INGEST_SIZE: 2000
 
-We have 500 edges and for each edge 1000 values are generated, therefor we will have 500.000 values in total.
+We have 500 edges and for each edge 2000 values are generated, therefore we will have 1.000.000 values in total.
 
 **Note: a value contains all the information for a single edge, including the defined `tags` and `metrics`. See [Data Generator Models](#data-generator-models) for more information about tags and metrics.**
 

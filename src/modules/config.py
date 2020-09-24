@@ -9,7 +9,7 @@ class DataGeneratorConfig:
         self.id_start = int(os.getenv("ID_START", 1))
         self.id_end = int(os.getenv("ID_END", 500))
         self.ingest_mode = int(os.getenv("INGEST_MODE", 1))
-        self.ingest_size = int(os.getenv("INGEST_SIZE", 100))
+        self.ingest_size = int(os.getenv("INGEST_SIZE", 1000))
         self.ingest_ts = float(os.getenv("INGEST_TS", time.time()))
         self.ingest_delta = float(os.getenv("INGEST_DELTA", 0.5))
         self.model_path = os.getenv("MODEL_PATH", "")

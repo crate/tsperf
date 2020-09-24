@@ -1,0 +1,40 @@
+# example docker-compose when inserting 1000 values for 1000 edges into InfluxDB using the temperature model
+# prometheus metrics for ID 1 - 500 on port 8000, for ID 501 - 1000 on port 8001
+# assuming InfluxDB runs on localhost
+# Token and Organization have to be inserted before running
+version: "2.3"
+services:
+  datagen1:
+    image: data_gen
+    ports:
+      - 8000:8000
+    environment:
+      ID_START: 1
+      ID_END: 500
+      HOST: "host.docker.internal"
+      PORT: 8086
+      TOKEN: ""
+      ORG: ""
+      INGEST_MODE: 1
+      INGEST_SIZE: 1000
+      MODEL_PATH: "/temperature.json"
+      DATABASE: 2
+    volumes:
+      - ./temperature.json:/temperature.json
+  datagen2:
+    image: data_gen
+    ports:
+      - 8001:8000
+    environment:
+      ID_START: 501
+      ID_END: 1000
+      HOST: "host.docker.internal"
+      PORT: 8086
+      TOKEN: ""
+      ORG: ""
+      INGEST_MODE: 1
+      INGEST_SIZE: 1000
+      MODEL_PATH: "/temperature.json"
+      DATABASE: 2
+    volumes:
+      - ./temperature.json:/temperature.json

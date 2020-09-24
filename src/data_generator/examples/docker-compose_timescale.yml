@@ -1,0 +1,44 @@
+# example docker-compose when inserting 1000 values for 1000 edges into CrateDB using the temperature model
+# prometheus metrics for ID 1 - 500 on port 8000, for ID 501 - 1000 on port 8001
+# assuming TimescaleDB runs on localhost and an existing TimescaleDB Table named data_generator.
+# Username and Password have to be inserted before running
+version: "2.3"
+services:
+  datagen1:
+    image: data_gen
+    ports:
+      - 8000:8000
+    environment:
+      ID_START: 1
+      ID_END: 500
+      INGEST_MODE: 1
+      INGEST_SIZE: 1000
+      TABLE_NAME: "timeseries"
+      HOST: "host.docker.internal"
+      PORT: 5432
+      dbUser: ""
+      dbPassword: ""
+      DATABASE: 1
+      MODEL_PATH: "/temperature.json"
+      DB_NAME: "data_generator"
+    volumes:
+      - ./temperature.json:/temperature.json
+  datagen2:
+    image: data_gen
+    ports:
+      - 8001:8000
+    environment:
+      ID_START: 501
+      ID_END: 1000
+      INGEST_MODE: 1
+      INGEST_SIZE: 1000
+      TABLE_NAME: "timeseries"
+      HOST: "host.docker.internal"
+      PORT: 5432
+      USERNAME: ""
+      PASSWORD: ""
+      DATABASE: 1
+      MODEL_PATH: "/temperature.json"
+      DB_NAME: "data_generator"
+    volumes:
+      - ./temperature.json:/temperature.json

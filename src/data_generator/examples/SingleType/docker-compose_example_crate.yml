@@ -1,0 +1,19 @@
+version: "2.3"
+services:
+  datagen:
+    image: data_gen
+    ports:
+      - 8000:8000
+    environment:
+      ID_START: 1
+      ID_END: 100
+      HOST: "host.docker.internal:4200"
+      # USERNAME: ""
+      # PASSWORD: ""
+      INGEST_MODE: 0
+      INGEST_SIZE: 720
+      INGEST_DELTA: 5
+      MODEL_PATH: "/example_model.json"
+      DATABASE: 0
+    volumes:
+      - ./example_model.json:/example_model.json

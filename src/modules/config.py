@@ -37,6 +37,11 @@ class DataGeneratorConfig:
         self.organization = os.getenv("ORG", "")
         self.invalid_configs = []
 
+        # environment variable to connect to aws timestream
+        self.aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID", "")
+        self.aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY", "")
+        self.aws_region_name = os.getenv("AWS_REGION_NAME", "")
+
     def validate_config(self) -> bool:
         if self.id_start < 0:
             self.invalid_configs.append(f"ID_START: {self.id_start} < 0")
@@ -54,7 +59,7 @@ class DataGeneratorConfig:
             self.invalid_configs.append(f"INGEST_DELTA: {self.ingest_delta} <= 0")
         if not os.path.isfile(self.model_path):
             self.invalid_configs.append(f"MODEL_PATH: {self.model_path} does not exist")
-        if self.database not in [0, 1, 2, 3, 4]:
+        if self.database not in [0, 1, 2, 3, 4, 5]:
             self.invalid_configs.append(f"DATABASE: {self.database} not 0, 1, 2, 3 or 4")
         if self.stat_delta <= 0:
             self.invalid_configs.append(f"STAT_DELTA: {self.stat_delta} <= 0")

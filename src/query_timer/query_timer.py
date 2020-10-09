@@ -3,14 +3,16 @@ import urllib3
 import statistics
 import time
 import shutil
-import json
 import modules.helper as helper
+from modules.config import DataGeneratorConfig
 from modules.crate_db_writer import CrateDbWriter
+from modules.postgres_db_writer import PostgresDbWriter
 from modules.timescale_db_writer import TimescaleDbWriter
 from modules.influx_db_writer import InfluxDbWriter
 from modules.mongo_db_writer import MongoDbWriter
 from threading import Thread
 
+from modules.timestream_db_writer import TimeStreamWriter
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -22,10 +24,11 @@ table_name = os.getenv("TABLE_NAME", "timeseries")
 database = int(os.getenv("DATABASE", 0))  # 0:crate, 1:timescale, 2:influx
 db_name = os.getenv("DB_NAME", "")
 token = os.getenv("TOKEN", "")
-concurrency = os.getenv("CONCURRENCY", 20)
-iterations = os.getenv("ITERATIONS", 50)
+concurrency = os.getenv("CONCURRENCY", 1)
+iterations = os.getenv("ITERATIONS", 200)
 quantile_list = os.getenv("QUANTILES", "50,60,75,90,99")
-query = os.getenv("QUERY", "SELECT COUNT(*) FROM timeseries;")
+query = os.getenv("QUERY", 'SELECT * FROM "data_generator_test"."temperature" LIMIT 100')
+model = {"value": "none"}
 
 query_results = []
 total_queries = 0
@@ -33,15 +36,25 @@ stop_thread = False
 start_time = time.time()
 terminal_size = shutil.get_terminal_size()
 
-if database == 0:  # crate
-    db_writer = CrateDbWriter(host, username, password, table_name)
-elif database == 1:  # timescale
-    db_writer = TimescaleDbWriter(host, username, password, table_name, db_name, port)
-elif database == 2:  # influx
-    db_writer = InfluxDbWriter(host, token, db_name)
-elif database == 3:  # mongo
-    db_writer = MongoDbWriter(host, username, password, db_name)
-    query = json.loads(query)  # mongo uses queries in json format
+config = DataGeneratorConfig()
+
+# initialize the db_writer based on environment variable
+if config.database == 0:  # crate
+    db_writer = CrateDbWriter(config.host, config.username, config.password, model,
+                              config.table_name, config.shards, config.replicas, config.partition)
+elif config.database == 1:  # timescale
+    db_writer = TimescaleDbWriter(config.host, config.port, config.username, config.password,
+                                  config.db_name, model, config.table_name, config.partition)
+elif config.database == 2:  # influx
+    db_writer = InfluxDbWriter(config.host, config.token, config.organization, model, config.db_name)
+elif config.database == 3:  # mongo
+    db_writer = MongoDbWriter(config.host, config.username, config.password, config.db_name, model)
+elif config.database == 4:  # postgres
+    db_writer = PostgresDbWriter(config.host, config.port, config.username, config.password,
+                                 config.db_name, model, config.table_name, config.partition)
+elif config.database == 5:  # timestream
+    db_writer = TimeStreamWriter(config.aws_access_key_id, config.aws_secret_access_key,
+                                 config.aws_region_name, config.db_name, model)
 else:
     db_writer = None
 

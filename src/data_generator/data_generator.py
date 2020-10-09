@@ -10,6 +10,7 @@ from modules.timescale_db_writer import TimescaleDbWriter
 from modules.influx_db_writer import InfluxDbWriter
 from modules.mongo_db_writer import MongoDbWriter
 from modules.postgres_db_writer import PostgresDbWriter
+from modules.timestream_db_writer import TimeStreamWriter
 from modules.batch_size_automator import BatchSizeAutomator
 from modules.config import DataGeneratorConfig
 from threading import Thread
@@ -44,8 +45,10 @@ elif config.database == 3:  # mongo
     db_writer = MongoDbWriter(config.host, config.username, config.password, config.db_name, model)
 elif config.database == 4:  # postgres
     db_writer = PostgresDbWriter(config.host, config.port, config.username, config.password,
-                                  config.db_name, model, config.table_name, config.partition)
-
+                                 config.db_name, model, config.table_name, config.partition)
+elif config.database == 5:  # timestream
+    db_writer = TimeStreamWriter(config.aws_access_key_id, config.aws_secret_access_key,
+                                 config.aws_region_name, config.db_name, model)
 else:
     db_writer = None
 

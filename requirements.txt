@@ -1,7 +1,10 @@
-crate==0.25.0
-prometheus_client==0.7.1
+boto3==1.15.15
+botocore~=1.18.15
+crate==0.26.0
+prometheus_client==0.8.0
 urllib3==1.25.10
-datetime_truncate==1.1.0
+datetime_truncate==1.1.1
 psycopg2-binary==2.8.6
-influxdb_client==1.7.0
+influxdb_client==1.11.0
 pymongo==3.11.0
+numpy==1.19.2

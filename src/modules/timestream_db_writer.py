@@ -19,9 +19,6 @@ class TimeStreamWriter(DbWriter):
                                                               retries={'max_attempts': 10}))
         self.query_client = self.session.client('timestream-query')
 
-    def close_connection(self):
-        pass
-
     def insert_stmt(self, timestamps, batch):
         data = helper.execute_timed_function(self._prepare_timestream_stmt, timestamps, batch)
         records = numpy.array_split(data, math.ceil(len(data)/100))
@@ -90,8 +87,6 @@ class TimeStreamWriter(DbWriter):
         try:
             self.write_client.create_database(DatabaseName=self.database_name)
             print("Database [%s] created successfully." % self.database_name)
-        except self.write_client.exceptions.ConflictException:
-            print("Database [%s] exists. Skipping database creation" % self.database_name)
         except Exception as err:
             print("Create database failed:", err)
 
@@ -103,8 +98,5 @@ class TimeStreamWriter(DbWriter):
             self.write_client.create_table(DatabaseName=self.database_name, TableName=self.table_name,
                                      RetentionProperties=retention_properties)
             print("Table [%s] successfully created." % self.table_name)
-        except self.write_client.exceptions.ConflictException:
-            print("Table [%s] exists on database [%s]. Skipping table creation" % (
-                self.table_name, self.database_name))
         except Exception as err:
             print("Create table failed:", err)

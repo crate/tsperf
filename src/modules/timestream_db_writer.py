@@ -1,5 +1,4 @@
 import boto3
-import json
 import math
 import numpy
 from botocore.config import Config

@@ -24,8 +24,8 @@ table_name = os.getenv("TABLE_NAME", "timeseries")
 database = int(os.getenv("DATABASE", 0))  # 0:crate, 1:timescale, 2:influx
 db_name = os.getenv("DB_NAME", "")
 token = os.getenv("TOKEN", "")
-concurrency = os.getenv("CONCURRENCY", 1)
-iterations = os.getenv("ITERATIONS", 200)
+concurrency = os.getenv("CONCURRENCY", 10)
+iterations = os.getenv("ITERATIONS", 100)
 quantile_list = os.getenv("QUANTILES", "50,60,75,90,99")
 query = os.getenv("QUERY", 'SELECT * FROM "data_generator_test"."temperature" LIMIT 100')
 model = {"value": "none"}
@@ -35,6 +35,7 @@ total_queries = 0
 stop_thread = False
 start_time = time.time()
 terminal_size = shutil.get_terminal_size()
+errors = 0
 
 config = DataGeneratorConfig()
 
@@ -84,7 +85,7 @@ def print_progressbar(iteration, total, prefix='', suffix='', decimals=1, length
 
 
 def start_query_run():
-    global total_queries
+    global total_queries, errors
     for x in range(0, iterations):
         result = helper.execute_timed_function(db_writer.execute_query, query)
         total_queries += 1
@@ -92,6 +93,8 @@ def start_query_run():
         print_progressbar(total_queries, concurrency * iterations,
                           prefix='Progress:', suffix='Complete', length=(terminal_size_thread.columns - 40))
         query_results.append(result)
+        if result == []:
+            errors +=1
 
 
 def main():
@@ -128,5 +131,5 @@ if __name__ == '__main__':
         for i in range(0, len(qus)):
             if str(i + 1) in q_list:
                 print(f"""p{i+1}  : {round(qus[i]*1000, 3)}ms""")
-
+        print(f"errors: {errors}")
     # finished

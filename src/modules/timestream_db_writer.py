@@ -74,11 +74,11 @@ class TimeStreamWriter(DbWriter):
         for key, value in metrics_.items():
             if key != "description":
                 metrics.append({"name": value["key"]["value"],
-                                "type": self._conver_to_timestream_type(value["type"]["value"])})
+                                "type": self.t(value["type"]["value"])})
         return tags, metrics
 
     @staticmethod
-    def _conver_to_timestream_type(metric_type: str) -> str:
+    def t(metric_type: str) -> str:
         metric_type = metric_type.lower()
         if metric_type in ["float", "double"]:
             return "DOUBLE"

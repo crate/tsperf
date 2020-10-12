@@ -35,7 +35,6 @@ total_queries = 0
 stop_thread = False
 start_time = time.time()
 terminal_size = shutil.get_terminal_size()
-errors = 0
 
 config = DataGeneratorConfig()
 
@@ -50,6 +49,7 @@ elif config.database == 2:  # influx
     db_writer = InfluxDbWriter(config.host, config.token, config.organization, model, config.db_name)
 elif config.database == 3:  # mongo
     db_writer = MongoDbWriter(config.host, config.username, config.password, config.db_name, model)
+    print("QueryTimer for MongoDB needs hardcoded queries inside the query_time.py scripts")
 elif config.database == 4:  # postgres
     db_writer = PostgresDbWriter(config.host, config.port, config.username, config.password,
                                  config.db_name, model, config.table_name, config.partition)
@@ -93,8 +93,6 @@ def start_query_run():
         print_progressbar(total_queries, concurrency * iterations,
                           prefix='Progress:', suffix='Complete', length=(terminal_size_thread.columns - 40))
         query_results.append(result)
-        if result == []:
-            errors +=1
 
 
 def main():

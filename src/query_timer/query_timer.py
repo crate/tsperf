@@ -29,7 +29,7 @@ token = os.getenv("TOKEN", "")
 concurrency = os.getenv("CONCURRENCY", 10)
 iterations = os.getenv("ITERATIONS", 10)
 quantile_list = os.getenv("QUANTILES", "50,60,75,90,99")
-query = os.getenv("QUERY", 'SELECT * FROM "data_generator_test"."temperature" LIMIT 100')
+query = os.getenv("QUERY", 'SELECT * FROM table LIMIT 100')
 model = {"value": "none"}
 
 query_results = []

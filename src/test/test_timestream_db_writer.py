@@ -18,7 +18,8 @@ def test_close_connection(mock_boto):
     session = mock.MagicMock()
     mock_boto.session.Session.return_value = session
     db_writer = TimeStreamWriter("aws_key_id", "aws_secrete", "aws_region", "db_name", test_model)
-    mock_boto.session.Session.assert_called_with('aws_key_id', aws_secret_access_key='aws_secrete', region_name='aws_region')
+    mock_boto.session.Session.assert_called_with('aws_key_id', aws_secret_access_key='aws_secrete',
+                                                 region_name='aws_region')
 
 
 @mock.patch("modules.timestream_db_writer.boto3", autospec=True)
@@ -61,8 +62,20 @@ def test_insert_stmt(mock_boto):
                 "MeasureValueType": "BOOLEAN"}]
     write_client.write_records.assert_called_once()
     args = write_client.write_records.call_args.kwargs
+    rec_arg = [{'MeasureName': 'value',
+                'MeasureValue': '6.7',
+                'MeasureValueType': 'DOUBLE',
+                'Time': '1586327807000'},
+               {'MeasureName': 'button_press',
+                'MeasureValue': 'False',
+                'MeasureValueType': 'BOOLEAN',
+                'Time': '1586327807000'}]
+    common_attr = {'Dimensions': [{'Name': 'plant', 'Value': '2'},
+                                  {'Name': 'line', 'Value': '2'},
+                                  {'Name': 'sensor_id', 'Value': '2'}]}
     assert len(args) == 4
-    assert args["Records"] == records
+    assert args["Records"] == rec_arg
+    assert args["CommonAttributes"] == common_attr
 
 
 @mock.patch("modules.timestream_db_writer.boto3", autospec=True)

@@ -60,7 +60,7 @@ class DataGeneratorConfig:
         if not os.path.isfile(self.model_path):
             self.invalid_configs.append(f"MODEL_PATH: {self.model_path} does not exist")
         if self.database not in [0, 1, 2, 3, 4, 5]:
-            self.invalid_configs.append(f"DATABASE: {self.database} not 0, 1, 2, 3 or 4")
+            self.invalid_configs.append(f"DATABASE: {self.database} not 0, 1, 2, 3, 4 or 5")
         if self.stat_delta <= 0:
             self.invalid_configs.append(f"STAT_DELTA: {self.stat_delta} <= 0")
         if self.partition.lower() not in ["second", "minute", "hour", "day", "week", "month", "quarter", "year"]:

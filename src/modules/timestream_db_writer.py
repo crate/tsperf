@@ -21,34 +21,45 @@ class TimeStreamWriter(DbWriter):
 
     def insert_stmt(self, timestamps, batch):
         data = helper.execute_timed_function(self._prepare_timestream_stmt, timestamps, batch)
-        records = numpy.array_split(data, math.ceil(len(data)/100))
-        for record in records:
-            values = list(record)
-            self.write_client.write_records(DatabaseName=self.database_name, TableName=self.table_name,
-                                            Records=values, CommonAttributes={})
+        for key, values in data.items():
+            common_attributes = values["common_attributes"]
+            records = numpy.array_split(values["records"], math.ceil(len(values["records"])/100))
+            for record in records:
+                record_list = list(record)
+                try:
+                    self.write_client.write_records(DatabaseName=self.database_name, TableName=self.table_name,
+                                                    Records=record_list, CommonAttributes=common_attributes)
+                except Exception as e:
+                    print(e)
 
     def _prepare_timestream_stmt(self, timestamps, batch):
-        data = []
+        data = {}
         tags, metrics = self._get_tags_and_metrics()
         for i in range(0, len(batch)):
-            record = {"Time": str(timestamps[i]),
-                      "Dimensions": []}
+            record = {"Time": str(timestamps[i])}
+            common_attributes = {"Dimensions": []}
             for tag in tags:
-                record["Dimensions"].append({"Name": tag, "Value": str(batch[i][tag])})
+                common_attributes["Dimensions"].append({"Name": tag, "Value": str(batch[i][tag])})
+            if str(common_attributes) not in data:
+                data[str(common_attributes)] = {"common_attributes": common_attributes, "records": []}
             for metric in metrics:
                 record_metric = dict(record)
                 record_metric.update({"MeasureName": metric["name"],
                                       "MeasureValue": str(batch[i][metric["name"]]),
                                       "MeasureValueType": metric["type"]})
-                data.append(record_metric)
+                data[str(common_attributes)]["records"].append(record_metric)
         return data
 
-    def execute_query(self, query):
+    def execute_query(self, query, retry=True):
         result = []
-        paginator = self.query_client.get_paginator('query')
-        page_iterator = paginator.paginate(QueryString=query)
-        for page in page_iterator:
-            result.append(page)
+        try:
+            paginator = self.query_client.get_paginator('query')
+            page_iterator = paginator.paginate(QueryString=query)
+            for page in page_iterator:
+                result.append(page)
+        except Exception as e:
+            if retry:
+                result = self.execute_query(query, False)
         return result
 
     def _get_tags_and_metrics(self):
@@ -63,11 +74,11 @@ class TimeStreamWriter(DbWriter):
         for key, value in metrics_.items():
             if key != "description":
                 metrics.append({"name": value["key"]["value"],
-                                "type": self._conver_to_timestream_type(value["type"]["value"])})
+                                "type": self._convert_to_timestream_type(value["type"]["value"])})
         return tags, metrics
 
     @staticmethod
-    def _conver_to_timestream_type(metric_type: str) -> str:
+    def _convert_to_timestream_type(metric_type: str) -> str:
         metric_type = metric_type.lower()
         if metric_type in ["float", "double"]:
             return "DOUBLE"

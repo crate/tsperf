@@ -27,7 +27,7 @@ database = int(os.getenv("DATABASE", 0))  # 0:crate, 1:timescale, 2:influx
 db_name = os.getenv("DB_NAME", "")
 token = os.getenv("TOKEN", "")
 concurrency = os.getenv("CONCURRENCY", 10)
-iterations = os.getenv("ITERATIONS", 100)
+iterations = os.getenv("ITERATIONS", 10)
 quantile_list = os.getenv("QUANTILES", "50,60,75,90,99")
 query = os.getenv("QUERY", 'SELECT * FROM "data_generator_test"."temperature" LIMIT 100')
 model = {"value": "none"}
@@ -36,7 +36,6 @@ query_results = []
 total_queries = 0
 stop_thread = False
 start_time = time.time()
-terminal_size = shutil.get_terminal_size()
 
 config = DataGeneratorConfig()
 
@@ -79,32 +78,30 @@ def print_progressbar(iteration, total, prefix='', suffix='', decimals=1, length
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filled_length = int(length * iteration // total)
     bar = fill * filled_length + '-' * (length - filled_length)
-    print_string = ""
-    for k, v in helper.tic_toc.items():
-        if len(v) == 0:
-            print_string = f"\r{prefix} |{bar}| {percent}%% {suffix} {round(now - start_time, 2)}s"
-        else:
+
+    if "execute_query" in helper.tic_toc:
+        values = helper.tic_toc["execute_query"]
+        console.addstr(3, 0, f"{prefix} |{bar}| {percent}%% {suffix} {round(now - start_time, 2)}s")
+        if len(values) > 1:
             try:
-                print_string = f"\n{prefix} |{bar}| {percent}% {suffix} {round(now-start_time, 2)}s\n\n" \
-                               f"rate : {round((1 / statistics.mean(v)) * concurrency, 3)}qs/s\n" \
-                               f"mean : {round(statistics.mean(v) * 1000, 3)}ms\n" \
-                               f"stdev: {round(statistics.stdev(v) * 1000, 3)}ms\n" \
-                               f"min  : {round(min(v) * 1000, 3)}ms\n" \
-                               f"max  : {round(max(v) * 1000, 3)}ms\n"
+                console.addstr(5, 0, f"rate : {round((1 / statistics.mean(values)) * concurrency, 3)}qs/s\n")
+                console.addstr(6, 0, f"mean : {round(statistics.mean(values) * 1000, 3)}ms\n")
+                console.addstr(7, 0, f"stdev: {round(statistics.stdev(values) * 1000, 3)}ms\n")
+                console.addstr(8, 0, f"min  : {round(min(values) * 1000, 3)}ms\n")
+                console.addstr(9, 0, f"max  : {round(max(values) * 1000, 3)}ms\n")
             except Exception as e:
-                pass
-    console.addstr(2, 0, print_string)
+                print(e)
     console.refresh()
 
 
 def start_query_run():
-    global total_queries, errors
+    global total_queries
     for x in range(0, iterations):
         result = helper.execute_timed_function(db_writer.execute_query, query)
         total_queries += 1
-        terminal_size_thread = shutil.get_terminal_size()
+        terminal_size = shutil.get_terminal_size()
         print_progressbar(total_queries, concurrency * iterations,
-                          prefix='Progress:', suffix='Complete', length=(terminal_size_thread.columns - 40))
+                          prefix='Progress:', suffix='Complete', length=(terminal_size.columns - 40))
         query_results.append(result)
 
 
@@ -127,24 +124,20 @@ if __name__ == '__main__':
 
     console.addstr(f"""concurrency: {concurrency}\niterations : {iterations}""")
     console.refresh()
+    terminal_size = shutil.get_terminal_size()
     print_progressbar(0, concurrency * iterations,
                       prefix='Progress:', suffix='Complete', length=(terminal_size.columns - 40))
 
     main()
+
     q_list = quantile_list.split(",")
-    for k, v in helper.tic_toc.items():
-        # rate is how many queries are finished each second
-        console.addstr(5, 0, f"""rate : {round((1 / statistics.mean(v)) * concurrency, 3)}qs/s""")
-        console.addstr(6, 0, f"""mean : {round(statistics.mean(v)*1000, 3)}ms""")
-        console.addstr(7, 0, f"""stdev: {round(statistics.stdev(v)*1000, 3)}ms""")
-        console.addstr(8, 0, f"""min  : {round(min(v)*1000, 3)}ms""")
-        console.addstr(9, 0, f"""max  : {round(max(v)*1000, 3)}ms""")
-        qus = statistics.quantiles(v, n=100, method="inclusive")
+    if "execute_query" in helper.tic_toc:
+        values = helper.tic_toc["execute_query"]
+        qus = statistics.quantiles(values, n=100, method="inclusive")
         line = 10
         for i in range(0, len(qus)):
             if str(i + 1) in q_list:
                 line += 1
-                out = f"""p{i+1}  : {round(qus[i]*1000, 3)}ms"""
-                console.addstr(line, 0, out)
+                console.addstr(line, 0, f"p{i+1}  : {round(qus[i]*1000, 3)}ms")
     console.refresh()
     # finished

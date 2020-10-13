@@ -50,7 +50,7 @@ class TimeStreamWriter(DbWriter):
                 data[str(common_attributes)]["records"].append(record_metric)
         return data
 
-    def execute_query(self, query, recursive=False):
+    def execute_query(self, query, retry=True):
         result = []
         try:
             paginator = self.query_client.get_paginator('query')
@@ -58,8 +58,8 @@ class TimeStreamWriter(DbWriter):
             for page in page_iterator:
                 result.append(page)
         except Exception as e:
-            if not recursive:
-                result = self.execute_query(query, True)
+            if retry:
+                result = self.execute_query(query, False)
         return result
 
     def _get_tags_and_metrics(self):
@@ -74,11 +74,11 @@ class TimeStreamWriter(DbWriter):
         for key, value in metrics_.items():
             if key != "description":
                 metrics.append({"name": value["key"]["value"],
-                                "type": self.t(value["type"]["value"])})
+                                "type": self._convert_to_timestream_type(value["type"]["value"])})
         return tags, metrics
 
     @staticmethod
-    def t(metric_type: str) -> str:
+    def _convert_to_timestream_type(metric_type: str) -> str:
         metric_type = metric_type.lower()
         if metric_type in ["float", "double"]:
             return "DOUBLE"

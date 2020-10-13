@@ -1,3 +1,4 @@
+import curses
 import os
 import urllib3
 import statistics
@@ -14,6 +15,7 @@ from threading import Thread
 
 from modules.timestream_db_writer import TimeStreamWriter
 
+console = curses.initscr()
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 host = os.getenv("HOST", "localhost:4200")
@@ -60,7 +62,7 @@ else:
     db_writer = None
 
 
-def print_progressbar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', print_end="\r"):
+def print_progressbar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -77,11 +79,22 @@ def print_progressbar(iteration, total, prefix='', suffix='', decimals=1, length
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filled_length = int(length * iteration // total)
     bar = fill * filled_length + '-' * (length - filled_length)
-    print('\r%s |%s| %s%% %s %ss' % (prefix, bar, percent, suffix, round(now-start_time, 2)), end=print_end)
-    # Print New Line on Complete
-    if iteration == total:
-        print()
-    os.get_terminal_size()
+    print_string = ""
+    for k, v in helper.tic_toc.items():
+        if len(v) == 0:
+            print_string = f"\r{prefix} |{bar}| {percent}%% {suffix} {round(now - start_time, 2)}s"
+        else:
+            try:
+                print_string = f"\n{prefix} |{bar}| {percent}% {suffix} {round(now-start_time, 2)}s\n\n" \
+                               f"rate : {round((1 / statistics.mean(v)) * concurrency, 3)}qs/s\n" \
+                               f"mean : {round(statistics.mean(v) * 1000, 3)}ms\n" \
+                               f"stdev: {round(statistics.stdev(v) * 1000, 3)}ms\n" \
+                               f"min  : {round(min(v) * 1000, 3)}ms\n" \
+                               f"max  : {round(max(v) * 1000, 3)}ms\n"
+            except Exception as e:
+                pass
+    console.addstr(2, 0, print_string)
+    console.refresh()
 
 
 def start_query_run():
@@ -112,22 +125,26 @@ if __name__ == '__main__':
     if concurrency * iterations < 100:
         raise ValueError("query_timer needs at least 100 queries (concurrent * iterations) to work properly")
 
-    print(f"""concurrency: {concurrency}\niterations : {iterations}""")
+    console.addstr(f"""concurrency: {concurrency}\niterations : {iterations}""")
+    console.refresh()
     print_progressbar(0, concurrency * iterations,
                       prefix='Progress:', suffix='Complete', length=(terminal_size.columns - 40))
 
     main()
     q_list = quantile_list.split(",")
     for k, v in helper.tic_toc.items():
-        # TODO: define rate, currently it is: iterations per average duration per second times concurrency
-        print(f"""rate : {round(((iterations * concurrency) / (statistics.mean(v)*1000)) * concurrency, 3)}qs/s""")
-        print(f"""mean : {round(statistics.mean(v)*1000, 3)}ms""")
-        print(f"""stdev: {round(statistics.stdev(v)*1000, 3)}ms""")
-        print(f"""min  : {round(min(v)*1000, 3)}ms""")
-        print(f"""max  : {round(max(v)*1000, 3)}ms""")
+        # rate is how many queries are finished each second
+        console.addstr(5, 0, f"""rate : {round((1 / statistics.mean(v)) * concurrency, 3)}qs/s""")
+        console.addstr(6, 0, f"""mean : {round(statistics.mean(v)*1000, 3)}ms""")
+        console.addstr(7, 0, f"""stdev: {round(statistics.stdev(v)*1000, 3)}ms""")
+        console.addstr(8, 0, f"""min  : {round(min(v)*1000, 3)}ms""")
+        console.addstr(9, 0, f"""max  : {round(max(v)*1000, 3)}ms""")
         qus = statistics.quantiles(v, n=100, method="inclusive")
+        line = 10
         for i in range(0, len(qus)):
             if str(i + 1) in q_list:
-                print(f"""p{i+1}  : {round(qus[i]*1000, 3)}ms""")
-        print(f"errors: {errors}")
+                line += 1
+                out = f"""p{i+1}  : {round(qus[i]*1000, 3)}ms"""
+                console.addstr(line, 0, out)
+    console.refresh()
     # finished

@@ -104,5 +104,3 @@ spec:
 
 ```
 *) secrets, configmap **NOT** shown here.
-
-s

@@ -447,6 +447,7 @@ The environment variables in this chapter are used by different databases to con
 + [InfluxDB](#influxdb)
 + [TimescaleDB](#timescaledb)
 + [MongoDB](#mongodb)
++ [AWS Timestream](#aws-timestream)
 
 #### HOST
 
@@ -498,7 +499,7 @@ Values: Name of the database where table will be created
 
 Default: empty string
 
-used with InfluxDB, TimescaleDB, MongoDB.
+used with InfluxDB, TimescaleDB, MongoDB, AWS Timestream.
 
 **InfluxDB:**
 This is an optional parameter for InfluxDB. In case it is set the Bucket where the values are inserted will use the value of `DB_NAME` as name. If `DB_NAME` is empty string than the name of the model (see [Data Generator models](#data-generator-models) for more information) will be used as Bucket name.
@@ -508,6 +509,9 @@ The value of `DB_NAME` is used when connecting to TimescaleDB. This database mus
 
 **MongoDB:**
 The value of `DB_NAME` is used as the database parameter of MongoDB.
+
+**AWS Timestream:**
+The value of `DB_NAME` is used as the database parameter of AWS Timestream.
 
 #### TABLE_NAME
 
@@ -590,6 +594,34 @@ Values: org_id gotten from InfluxDB V2
 Default: empty string
 
 Influx V2 uses [organizations](https://v2.docs.influxdata.com/v2.0/organizations/) to manage buckets.
+
+### Environment variables used to configure AWS Timestream
+
+The environment variables in this chapter are only used to configure AWS Timestream
+
+#### AWS_ACCESS_KEY_ID
+
+Type: String
+
+Values: AWS Access Key ID
+
+Default: empty string
+
+#### AWS_SECRET_ACCESS_KEY
+
+Type: String
+
+Values: AWS Secret Access Key
+
+Default: empty string
+
+#### AWS_REGION_NAME
+
+Type: String
+
+Values: AWS region name
+
+Default: empty string
 
 ## Data Generator Models
 

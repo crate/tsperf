@@ -10,50 +10,31 @@ The Data Generator evolved as a standalone tool which can be used independently 
     + [How To](#how-to)
     + [Supported Databases](#supported-databases)
       - [CrateDB](#cratedb)
-        * [Client Library](#client-library)
-        * [Table Setup](#table-setup)
-        * [Insert](#insert)
-        * [Specifics](#specifics)
       - [InfluxDB](#influxdb)
-        * [Client Library](#client-library-1)
-        * [Bucket Setup](#bucket-setup)
-        * [Insert](#insert-1)
-        * [Specifics](#specifics-1)
       - [TimescaleDB](#timescaledb)
-        * [Client Library](#client-library-2)
-        * [Table Setup](#table-setup-1)
-        * [Insert](#insert-2)
-        * [Specifics](#specifics-2)
       - [MongoDB](#mongodb)
-        * [Client Library](#client-library-3)
-        * [Collection Setup](#collection-setup)
-        * [Insert](#insert-3)
-        * [Specifics](#specifics-3)
       - [PostgreSQL](#postgresql)
-        * [Client Library](#client-library-4)
-        * [Table Setup](#table-setup-2)
-        * [Insert](#insert-4)
-        * [Specifics](#specifics-4)
+      - [AWS Timestream](#aws-timestream)
   * [Data Generator Configuration](#data-generator-configuration)
     + [Environment variables configuring the behaviour of the Data Generator](#environment-variables-configuring-the-behaviour-of-the-data-generator)
-      - [ID_START](#id-start)
-      - [ID_END](#id-end)
-      - [INGEST_MODE](#ingest-mode)
-        * [INGEST_MODE 0](#ingest-mode-0)
-        * [INGEST_MODE 1](#ingest-mode-1)
-      - [INGEST_SIZE](#ingest-size)
-      - [INGEST_TS](#ingest-ts)
-      - [INGEST_DELTA](#ingest-delta)
-      - [MODEL_PATH](#model-path)
-      - [BATCH_SIZE](#batch-size)
+      - [ID_START](#id_start)
+      - [ID_END](#id_end)
+      - [INGEST_MODE](#ingest_mode)
+        * [INGEST_MODE 0](#ingest_mode-0)
+        * [INGEST_MODE 1](#ingest_mode-1)
+      - [INGEST_SIZE](#ingest_size)
+      - [INGEST_TS](#ingest_ts)
+      - [INGEST_DELTA](#ingest_delta)
+      - [MODEL_PATH](#model_path)
+      - [BATCH_SIZE](#batch_size)
       - [DATABASE](#database)
-      - [STAT_DELTA](#stat-delta)
+      - [STAT_DELTA](#stat_delta)
     + [Environment variables used to configure different databases](#environment-variables-used-to-configure-different-databases)
       - [HOST](#host)
       - [USERNAME](#username)
       - [PASSWORD](#password)
-      - [DB_NAME](#db-name)
-      - [TABLE_NAME](#table-name)
+      - [DB_NAME](#db_name)
+      - [TABLE_NAME](#table_name)
       - [PARTITION](#partition)
     + [Environment variables used to configure CrateDB](#environment-variables-used-to-configure-cratedb)
       - [SHARDS](#shards)
@@ -68,9 +49,7 @@ The Data Generator evolved as a standalone tool which can be used independently 
     + [Complex Model Example](#complex-model-example)
     + [Sensor Types](#sensor-types)
       - [Float Sensor](#float-sensor)
-        * [Model](#model)
       - [Bool Sensor](#bool-sensor)
-        * [Model](#model-1)
   * [Batch-Size-Automator](#batch-size-automator)
     + [Setup](#setup)
     + [Modes](#modes)
@@ -79,14 +58,10 @@ The Data Generator evolved as a standalone tool which can be used independently 
   * [Prometheus Metrics](#prometheus-metrics)
   * [Example Use Cases](#example-use-cases)
     + [Single Type of Edge](#single-type-of-edge)
-      - [Setup](#setup-1)
-      - [Running the example](#running-the-example)
     + [Multiple Types of Edges](#multiple-types-of-edges)
-      - [Setup](#setup-2)
-      - [Running the example](#running-the-example-1)
   * [Alternative data generators](#alternative-data-generators)
-    + [Why use this data generator over the alternatives?](#why-use-this-data-generator-over-the-alternatives-)
-    + [cr8 + mkjson](#cr8---mkjson)
+    + [Why use this data generator over the alternatives?](#why-use-this-data-generator-over-the-alternatives)
+    + [cr8 + mkjson](#cr8--mkjson)
     + [tsbs data generator](#tsbs-data-generator)
   * [Glossary](#glossary)
 
@@ -118,6 +93,7 @@ Currently 5 Databases are
 + [TimescaleDB](https://www.timescale.com/)
 + [MongoDB](https://www.mongodb.com/)
 + [PostgreSQL](https://www.postgresql.org/)
++ [AWS Timestream](https://aws.amazon.com/timestream/)
 
 Databases can be run either local or in the Cloud as both use cases are supported. Support for additional databases depends on the demand for it.
 
@@ -293,6 +269,39 @@ Insert is done in batches.
 
 + No index is created, to query data indices must be created manually.
 + Insert of multiple models into a single table is not possible as the table schema is only created once.
+
+#### AWS Timestream
+
+##### Client Library
+
+For AWS Timestream the [boto3](https://github.com/boto/boto3) library is used.
+
+To connect with AWS Timestream the following environment variables must be set:
+
++ [AWS_ACCESS_KEY_ID](#aws_access_key_id): AWS Access Key ID
++ [AWS_SECRET_ACCESS_KEY](#aws_secret_access_key): AWS Secret Access Key
++ [AWS_REGION_NAME](#aws_region_name): AWS Region
++ [DB_NAME](#db_name): the database name to connect to or create
+
+##### Table Setup
+
+A table gets it's name from the provided [model](#data-generator-models)
+
+A table for AWS Timestream consists of the following columns:
+
++ A column for each `tag` in the provided model
++ All columns necessary for the AWS Timestream [datamodel](https://docs.aws.amazon.com/timestream/latest/developerguide/getting-started.python.code-samples.write-data.html):
+    
+**If a table or database with the same name already exists it will be used by the data generator**
+
+##### Insert
+
+The insert is done according to the optimized write [documentation](https://docs.aws.amazon.com/timestream/latest/developerguide/getting-started.python.code-samples.write-data-optimized.html). Values are grouped by their tags and inserted in batches. As AWS Timestream has a default limit of 100 values per batch, the batch is limited to have a maximum size of 100.
+
+##### Specifics
+
++ Tests show that about 600 values per second can be inserted by a single data generator instance. So the data model has to be adjusted accordingly to not be slower than the settings require.
+  + e.g. having 600 sensors with each 2 metrics and each should write a single value each second would require 1200 values/s of insert speed. For this at least 2 data generator instance would be needed.
 
 ## Data Generator Configuration
 

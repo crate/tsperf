@@ -1,3 +1,5 @@
+![tag_build_and_push](https://github.com/crate/ts-data-generator/workflows/tag_build_and_push/badge.svg?branch=master) ![code_quality](https://github.com/crate/ts-data-generator/workflows/code_quality/badge.svg)
+
 # Timeseries data generator
 
 The datagenerator has it is own in-depth [documentation](DATA_GENERATOR.md).
@@ -102,5 +104,3 @@ spec:
 
 ```
 *) secrets, configmap **NOT** shown here.
-
-s

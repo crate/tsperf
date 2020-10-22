@@ -1,0 +1,138 @@
+{
+    "grafana_demo_values": {
+        "tags": {
+            "factory": 2,
+            "machine": 10,
+            "sensor": "id"
+        },
+        "metrics": {
+            "temperature": {
+                "key": {
+                    "value": "temperature"
+                },
+                "type": {
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 50
+                },
+                "max": {
+                    "value": 200
+                },
+                "mean": {
+                    "value": 125
+                },
+                "stdev": {
+                    "value": 5
+                },
+                "variance": {
+                    "value": 0.5
+                },
+                "error_rate": {
+                    "value": 0.00001
+                },
+                "error_length": {
+                    "value": 2.07
+                }
+            },
+            "fluid_level": {
+                "key": {
+                    "value": "fluid_level"
+                },
+                "type": {
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 85
+                },
+                "max": {
+                    "value": 100
+                },
+                "mean": {
+                    "value": 92
+                },
+                "stdev": {
+                    "value": 1
+                },
+                "variance": {
+                    "value": 0.01
+                },
+                "error_rate": {
+                    "value": 0.0001
+                },
+                "error_length": {
+                    "value": 2.07
+                }
+            },
+            "humidity": {
+                "key": {
+                    "value": "humidity"
+                },
+                "type": {
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 30
+                },
+                "max": {
+                    "value": 60
+                },
+                "mean": {
+                    "value": 45
+                },
+                "stdev": {
+                    "value": 1
+                },
+                "variance": {
+                    "value": 0.01
+                },
+                "error_rate": {
+                    "value": 0.0001
+                },
+                "error_length": {
+                    "value": 2.07
+                }
+            },
+            "pressure": {
+                "key": {
+                    "value": "pressure"
+                },
+                "type": {
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 0
+                },
+                "max": {
+                    "value": 50
+                },
+                "mean": {
+                    "value": 37
+                },
+                "stdev": {
+                    "value": 1
+                },
+                "variance": {
+                    "value": 0.01
+                },
+                "error_rate": {
+                    "value": 0.0001
+                },
+                "error_length": {
+                    "value": 5
+                }
+            },
+            "broken": {
+                "key": {
+                    "value": "broken"
+                },
+                "type": {
+                    "value": "BOOL"
+                },
+                "true_ratio": {
+                    "value": 0.01
+                }
+            }
+        }
+    }
+}

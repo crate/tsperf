@@ -1,0 +1,10 @@
+kubernetes:
+  name: grafana-demo-data
+
+version: latest
+
+ID_START: 1
+ID_END: 150
+
+db:
+  crateuri: https://grafana-demo-1.westeurope.azure.cratedb.net:4200

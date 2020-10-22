@@ -1,10 +1,177 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: datagenerator
+    app.kubernetes.io/name: "{{ kubernetes.name }}"
+  name: "datamodel"
+  namespace: "{{ kubernetes.namespace }}"
+data:
+  grafana_demo_model.json: |
+    {
+        "grafana_demo_values": {
+            "tags": {
+                "factory": 2,
+                "machine": 10,
+                "sensor": "id"
+            },
+            "metrics": {
+                "temperature": {
+                    "key": {
+                        "value": "temperature"
+                    },
+                    "type": {
+                        "value": "FLOAT"
+                    },
+                    "min": {
+                        "value": 50
+                    },
+                    "max": {
+                        "value": 200
+                    },
+                    "mean": {
+                        "value": 125
+                    },
+                    "stdev": {
+                        "value": 5
+                    },
+                    "variance": {
+                        "value": 0.5
+                    },
+                    "error_rate": {
+                        "value": 0.00001
+                    },
+                    "error_length": {
+                        "value": 2.07
+                    }
+                },
+                "fluid_level": {
+                    "key": {
+                        "value": "fluid_level"
+                    },
+                    "type": {
+                        "value": "FLOAT"
+                    },
+                    "min": {
+                        "value": 85
+                    },
+                    "max": {
+                        "value": 100
+                    },
+                    "mean": {
+                        "value": 92
+                    },
+                    "stdev": {
+                        "value": 1
+                    },
+                    "variance": {
+                        "value": 0.01
+                    },
+                    "error_rate": {
+                        "value": 0.0001
+                    },
+                    "error_length": {
+                        "value": 2.07
+                    }
+                },
+                "humidity": {
+                    "key": {
+                        "value": "humidity"
+                    },
+                    "type": {
+                        "value": "FLOAT"
+                    },
+                    "min": {
+                        "value": 30
+                    },
+                    "max": {
+                        "value": 60
+                    },
+                    "mean": {
+                        "value": 45
+                    },
+                    "stdev": {
+                        "value": 1
+                    },
+                    "variance": {
+                        "value": 0.01
+                    },
+                    "error_rate": {
+                        "value": 0.0001
+                    },
+                    "error_length": {
+                        "value": 2.07
+                    }
+                },
+                "pressure": {
+                    "key": {
+                        "value": "pressure"
+                    },
+                    "type": {
+                        "value": "FLOAT"
+                    },
+                    "min": {
+                        "value": 0
+                    },
+                    "max": {
+                        "value": 50
+                    },
+                    "mean": {
+                        "value": 37
+                    },
+                    "stdev": {
+                        "value": 1
+                    },
+                    "variance": {
+                        "value": 0.01
+                    },
+                    "error_rate": {
+                        "value": 0.0001
+                    },
+                    "error_length": {
+                        "value": 5
+                    }
+                },
+                "broken": {
+                    "key": {
+                        "value": "broken"
+                    },
+                    "type": {
+                        "value": "BOOL"
+                    },
+                    "true_ratio": {
+                        "value": 0.01
+                    }
+                }
+            }
+        }
+    }
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: image-pull-cr8
+  namespace: "{{ kubernetes.namespace }}"
+  labels:
+    app.kubernetes.io/name: image-pull-cr8
+    app.kubernetes.io/part-of: cratedb
+    app.kubernetes.io/managed-by: replicator
+  annotations:
+    replicator.v1.mittwald.de/replicate-from: "templates/image-pull-cr8"
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: "e30K"  # empty {}
+
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
   labels:
     k8s-app: datagenerator
-    app.kubernetes.io/name: {{ kubernetes.name }}
-  name: dg-{{ ID_START }}
+    app.kubernetes.io/name: "{{ kubernetes.name }}"
+  name: "dg-{{ ID_START }}"
   namespace: "{{ kubernetes.namespace }}"
 spec:
   backoffLimit: 0
@@ -16,13 +183,13 @@ spec:
         prometheus.io/path: "/metrics"
       labels:
         k8s-app: datagenerator
-        app.kubernetes.io/name: {{ kubernetes.name }}
+        app.kubernetes.io/name: "{{ kubernetes.name }}"
     spec:
       imagePullSecrets:
         - name: image-pull-cr8
       containers:
         - name: datagenerator
-          image: registry.cr8.net/data-generator:{{ version }}
+          image: "registry.cr8.net/data-generator:{{ version }}"
           ports:
             - containerPort: 8000
               protocol: TCP
@@ -43,7 +210,7 @@ spec:
             - name: ID_END
               value: "{{ ID_END }}"
             - name: HOST
-              value: {{ db.crateuri }}
+              value: "{{ db.crateuri }}"
             - name: INGEST_MODE
               value: "0"
             - name: INGEST_SIZE
@@ -57,17 +224,17 @@ spec:
             - name: SHARDS
               value: "4"
             - name: USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: datagenerator
-                  key: crate_user
+              value: "{{ credentials.username }}"
             - name: PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: datagenerator
-                  key: crate_password
+                  name: "{{ credentials.password_k8s_secret }}"
+                  key: password
       restartPolicy: Never
       volumes:
         - name: datamodel
           configMap:
             name: datamodel
+            items:
+            - key: grafana_demo_model.json
+              path: grafana_demo_model.json

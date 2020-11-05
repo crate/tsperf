@@ -82,9 +82,9 @@ The Data Generator is a tool to generate timeseries data which adheres to a [sta
 The easiest way to use the Data Generator is to build the Docker Image:
 
 + navigate to root directory of this repository
-+ build docker image with `docker build -t data_gen -f src/data_generator/Dockerfile .`
++ build docker image with `docker build -t data_gen -f Dockerfile .`
 + Adapt one of the example docker-compose files in the [example folder](src/data_generator/examples)
-+ start (e.g. crate example) with `docker-compose -f src/data_generator/example/docker-compose_crate.yml up`
++ start (e.g. crate example) with `docker-compose -f src/data_generator/examples/docker-compose_crate.yml up`
 
 For an explanation on how to set the environment variables see [Environment variables](#data-generator-configuration).
 For example use cases see [Example use cases](#example-use-cases)
@@ -161,7 +161,7 @@ Insert into InfluxDB is done using the `Point` type from the `influxdb_client.cl
 ##### Specifics
 
 + All tags are automatically indexed
-+ Insert of multiple models into a single bucket is possible due to InfluxDB being a NoSQL database. 
++ Insert of multiple models into a single bucket is possible due to InfluxDB being a NoSQL database.
 + When using InfluxDB V2 with a usage-based plan insert is limited to 300MB/5m, this is about 15.000 metrics per second, additional metrics are dropped by InfluxDB and the client is not informed.
 
 #### TimescaleDB
@@ -186,10 +186,10 @@ A table for TimescaleDB consists of the following columns:
 
 + `ts`: column containing a timestamp (occurrence of the payload)
 + `ts_'interval'`: column containing the `ts` value truncated to the value set with [PARTITION](#partition).
-+ a column for each entry in `tags` and `metrics`. 
++ a column for each entry in `tags` and `metrics`.
     + `tags` are of type `INTEGER` when using numbers and of type `TEXT` when using list notation
     + `metrics` are of the type defined in the [model](#data-generator-models)
-    
+
 **If a table with the same name already exists which doesn't have the expected structure the data-generator will fail when inserting values.**
 
 Using this table a TimescaleDB Hypertable is created partitioned by the `ts` and `ts_'interval'` column
@@ -259,10 +259,10 @@ A table for PostgreSQL consists of the following columns:
 
 + `ts`: column containing a timestamp (occurrence of the payload)
 + `ts_'interval'`: column containing the `ts` value truncated to the value set with [PARTITION](#partition).
-+ a column for each entry in `tags` and `metrics`. 
++ a column for each entry in `tags` and `metrics`.
     + `tags` are of type `INTEGER` when using numbers and of type `TEXT` when using list notation
     + `metrics` are of the type defined in the [model](#data-generator-models)
-    
+
 **If a table with the same name already exists which doesn't have the expected structure the data-generator will fail when inserting values.**
 
 ##### Insert
@@ -295,7 +295,7 @@ A table for AWS Timestream consists of the following columns:
 
 + A column for each `tag` in the provided model
 + All columns necessary for the AWS Timestream [datamodel](https://docs.aws.amazon.com/timestream/latest/developerguide/getting-started.python.code-samples.write-data.html):
-    
+
 **If a table or database with the same name already exists it will be used by the data generator**
 
 ##### Insert

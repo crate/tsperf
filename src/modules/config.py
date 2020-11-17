@@ -32,7 +32,7 @@ class DataGeneratorConfig:
 
         # environment variables to configure timescaledb
         self.port = os.getenv("PORT", "5432")
-        self.copy = strtobool(os.getenv("TIMESCALE_COPY", "False"))
+        self.copy = strtobool(os.getenv("TIMESCALE_COPY", "True"))
 
         # environment variables to connect to influxdb
         self.token = os.getenv("TOKEN", "")

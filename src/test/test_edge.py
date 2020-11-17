@@ -113,7 +113,7 @@ def test_calculate_next_value_float():
     stdev = statistics.stdev(results)
     error_rate = float_sensor.error_count / (float_sensor.value_count + float_sensor.error_count)
     assert mean == pytest.approx(float_model["mean"]["value"], abs=0.5)
-    assert stdev == pytest.approx(float_model["stdev"]["value"], abs=0.11)
+    assert stdev == pytest.approx(float_model["stdev"]["value"], abs=0.15)
     assert error_rate == pytest.approx(float_model["error_rate"]["value"], abs=0.001)
 
 

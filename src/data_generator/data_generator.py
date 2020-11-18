@@ -168,15 +168,15 @@ def insert_routine(last_ts):
     runtime_metrics["rows"] += len(batch)
     runtime_metrics["metrics"] += len(batch) * len(get_sub_element("metrics").keys())
 
-    #try:
-    helper.execute_timed_function(db_writer.insert_stmt, timestamps, batch)
-    #except Exception as e:
-    #    # if an exception is thrown while inserting we don't want the whole data_generator to crash
-    #    # as the values have not been inserted we remove them from our runtime_metrics
-    #    # TODO: more sophistic error handling on db_writer level
-    #    logging.error(e)
-    #    runtime_metrics["rows"] -= len(batch)
-    #    runtime_metrics["metrics"] -= len(batch) * len(get_sub_element("metrics").keys())
+    try:
+        helper.execute_timed_function(db_writer.insert_stmt, timestamps, batch)
+    except Exception as e:
+        # if an exception is thrown while inserting we don't want the whole data_generator to crash
+        # as the values have not been inserted we remove them from our runtime_metrics
+        # TODO: more sophistic error handling on db_writer level
+        logging.error(e)
+        runtime_metrics["rows"] -= len(batch)
+        runtime_metrics["metrics"] -= len(batch) * len(get_sub_element("metrics").keys())
 
     if batch_size_automator.auto_batch_mode:
         duration = time.time() - start

@@ -41,6 +41,7 @@ The Data Generator evolved as a standalone tool which can be used independently 
       - [REPLICAS](#replicas)
     + [Environment variables used to configure TimescaleDB](#environment-variables-used-to-configure-timescaledb)
       - [PORT](#port)
+      - [TIMESCALE_COPY](#timescale_copy)
     + [Environment variables used to configure InfluxDB](#environment-variables-used-to-configure-influxdb)
       - [TOKEN](#token)
       - [ORG](#org)
@@ -169,6 +170,8 @@ Insert into InfluxDB is done using the `Point` type from the `influxdb_client.cl
 ##### Client Library
 
 For TimescaleDB the [psycopg2](https://pypi.org/project/psycopg2/) library is used. As psycopg2 does not have the best insert performance for TimescaleDB (see [here](https://docs.timescale.com/latest/tutorials/quickstart-python#insert_rows)) to insert a lot of metrics it is advised to split [IDs](#id_start) over multiple data-generator instances.
+
+Note: starting with version `0.1.3` TimescaleDB uses the [pgcopy](https://pypi.org/project/pgcopy/) library by default to enhance insert performance for single clients. To override the default setting you can set [TIMESCALE_COPY](#timescale_copy) to `False`.
 
 To connect with TimescaleDB the following environment variables must be set:
 
@@ -574,6 +577,16 @@ Values: positive number
 Default: 5432
 
 Defines the port number of the host where TimescaleDB is reachable.
+
+#### TIMESCALE_COPY
+
+Type: Boolean
+
+Values: True or False
+
+Default: True
+
+Defines if Timescale insert uses `pgcopy` or not.
 
 ### Environment variables used to configure InfluxDB
 

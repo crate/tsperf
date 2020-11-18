@@ -38,7 +38,7 @@ if config.database == 0:  # crate
                               config.table_name, config.shards, config.replicas, config.partition)
 elif config.database == 1:  # timescale
     db_writer = TimescaleDbWriter(config.host, config.port, config.username, config.password,
-                                  config.db_name, model, config.table_name, config.partition)
+                                  config.db_name, model, config.table_name, config.partition, config.copy)
 elif config.database == 2:  # influx
     db_writer = InfluxDbWriter(config.host, config.token, config.organization, model, config.db_name)
 elif config.database == 3:  # mongo

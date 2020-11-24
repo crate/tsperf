@@ -1,4 +1,4 @@
-from modules import helper
+from tictrack import timed_function
 from modules.db_writer import DbWriter
 from pymongo import MongoClient
 from pymongo import CursorType
@@ -21,10 +21,12 @@ class MongoDbWriter(DbWriter):
     def close_connection(self):
         self.client.close()
 
+    @timed_function()
     def insert_stmt(self, timestamps, batch):
-        data = helper.execute_timed_function(self._prepare_mongo_stmt, timestamps, batch)
+        data = self._prepare_mongo_stmt(timestamps, batch)
         self.collection.insert_many(data)
 
+    @timed_function()
     def _prepare_mongo_stmt(self, timestamps, batch):
         data = []
         tags, metrics = self._get_tags_and_metrics()
@@ -41,6 +43,7 @@ class MongoDbWriter(DbWriter):
             data.append(document)
         return data
 
+    @timed_function()
     def execute_query(self, query):
         cursor = self.collection.find(query, cursor_type=CursorType.EXHAUST)
         return list(cursor)

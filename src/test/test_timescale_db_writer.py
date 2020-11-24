@@ -100,6 +100,36 @@ def test_prepare_database2(mock_connect):
 
 
 @mock.patch.object(psycopg2, 'connect', autospec=True)
+def test_prepare_database3(mock_connect):
+    """
+    This function tests if the .prepare_database() function uses the correct statement to create the database table
+
+    Pre Condition: psycopg2.client.connect() returns a Mock Object conn which returns a Mock Object
+        cursor when its .cursor() function is called.
+        TimescaleDbWriter is called.
+
+    Test Case 1: calling TimescaleDbWriter.prepare_database() with default values overwritten by constructor arguments
+    -> "distributed" is in stmt (table name)
+    -> conn.commit function has been called
+
+    :param mock_connect: mocked function call from psycopg2.client.connect()
+    """
+    # Pre Condition:
+    conn = mock.Mock()
+    cursor = mock.Mock()
+    mock_connect.return_value = conn
+    conn.cursor.return_value = cursor
+    db_writer = TimescaleDbWriter("localhost", 4200, "timescale3", "password3",
+                                  "test", test_model2, "table_name", "day", True, True)
+    # Test Case 1:
+    db_writer.prepare_database()
+    stmt = cursor.execute.call_args.args[0]
+    # distributed is in stmt
+    assert "distributed" in stmt
+    conn.commit.assert_called()
+
+
+@mock.patch.object(psycopg2, 'connect', autospec=True)
 def test_insert_stmt(mock_connect):
     """
     This function tests if the .insert_stmt() function uses the correct statement to insert values

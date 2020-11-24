@@ -4,7 +4,7 @@ import urllib3
 import statistics
 import time
 import shutil
-import modules.helper as helper
+from tictrack import timed_function, tic_toc
 from modules.config import DataGeneratorConfig
 from modules.crate_db_writer import CrateDbWriter
 from modules.postgres_db_writer import PostgresDbWriter
@@ -79,8 +79,8 @@ def print_progressbar(iteration, total, prefix='', suffix='', decimals=1, length
     filled_length = int(length * iteration // total)
     bar = fill * filled_length + '-' * (length - filled_length)
 
-    if "execute_query" in helper.tic_toc:
-        values = helper.tic_toc["execute_query"]
+    if "execute_query" in tic_toc:
+        values = tic_toc["execute_query"]
         console.addstr(3, 0, f"{prefix} |{bar}| {percent}%% {suffix} {round(now - start_time, 2)}s")
         if len(values) > 1:
             try:
@@ -97,7 +97,7 @@ def print_progressbar(iteration, total, prefix='', suffix='', decimals=1, length
 def start_query_run():
     global total_queries
     for x in range(0, iterations):
-        result = helper.execute_timed_function(db_writer.execute_query, query)
+        result = db_writer.execute_query(query)
         total_queries += 1
         terminal_size = shutil.get_terminal_size()
         print_progressbar(total_queries, concurrency * iterations,
@@ -131,8 +131,8 @@ if __name__ == '__main__':
     main()
 
     q_list = quantile_list.split(",")
-    if "execute_query" in helper.tic_toc:
-        values = helper.tic_toc["execute_query"]
+    if "execute_query" in tic_toc:
+        values = tic_toc["execute_query"]
         qus = statistics.quantiles(values, n=100, method="inclusive")
         line = 10
         for i in range(0, len(qus)):

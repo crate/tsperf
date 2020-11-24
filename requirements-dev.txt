@@ -7,3 +7,4 @@ influxdb_client
 pymongo
 boto3
 numpy
+tictrack

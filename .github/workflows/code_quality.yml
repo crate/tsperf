@@ -55,12 +55,4 @@ jobs:
             pip install -r src/test/requirements.txt
         - name: Measure code coverage
           run: |
-            percentage=$(pytest --cov=./src/modules/ --cov-report term ./src/test | grep -E '[TOTAL]' | awk '{print $4}' | tr -d % )
-            if [ -z "$percentage" ];then
-              echo "pytest failed, no code coverage result"
-              exit -1;
-            fi;
-            if (("$percentage" < 95));then
-              echo "Coverage failed because percentage is lower than 95%: $percentage%"
-              exit -1;
-            fi;
+            pytest --cov=./src/modules/ --cov-fail-under=95 --cov-report term ./src/test

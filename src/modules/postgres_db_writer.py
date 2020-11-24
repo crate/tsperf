@@ -1,7 +1,7 @@
 import psycopg2
 import psycopg2.extras
+from tictrack import timed_function
 from modules.db_writer import DbWriter
-from modules import helper
 from datetime import datetime
 from datetime_truncate import truncate
 
@@ -32,11 +32,13 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         self.cursor.execute(stmt)
         self.conn.commit()
 
+    @timed_function()
     def insert_stmt(self, timestamps, batch):
-        stmt = helper.execute_timed_function(self._prepare_postgres_stmt, timestamps, batch)
+        stmt = self._prepare_postgres_stmt(timestamps, batch)
         self.cursor.execute(stmt)
         self.conn.commit()
 
+    @timed_function()
     def _prepare_postgres_stmt(self, timestamps, batch):
         columns = self._get_tags_and_metrics().keys()
         stmt = f"""INSERT INTO {self.table_name} (ts, ts_{self.partition},"""
@@ -54,6 +56,7 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         stmt = stmt.rstrip(",")
         return stmt
 
+    @timed_function()
     def execute_query(self, query):
         self.cursor.execute(query)
         return self.cursor.fetchall()

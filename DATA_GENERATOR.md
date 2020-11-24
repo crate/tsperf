@@ -206,6 +206,7 @@ Insert is done in batches.
 + No index is created, to query data indices must be created manually.
 + Insert of multiple models into a single table is not possible as the table schema is only created once.
 + psycopg2 does not have the best insert performance for TimescaleDB (see [here](https://docs.timescale.com/latest/tutorials/quickstart-python#insert_rows)) to insert a lot of metrics it is advised to split [IDs](#id_start) over multiple data-generator instances.
++ TimescaleDB can be used with distributed hypertables, to test the data_generator with these the [TIMESCALE_DISTRIBUTED] environment variable must be set to `True`.
 
 #### MongoDB
 
@@ -587,6 +588,16 @@ Values: True or False
 Default: True
 
 Defines if Timescale insert uses `pgcopy` or not.
+
+#### TIMESCALE_DISTRIBUTED
+
+Type: Boolean
+
+Values: True or False
+
+Default: False
+
+Defines if Timescale is used with distributed hypertables or not.
 
 ### Environment variables used to configure InfluxDB
 

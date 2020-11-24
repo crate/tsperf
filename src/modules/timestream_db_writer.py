@@ -1,8 +1,8 @@
 import boto3
 import math
 import numpy
+from tictrack import timed_function
 from botocore.config import Config
-from modules import helper
 from modules.db_writer import DbWriter
 
 
@@ -19,8 +19,9 @@ class TimeStreamWriter(DbWriter):
                                                               retries={'max_attempts': 10}))
         self.query_client = self.session.client('timestream-query')
 
+    @timed_function()
     def insert_stmt(self, timestamps, batch):
-        data = helper.execute_timed_function(self._prepare_timestream_stmt, timestamps, batch)
+        data = self._prepare_timestream_stmt(timestamps, batch)
         for key, values in data.items():
             common_attributes = values["common_attributes"]
             records = numpy.array_split(values["records"], math.ceil(len(values["records"])/100))
@@ -32,6 +33,7 @@ class TimeStreamWriter(DbWriter):
                 except Exception as e:
                     print(e)
 
+    @timed_function()
     def _prepare_timestream_stmt(self, timestamps, batch):
         data = {}
         tags, metrics = self._get_tags_and_metrics()
@@ -50,6 +52,7 @@ class TimeStreamWriter(DbWriter):
                 data[str(common_attributes)]["records"].append(record_metric)
         return data
 
+    @timed_function()
     def execute_query(self, query, retry=True):
         result = []
         try:

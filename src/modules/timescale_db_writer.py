@@ -1,8 +1,8 @@
 import psycopg2
 import psycopg2.extras
 from pgcopy import CopyManager
+from tictrack import timed_function
 from modules.db_writer import DbWriter
-from modules import helper
 from datetime import datetime
 from datetime_truncate import truncate
 
@@ -10,7 +10,7 @@ from datetime_truncate import truncate
 class TimescaleDbWriter(DbWriter):
     def __init__(self, host, port, username, password,
                  ts_db_name, model, table_name=None,
-                 partition="week", copy=False):
+                 partition="week", copy=False, distributed=False):
         super().__init__()
         self.conn = psycopg2.connect(dbname=ts_db_name, user=username, password=password, host=host, port=port)
         self.cursor = self.conn.cursor()
@@ -18,6 +18,7 @@ class TimescaleDbWriter(DbWriter):
         self.table_name = (table_name, self._get_model_table_name())[table_name is None or table_name == ""]
         self.partition = partition
         self.copy = copy
+        self.distributed = "distributed_" if distributed else ""
 
     def close_connection(self):
         self.cursor.close()
@@ -35,18 +36,20 @@ ts_{self.partition} TIMESTAMP NOT NULL,
 
         self.cursor.execute(stmt)
         self.conn.commit()
-        stmt = f"""SELECT create_hypertable('{self.table_name}', 'ts', 'ts_{self.partition}', 10, if_not_exists => true); """
+        stmt = f"""SELECT create_{self.distributed}hypertable('{self.table_name}', 'ts', 'ts_{self.partition}', 10, if_not_exists => true); """
         self.cursor.execute(stmt)
         self.conn.commit()
 
+    @timed_function()
     def insert_stmt(self, timestamps, batch):
         if self.copy:
-            helper.execute_timed_function(self._prepare_copy, timestamps, batch)
+            self._prepare_copy(timestamps, batch)
         else:
-            stmt = helper.execute_timed_function(self._prepare_timescale_stmt, timestamps, batch)
+            stmt = self._prepare_timescale_stmt(timestamps, batch)
             self.cursor.execute(stmt)
         self.conn.commit()
 
+    @timed_function()
     def _prepare_copy(self, timestamps, batch):
         columns = self._get_tags_and_metrics().keys()
         values = []
@@ -65,6 +68,7 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         copy_manager = CopyManager(self.conn, self.table_name, cols)
         copy_manager.copy(values)
 
+    @timed_function()
     def _prepare_timescale_stmt(self, timestamps, batch):
         columns = self._get_tags_and_metrics().keys()
         stmt = f"""INSERT INTO {self.table_name} (ts, ts_{self.partition},"""
@@ -82,6 +86,7 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         stmt = stmt.rstrip(",")
         return stmt
 
+    @timed_function()
     def execute_query(self, query):
         self.cursor.execute(query)
         return self.cursor.fetchall()

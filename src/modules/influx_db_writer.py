@@ -1,4 +1,4 @@
-from modules import helper
+from tictrack import timed_function
 from modules.db_writer import DbWriter
 from influxdb_client import InfluxDBClient, Bucket
 from influxdb_client.client.write_api import ASYNCHRONOUS, Point
@@ -31,10 +31,12 @@ class InfluxDbWriter(DbWriter):
                             retention_rules=[])
             self.bucket = self.client.buckets_api().create_bucket(bucket)
 
+    @timed_function()
     def insert_stmt(self, timestamps, batch):
-        data = helper.execute_timed_function(self._prepare_influx_stmt, timestamps, batch)
+        data = self._prepare_influx_stmt(timestamps, batch)
         self.write_api.write(bucket=self.database_name, org=self.org, record=data)
 
+    @timed_function()
     def _prepare_influx_stmt(self, timestamps, batch):
         data = []
         tags, metrics = self._get_tags_and_metrics()
@@ -49,6 +51,7 @@ class InfluxDbWriter(DbWriter):
 
         return data
 
+    @timed_function()
     def execute_query(self, query):
         return self.query_api.query(query)
 

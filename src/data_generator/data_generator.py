@@ -3,7 +3,7 @@ import queue
 import urllib3
 import time
 import logging
-from modules import helper
+from tictrack import timed_function, tic_toc, tic_toc_delta, reset_delta
 from modules.edge import Edge
 from modules.crate_db_writer import CrateDbWriter
 from modules.timescale_db_writer import TimescaleDbWriter
@@ -38,7 +38,8 @@ if config.database == 0:  # crate
                               config.table_name, config.shards, config.replicas, config.partition)
 elif config.database == 1:  # timescale
     db_writer = TimescaleDbWriter(config.host, config.port, config.username, config.password,
-                                  config.db_name, model, config.table_name, config.partition, config.copy)
+                                  config.db_name, model, config.table_name, config.partition, config.copy,
+                                  config.distributed)
 elif config.database == 2:  # influx
     db_writer = InfluxDbWriter(config.host, config.token, config.organization, model, config.db_name)
 elif config.database == 3:  # mongo
@@ -72,6 +73,7 @@ if batch_size_automator.auto_batch_mode:
     g_best_batch_rps = Gauge("data_gen_best_batch_rps", "The rows per second for the up to now best batch size")
 
 
+@timed_function()
 def create_edges():
     # this function creates metric objects in the given range [id_start, id_end]
     for i in range(config.id_start, config.id_end + 1):
@@ -88,6 +90,7 @@ def get_sub_element(sub):
     return element
 
 
+@timed_function()
 def get_next_value():
     # for each edge in the edges list all next values are calculated and saved to the edge_value list
     # this list is then added to the FIFO queue, so each entry of the FIFO queue contains all next values for each edge
@@ -100,7 +103,7 @@ def get_next_value():
 
 
 def write_to_db():
-    global db_writer
+    global db_writer, tic_toc_delta
     last_insert = config.ingest_ts
     last_stat_ts = time.time()
     # while the queue is not empty and the value creation has not yet finished the loop will call the insert_operation
@@ -116,17 +119,18 @@ def write_to_db():
             # if delta is smaller than ingest_delta the time difference is waited (as we want an insert
             # every half second (default)
             if config.ingest_mode == 1 or insert_delta > config.ingest_delta:
-                last_insert = helper.execute_timed_function(insert_routine, last_insert)
+                last_insert = insert_routine(last_insert)
             else:
                 time.sleep(config.ingest_delta - insert_delta)
         if time.time() - last_stat_ts >= config.stat_delta:
-            for key, value in helper.tic_toc_delta.items():
+            for key, value in tic_toc_delta.items():
                 print(f"""average time for {key}: {(sum(value) / len(value))}""")
-            helper.reset_delta()
+            tic_toc_delta = {}
             last_stat_ts = time.time()
     db_writer.close_connection()
 
 
+@timed_function()
 def insert_routine(last_ts):
     global db_writer
     batch = []
@@ -169,7 +173,7 @@ def insert_routine(last_ts):
     runtime_metrics["metrics"] += len(batch) * len(get_sub_element("metrics").keys())
 
     try:
-        helper.execute_timed_function(db_writer.insert_stmt, timestamps, batch)
+        db_writer.insert_stmt(timestamps, batch)
     except Exception as e:
         # if an exception is thrown while inserting we don't want the whole data_generator to crash
         # as the values have not been inserted we remove them from our runtime_metrics
@@ -190,6 +194,7 @@ def insert_routine(last_ts):
     return last_ts
 
 
+@timed_function()
 def main():
     # prepare the database (create the table/bucket/collection if not existing)
     db_writer.prepare_database()
@@ -198,14 +203,14 @@ def main():
     db_writer_thread = Thread(target=write_to_db)
     db_writer_thread.start()
     try:
-        helper.execute_timed_function(create_edges)
+        create_edges()
 
         # TODO: this should not have an endless loop for now stop with ctrl+C
         # we are either in endless mode or have a certain amount of values to create
         while_count = 0
         while config.ingest_size == 0 or while_count < config.ingest_size:
             while_count += 1
-            helper.execute_timed_function(get_next_value)
+            get_next_value()
     except Exception as e:
         logging.exception(e)
     finally:
@@ -219,10 +224,10 @@ if __name__ == '__main__':
     # start prometheus server
     start_http_server(8000)
 
-    helper.execute_timed_function(main)
+    main()
     main = 0
     # we analyze the runtime of the different function
-    for k, v in helper.tic_toc.items():
+    for k, v in tic_toc.items():
         if k == "main":
             main = sum(v) / len(v)
         print(f"""average time for {k}: {(sum(v) / len(v))}""")

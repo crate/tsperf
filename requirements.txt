@@ -1,5 +1,5 @@
-boto3==1.16.24
-botocore~=1.19.24
+boto3==1.16.25
+botocore~=1.19.25
 crate==0.26.0
 prometheus_client==0.9.0
 urllib3==1.26.2
@@ -10,3 +10,4 @@ pymongo==3.11.1
 numpy==1.19.4
 pgcopy==1.4.3
 tictrack==1.0.0
+float_simulator==1.0.0

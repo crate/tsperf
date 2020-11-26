@@ -8,3 +8,4 @@ pymongo
 boto3
 numpy
 tictrack
+float_simulator

@@ -759,7 +759,7 @@ This chapter describes the available Sensor types, what values they use and the 
 
 #### Float Sensor
 
-The Float Sensor produces floating point numbers defined by a statistical model. The generated values follow a normal distribution.
+To generate real world resembling float values the [float_simulator](https://pypi.org/project/float-simulator/) library is used.
 
 ##### Model
 
@@ -865,33 +865,11 @@ The Model for a Bool Sensor is pretty simple, we look at the example we created 
 
 ## Batch-Size-Automator
 
-The Batch Size Automator (BSA) is used to improve insert performance by adjusting the batch size dynamically.
+To optimize ingest performance the [BSA](https://pypi.org/project/batch-size-automator/) library is used
 
 ### Setup
 
 The BSA is only active when [INGEST_MODE](#ingest_mode) is set to `1` and [BATCH_SIZE](#batch_size) has a value smaller or equal `0`. When activated everything else is done automatically.
-
-### Modes
-
-The BSA consists of two modes:
-+ finding best batch size
-+ surveillance
-
-#### Finding best batch size
-
-1. The BSA calculates how many rows where inserted per second during the last test cycle (20 inserts)
-2. The BSA compares if the current result is better than the best
-    2.a. If current was better the batch size is adjusted by the step size
-    2.b. If current was worse the batch size is adjusted in the opposite direction of the last adjustment and the step size is reduced
-3. Repeat steps 1 to 2 until step size is below a threshold (this means that we entered 2.b. often and should have found our optimum batch size)
-4. Change to surveillance mode
-
-#### Surveillance mode
-
-1. The BSA increases the length of the test cycle to 1000 inserts
-2. After 1000 inserts the BSA calculates if performance has gotten worse
-    2.a. if performance is worse test cycle length is set to 20 and we switch to finding best batch size mode
-    2.b. If performance is the same or better repeat steps 1 to 2
 
 ## Prometheus Metrics
 

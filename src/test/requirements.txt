@@ -1,4 +1,4 @@
-boto3==1.16.24
+boto3==1.16.25
 numpy==1.19.4
 mock==4.0.2
 pytest==6.1.2
@@ -14,3 +14,5 @@ pymongo==3.11.1
 flake8==3.8.4
 pgcopy==1.4.3
 tictrack==1.0.0
+float_simulator==1.0.1
+batch_size_automator==1.0.0

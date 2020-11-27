@@ -3,7 +3,8 @@ import queue
 import urllib3
 import time
 import logging
-from tictrack import timed_function, tic_toc, tic_toc_delta, reset_delta
+import tictrack
+from batch_size_automator import BatchSizeAutomator
 from modules.edge import Edge
 from modules.crate_db_writer import CrateDbWriter
 from modules.timescale_db_writer import TimescaleDbWriter
@@ -11,7 +12,6 @@ from modules.influx_db_writer import InfluxDbWriter
 from modules.mongo_db_writer import MongoDbWriter
 from modules.postgres_db_writer import PostgresDbWriter
 from modules.timestream_db_writer import TimeStreamWriter
-from modules.batch_size_automator import BatchSizeAutomator
 from modules.config import DataGeneratorConfig
 from threading import Thread
 from prometheus_client import start_http_server, Gauge, Counter
@@ -73,7 +73,7 @@ if batch_size_automator.auto_batch_mode:
     g_best_batch_rps = Gauge("data_gen_best_batch_rps", "The rows per second for the up to now best batch size")
 
 
-@timed_function()
+@tictrack.timed_function()
 def create_edges():
     # this function creates metric objects in the given range [id_start, id_end]
     for i in range(config.id_start, config.id_end + 1):
@@ -90,7 +90,7 @@ def get_sub_element(sub):
     return element
 
 
-@timed_function()
+@tictrack.timed_function()
 def get_next_value():
     # for each edge in the edges list all next values are calculated and saved to the edge_value list
     # this list is then added to the FIFO queue, so each entry of the FIFO queue contains all next values for each edge
@@ -103,7 +103,7 @@ def get_next_value():
 
 
 def write_to_db():
-    global db_writer, tic_toc_delta
+    global db_writer
     last_insert = config.ingest_ts
     last_stat_ts = time.time()
     # while the queue is not empty and the value creation has not yet finished the loop will call the insert_operation
@@ -123,14 +123,14 @@ def write_to_db():
             else:
                 time.sleep(config.ingest_delta - insert_delta)
         if time.time() - last_stat_ts >= config.stat_delta:
-            for key, value in tic_toc_delta.items():
+            for key, value in tictrack.tic_toc_delta.items():
                 print(f"""average time for {key}: {(sum(value) / len(value))}""")
-            tic_toc_delta = {}
+            tictrack.tic_toc_delta = {}
             last_stat_ts = time.time()
     db_writer.close_connection()
 
 
-@timed_function()
+@tictrack.timed_function()
 def insert_routine(last_ts):
     global db_writer
     batch = []
@@ -194,7 +194,7 @@ def insert_routine(last_ts):
     return last_ts
 
 
-@timed_function()
+@tictrack.timed_function()
 def main():
     # prepare the database (create the table/bucket/collection if not existing)
     db_writer.prepare_database()
@@ -227,7 +227,7 @@ if __name__ == '__main__':
     main()
     main = 0
     # we analyze the runtime of the different function
-    for k, v in tic_toc.items():
+    for k, v in tictrack.tic_toc.items():
         if k == "main":
             main = sum(v) / len(v)
         print(f"""average time for {k}: {(sum(v) / len(v))}""")

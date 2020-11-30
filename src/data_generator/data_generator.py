@@ -53,7 +53,9 @@ elif config.database == 5:  # timestream
 else:
     db_writer = None
 
-batch_size_automator = BatchSizeAutomator(config.batch_size, config.ingest_mode, config.id_end - config.id_start + 1)
+batch_size_automator = BatchSizeAutomator(batch_size=config.batch_size,
+                                          active=bool(config.ingest_mode),
+                                          data_batch_size=(config.id_end - config.id_start + 1))
 
 runtime_metrics = {"rows": 0, "metrics": 0, "batch_size": config.batch_size}
 edges = {}

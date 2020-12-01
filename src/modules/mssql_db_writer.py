@@ -2,14 +2,14 @@ import pyodbc
 from tictrack import timed_function
 from modules.db_writer import DbWriter
 from datetime import datetime
-from datetime_truncate import truncate
 
 
 class MsSQLDbWriter(DbWriter):
     def __init__(self, host, username, password, db_name, model, port=1433, table_name=None):
         super().__init__()
         driver = '{ODBC Driver 17 for SQL Server}'
-        self.conn = pyodbc.connect(f"DRIVER={driver};SERVER={host};PORT={port};DATABASE={db_name};UID={username};PWD={password}")
+        connection_string = f"DRIVER={driver};SERVER={host},{port};DATABASE={db_name};UID={username};PWD={password};CONNECTION TIMEOUT=170000;"
+        self.conn = pyodbc.connect(connection_string)
         self.cursor = self.conn.cursor()
         self.cursor.fast_executemany = True
         self.model = model

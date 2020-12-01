@@ -18,7 +18,7 @@ class TimescaleDbWriter(DbWriter):
         self.table_name = (table_name, self._get_model_table_name())[table_name is None or table_name == ""]
         self.partition = partition
         self.copy = copy
-        self.distributed = "distributed_" if distributed else ""
+        self.distributed = distributed
 
     def close_connection(self):
         self.cursor.close()
@@ -36,7 +36,11 @@ ts_{self.partition} TIMESTAMP NOT NULL,
 
         self.cursor.execute(stmt)
         self.conn.commit()
-        stmt = f"""SELECT create_{self.distributed}hypertable('{self.table_name}', 'ts', 'ts_{self.partition}', 10, if_not_exists => true); """
+        if self.distributed:
+            tag = self._get_partition_tag()
+            stmt = f"SELECT create_distributed_hypertable('{self.table_name}', 'ts', '{tag}', if_not_exists => true);"
+        else:
+            stmt = f"SELECT create_hypertable('{self.table_name}', 'ts', 'ts_{self.partition}', 10, if_not_exists => true);"
         self.cursor.execute(stmt)
         self.conn.commit()
 
@@ -111,3 +115,11 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         for key in self.model.keys():
             if key != "description":
                 return key
+
+    def _get_partition_tag(self, top_level=False):
+        key = self._get_model_table_name()
+        tags = list(self.model[key]["tags"].keys())
+        if "description" in tags:
+            tags.remove("description")
+        return tags[0] if top_level else tags[-1]
+

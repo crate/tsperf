@@ -25,7 +25,7 @@ def test_prepare_database1(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
     db_writer = MsSQLDbWriter("localhost", "mssql", "password", "test", test_model)
-    connection_string = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost,1433;DATABASE=test;UID=mssql;***;CONNECTION TIMEOUT=170000;'
+    connection_string = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost,1433;DATABASE=test;UID=mssql;PWD=password;CONNECTION TIMEOUT=170000;'
     mock_connect.assert_called_with(connection_string)
     # Test Case 1:
     db_writer.prepare_database()

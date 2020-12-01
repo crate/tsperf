@@ -12,6 +12,7 @@ from modules.influx_db_writer import InfluxDbWriter
 from modules.mongo_db_writer import MongoDbWriter
 from modules.postgres_db_writer import PostgresDbWriter
 from modules.timestream_db_writer import TimeStreamWriter
+from modules.mssql_db_writer import MsSQLDbWriter
 from modules.config import DataGeneratorConfig
 from threading import Thread
 from prometheus_client import start_http_server, Gauge, Counter
@@ -50,6 +51,8 @@ elif config.database == 4:  # postgres
 elif config.database == 5:  # timestream
     db_writer = TimeStreamWriter(config.aws_access_key_id, config.aws_secret_access_key,
                                  config.aws_region_name, config.db_name, model)
+elif config.database == 6:  # ms_sql
+    db_writer = MsSQLDbWriter(config.host, config.username, config.password, config.db_name, model)
 else:
     db_writer = None
 

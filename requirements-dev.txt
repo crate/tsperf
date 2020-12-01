@@ -10,3 +10,4 @@ numpy
 tictrack
 float_simulator
 batch_size_automator
+pyodbc

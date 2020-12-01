@@ -15,6 +15,7 @@ The Data Generator evolved as a standalone tool which can be used independently 
       - [MongoDB](#mongodb)
       - [PostgreSQL](#postgresql)
       - [AWS Timestream](#aws-timestream)
+      - [Microsoft SQL Server](#mircosoft-sql-server)
   * [Data Generator Configuration](#data-generator-configuration)
     + [Environment variables configuring the behaviour of the Data Generator](#environment-variables-configuring-the-behaviour-of-the-data-generator)
       - [ID_START](#id_start)
@@ -42,6 +43,7 @@ The Data Generator evolved as a standalone tool which can be used independently 
     + [Environment variables used to configure TimescaleDB](#environment-variables-used-to-configure-timescaledb)
       - [PORT](#port)
       - [TIMESCALE_COPY](#timescale_copy)
+      - [TIMESCALE_DISTRIBUTED](#timescale_distributed)
     + [Environment variables used to configure InfluxDB](#environment-variables-used-to-configure-influxdb)
       - [TOKEN](#token)
       - [ORG](#org)
@@ -99,6 +101,7 @@ Currently 5 Databases are
 + [MongoDB](https://www.mongodb.com/)
 + [PostgreSQL](https://www.postgresql.org/)
 + [AWS Timestream](https://aws.amazon.com/timestream/)
++ [Microsoft SQL Server](https://www.microsoft.com/de-de/sql-server)
 
 Databases can be run either local or in the Cloud as both use cases are supported. Support for additional databases depends on the demand for it.
 
@@ -310,6 +313,36 @@ The insert is done according to the optimized write [documentation](https://docs
 
 + Tests show that about 600 values per second can be inserted by a single data generator instance. So the data model has to be adjusted accordingly to not be slower than the settings require.
   + e.g. having 600 sensors with each 2 metrics and each should write a single value each second would require 1200 values/s of insert speed. For this at least 2 data generator instance would be needed.
+  
+#### Mircosoft SQL Server
+
+##### Client Library
+
+For Microsoft SQL Server the [pyodcb](https://github.com/mkleehammer/pyodbc) library is used.
+
+To connect with Microsoft SQL Server the following environment variables must be set:
+
++ [HOST](#host): the host where Microsoft SQL Server is running in this [format](https://www.connectionstrings.com/azure-sql-database/)
++ [USERNAME](#username): Database user
++ [PASSWORD](#password): Password of the database user
++ [DB_NAME](#db_name): the database name to connect to or create
+
+##### Table Setup
+
+A table gets it's name from the provided [model](#data-generator-models)
+
+A table for Microsoft SQL Server consists of the following columns:
+
++ `ts`: column containing a timestamp (occurrence of the payload)
++ a column for each entry in `tags` and `metrics`.
+    + `tags` are of type `INTEGER` when using numbers and of type `TEXT` when using list notation
+    + `metrics` are of the type defined in the [model](#data-generator-models)
+
+**If a table or database with the same name already exists it will be used by the data generator**
+
+##### Insert
+
+The insert is done using the `executemany` function
 
 ## Data Generator Configuration
 

@@ -52,7 +52,8 @@ elif config.database == 5:  # timestream
     db_writer = TimeStreamWriter(config.aws_access_key_id, config.aws_secret_access_key,
                                  config.aws_region_name, config.db_name, model)
 elif config.database == 6:  # ms_sql
-    db_writer = MsSQLDbWriter(config.host, config.username, config.password, config.db_name, model)
+    db_writer = MsSQLDbWriter(config.host, config.username, config.password,
+                              config.db_name, model, port=config.port, table_name=config.table_name)
 else:
     db_writer = None
 

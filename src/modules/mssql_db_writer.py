@@ -11,6 +11,7 @@ class MsSQLDbWriter(DbWriter):
         driver = '{ODBC Driver 17 for SQL Server}'
         self.conn = pyodbc.connect(f"DRIVER={driver};SERVER={host};PORT={port};DATABASE={db_name};UID={username};PWD={password}")
         self.cursor = self.conn.cursor()
+        self.cursor.fast_executemany = True
         self.model = model
         self.table_name = (table_name, self._get_model_table_name())[table_name is None or table_name == ""]
 
@@ -23,7 +24,13 @@ ts DATETIME NOT NULL,
 """
         for key, value in columns.items():
             stmt += f"""{key} {value},"""
-        stmt = stmt.rstrip(",") + ");"
+
+        stmt += f" CONSTRAINT PK_{self.table_name} PRIMARY KEY (ts, "
+        tags = list(self.model[self._get_model_table_name()]["tags"].keys())
+        for tag in tags:
+            if tag != "description":
+                stmt += f"{tag}, "
+        stmt = stmt.rstrip(", ") + "));"
 
         self.cursor.execute(stmt)
         self.conn.commit()

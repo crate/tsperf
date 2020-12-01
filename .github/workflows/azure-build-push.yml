@@ -5,6 +5,7 @@ on:
     paths:
       - 'src/data_generator/**'
       - 'src/modules/**'
+      - 'Dockerfile'
 
 name: tag_build_and_push
 

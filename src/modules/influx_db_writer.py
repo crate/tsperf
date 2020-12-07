@@ -1,7 +1,7 @@
 from tictrack import timed_function
 from modules.db_writer import DbWriter
 from influxdb_client import InfluxDBClient, Bucket
-from influxdb_client.client.write_api import ASYNCHRONOUS, Point
+from influxdb_client.client.write_api import SYNCHRONOUS, Point
 from datetime import datetime
 
 
@@ -9,7 +9,7 @@ class InfluxDbWriter(DbWriter):
     def __init__(self, host, token, org, model, database_name=None):
         super().__init__()
         self.client = InfluxDBClient(url=host, token=token)
-        self.write_api = self.client.write_api(write_options=ASYNCHRONOUS)
+        self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
         self.query_api = self.client.query_api()
         self.org = org
         self.model = model

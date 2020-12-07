@@ -19,7 +19,7 @@ from prometheus_client import start_http_server, Gauge, Counter
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # load an validate the configuration
 config = DataGeneratorConfig()
@@ -33,37 +33,17 @@ stop_thread = False
 f = open(config.model_path, "r")
 model = json.load(f)
 
-# initialize the db_writer based on environment variable
-if config.database == 0:  # crate
-    db_writer = CrateDbWriter(config.host, config.username, config.password, model,
-                              config.table_name, config.shards, config.replicas, config.partition)
-elif config.database == 1:  # timescale
-    db_writer = TimescaleDbWriter(config.host, config.port, config.username, config.password,
-                                  config.db_name, model, config.table_name, config.partition, config.copy,
-                                  config.distributed)
-elif config.database == 2:  # influx
-    db_writer = InfluxDbWriter(config.host, config.token, config.organization, model, config.db_name)
-elif config.database == 3:  # mongo
-    db_writer = MongoDbWriter(config.host, config.username, config.password, config.db_name, model)
-elif config.database == 4:  # postgres
-    db_writer = PostgresDbWriter(config.host, config.port, config.username, config.password,
-                                 config.db_name, model, config.table_name, config.partition)
-elif config.database == 5:  # timestream
-    db_writer = TimeStreamWriter(config.aws_access_key_id, config.aws_secret_access_key,
-                                 config.aws_region_name, config.db_name, model)
-elif config.database == 6:  # ms_sql
-    db_writer = MsSQLDbWriter(config.host, config.username, config.password,
-                              config.db_name, model, port=config.port, table_name=config.table_name)
-else:
-    db_writer = None
-
+data_batch_size = (config.id_end - config.id_start + 1)
 batch_size_automator = BatchSizeAutomator(batch_size=config.batch_size,
                                           active=bool(config.ingest_mode),
-                                          data_batch_size=(config.id_end - config.id_start + 1))
+                                          data_batch_size=data_batch_size)
 
 runtime_metrics = {"rows": 0, "metrics": 0, "batch_size": config.batch_size}
 edges = {}
-current_values = queue.Queue(5000)
+current_values = queue.Queue(5000 * config.num_threads)
+ingest_ts_factor = 1 / config.ingest_delta
+last_stat_ts = time.time()
+last_ts = config.ingest_ts
 
 c_generated_values = Counter("data_gen_generated_values", "How many values have been generated")
 c_inserted_values = Counter("data_gen_inserted_values", "How many values have been inserted")
@@ -77,6 +57,33 @@ if batch_size_automator.auto_batch_mode:
     g_best_batch_size = Gauge("data_gen_best_batch_size", "The up to now best batch size found by the "
                                                           "batch_size_automator")
     g_best_batch_rps = Gauge("data_gen_best_batch_rps", "The rows per second for the up to now best batch size")
+
+
+def get_db_writer():
+    # initialize the db_writer based on environment variable
+    if config.database == 0:  # crate
+        db_writer = CrateDbWriter(config.host, config.username, config.password, model,
+                                  config.table_name, config.shards, config.replicas, config.partition)
+    elif config.database == 1:  # timescale
+        db_writer = TimescaleDbWriter(config.host, config.port, config.username, config.password,
+                                      config.db_name, model, config.table_name, config.partition, config.copy,
+                                      config.distributed)
+    elif config.database == 2:  # influx
+        db_writer = InfluxDbWriter(config.host, config.token, config.organization, model, config.db_name)
+    elif config.database == 3:  # mongo
+        db_writer = MongoDbWriter(config.host, config.username, config.password, config.db_name, model)
+    elif config.database == 4:  # postgres
+        db_writer = PostgresDbWriter(config.host, config.port, config.username, config.password,
+                                     config.db_name, model, config.table_name, config.partition)
+    elif config.database == 5:  # timestream
+        db_writer = TimeStreamWriter(config.aws_access_key_id, config.aws_secret_access_key,
+                                     config.aws_region_name, config.db_name, model)
+    elif config.database == 6:  # ms_sql
+        db_writer = MsSQLDbWriter(config.host, config.username, config.password,
+                                  config.db_name, model, port=config.port, table_name=config.table_name)
+    else:
+        db_writer = None
+    return db_writer
 
 
 @tictrack.timed_function()
@@ -98,6 +105,7 @@ def get_sub_element(sub):
 
 @tictrack.timed_function()
 def get_next_value():
+    global last_ts
     # for each edge in the edges list all next values are calculated and saved to the edge_value list
     # this list is then added to the FIFO queue, so each entry of the FIFO queue contains all next values for each edge
     # in the edge list
@@ -105,108 +113,136 @@ def get_next_value():
     for edge in edges.values():
         c_generated_values.inc()
         edge_values.append(edge.calculate_next_value())
-    current_values.put(edge_values)
+    ts = last_ts + config.ingest_delta
+    last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
+    timestamps = [int(last_ts * 1000)] * len(edge_values)
+    current_values.put({"timestamps": timestamps, "batch": edge_values})
 
 
-def write_to_db():
-    global db_writer
-    last_insert = config.ingest_ts
-    last_stat_ts = time.time()
-    # while the queue is not empty and the value creation has not yet finished the loop will call the insert_operation
-    # function. Because at the beginning of the script the queue is empty we use the stop_thread variable but because
-    # once the value creation is done we still ned to insert the outstanding values in the queue we check if the queue
-    # is empty
-    while not current_values.empty() or not stop_thread:
-        if not current_values.empty():
-            # we calculate the time delta from the last insert to the current timestamp
-            insert_delta = time.time() - last_insert
-            # if we use the ingest_mode the delta can be ignored
-            # otherwise delta needs to be bigger than ingest_delta
-            # if delta is smaller than ingest_delta the time difference is waited (as we want an insert
-            # every half second (default)
-            if config.ingest_mode == 1 or insert_delta > config.ingest_delta:
-                last_insert = insert_routine(last_insert)
-            else:
-                time.sleep(config.ingest_delta - insert_delta)
+def log_stat_delta():
+    global last_stat_ts
+    if time.time() - last_stat_ts >= config.stat_delta:
+        for key, value in tictrack.tic_toc_delta.items():
+            logging.info(f"average time for {key}: {(sum(value) / len(value))}")
+        tictrack.tic_toc_delta = {}
+        last_stat_ts = time.time()
+
+
+def stat_delta_thread_function():
+    while not stop_thread:
         if time.time() - last_stat_ts >= config.stat_delta:
-            for key, value in tictrack.tic_toc_delta.items():
-                print(f"""average time for {key}: {(sum(value) / len(value))}""")
-            tictrack.tic_toc_delta = {}
-            last_stat_ts = time.time()
+            log_stat_delta()
+        else:
+            # we could calculate the exact time to sleep until next output but this would block the
+            # the thread until it happens, this would mean at the end the whole data generator could
+            # sleep for another `config.stat_delta` seconds before finishing
+            time.sleep(1)
+
+
+def insert_routine():
+    db_writer = get_db_writer()
+    db_writer.prepare_database()
+    insert_bsa = BatchSizeAutomator(batch_size=config.batch_size,
+                                    active=bool(config.ingest_mode),
+                                    data_batch_size=data_batch_size)
+    local_batch_size = 0
+    while not current_values.empty() or not stop_thread:
+        batch = []
+        timestamps = []
+
+        if insert_bsa.auto_batch_mode:
+            local_batch_size = insert_bsa.get_next_batch_size()
+
+        while len(batch) < local_batch_size:
+            if not current_values.empty():
+                batch_values = current_values.get()
+                batch.extend(batch_values["batch"])
+                timestamps.extend(batch_values["timestamps"])
+            else:
+                break
+
+        if len(batch) > 0:
+            start = time.time()
+            try:
+                db_writer.insert_stmt(timestamps, batch)
+            except Exception as e:
+                # if an exception is thrown while inserting we don't want the whole data_generator to crash
+                # as the values have not been inserted we remove them from our runtime_metrics
+                # TODO: more sophistic error handling on db_writer level
+                logging.error(e)
+
+            if insert_bsa.auto_batch_mode and len(batch) == local_batch_size:
+                duration = time.time() - start
+                # g_insert_time.set(duration)
+                # g_rows_per_second.set(len(batch)/duration)
+                # g_best_batch_size.set(insert_bsa.batch_times["best"]["size"])
+                # g_best_batch_rps.set(insert_bsa.batch_times["best"]["batch_per_second"])
+                insert_bsa.insert_batch_time(duration)
+
+            if len(batch) != local_batch_size:
+                logging.warning(f"batch size ({len(batch)}) is not required batch size ({local_batch_size})")
+    db_writer.close_connection()
+
+
+def spawn_insert_threads():
+    insert_threads = []
+    for i in range(config.num_threads):
+        insert_threads.append(Thread(target=insert_routine))
+    for thread in insert_threads:
+        thread.start()
+    for thread in insert_threads:
+        thread.join()
+
+
+def fast_insert():
+    fast_insert_threads = [Thread(target=spawn_insert_threads),
+                           Thread(target=stat_delta_thread_function)]
+    for thread in fast_insert_threads:
+        thread.start()
+    for thread in fast_insert_threads:
+        thread.join()
+
+
+def consecutive_insert():
+    global last_ts
+    db_writer = get_db_writer()
+    db_writer.prepare_database()
+    last_insert = config.ingest_ts
+    while not current_values.empty() or not stop_thread:
+        # we calculate the time delta from the last insert to the current timestamp
+        insert_delta = time.time() - last_insert
+        # delta needs to be bigger than ingest_delta
+        # if delta is smaller than ingest_delta the time difference is waited (as we want an insert
+        # every `config.ingest_delta` second
+        if insert_delta > config.ingest_delta:
+            log_stat_delta()
+            c_inserted_values.inc(config.id_end - config.id_start + 1)
+            batch = current_values.get()
+            ts = time.time()
+            # we want the same timestamp for each value this timestamp should be the same
+            # even if the data_generator runs in multiple containers therefore we round the
+            # timestamp to match ingest_delta this is done by multiplying
+            # by ingest_delta and then dividing the result by ingest_delta
+            last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
+            timestamps = [int(last_ts * 1000)] * len(batch)
+            try:
+                db_writer.insert_stmt(timestamps, batch)
+                runtime_metrics["rows"] += len(batch)
+                runtime_metrics["metrics"] += len(batch) * len(get_sub_element("metrics").keys())
+            except Exception as e:
+                logging.error(e)
+        else:
+            time.sleep(config.ingest_delta - insert_delta)
     db_writer.close_connection()
 
 
 @tictrack.timed_function()
-def insert_routine(last_ts):
-    global db_writer
-    batch = []
-    timestamps = []
-    start = None
-
-    if batch_size_automator.auto_batch_mode:
-        runtime_metrics["batch_size"] = batch_size_automator.get_next_batch_size()
-        g_batch_size.set(runtime_metrics["batch_size"])
-        start = time.time()
-
-    if config.ingest_mode == 1:
-        # during ingest mode execution time increase with the amount of queries we execute therefor we insert as
-        # many batches as possible at a time (batch size of 10000 was empirically the best)
-        while len(batch) < runtime_metrics["batch_size"]:
-            if not current_values.empty():
-                c_inserted_values.inc(config.id_end - config.id_start + 1)
-                ts = last_ts + config.ingest_delta
-                next_batch = current_values.get()
-                batch.extend(next_batch)
-                factor = 1 / config.ingest_delta
-                last_ts = round(ts * factor) / factor
-                timestamps.extend([int(last_ts * 1000)] * len(next_batch))
-            else:
-                break
-        g_insert_percentage.set((c_inserted_values._value.get() /
-                                 (config.ingest_size * (config.id_end - config.id_start + 1))) * 100)
-    else:
-        c_inserted_values.inc(config.id_end - config.id_start + 1)
-        batch = current_values.get()
-        ts = time.time()
-        # we want the same timestamp for each value this timestamp should be the same even if the data_generator
-        # runs in multiple containers therefor we round the timestamp to match ingest_delta this is done by multiplying
-        # by ingest_delta and then dividing the result by ingest_delta
-        delta_factor = 1 / config.ingest_delta
-        last_ts = round(ts * delta_factor) / delta_factor
-        timestamps = [int(last_ts * 1000)] * len(batch)
-
-    runtime_metrics["rows"] += len(batch)
-    runtime_metrics["metrics"] += len(batch) * len(get_sub_element("metrics").keys())
-
-    try:
-        db_writer.insert_stmt(timestamps, batch)
-    except Exception as e:
-        # if an exception is thrown while inserting we don't want the whole data_generator to crash
-        # as the values have not been inserted we remove them from our runtime_metrics
-        # TODO: more sophistic error handling on db_writer level
-        logging.error(e)
-        runtime_metrics["rows"] -= len(batch)
-        runtime_metrics["metrics"] -= len(batch) * len(get_sub_element("metrics").keys())
-
-    if batch_size_automator.auto_batch_mode:
-        duration = time.time() - start
-        g_insert_time.set(duration)
-        g_rows_per_second.set(len(batch)/duration)
-        g_best_batch_size.set(batch_size_automator.batch_times["best"]["size"])
-        g_best_batch_rps.set(batch_size_automator.batch_times["best"]["batch_per_second"])
-        batch_size_automator.insert_batch_time(duration)
-
-    # we return the timestamp so we know when the last insert happened
-    return last_ts
-
-
-@tictrack.timed_function()
 def main():
-    # prepare the database (create the table/bucket/collection if not existing)
-    db_writer.prepare_database()
-
     # start the thread that writes to the db
-    db_writer_thread = Thread(target=write_to_db)
+    if config.ingest_mode == 0:
+        db_writer_thread = Thread(target=consecutive_insert)
+    else:
+        db_writer_thread = Thread(target=fast_insert)
     db_writer_thread.start()
     try:
         create_edges()
@@ -236,11 +272,11 @@ if __name__ == '__main__':
     for k, v in tictrack.tic_toc.items():
         if k == "main":
             main = sum(v) / len(v)
-        print(f"""average time for {k}: {(sum(v) / len(v))}""")
+        logging.info(f"average time for {k}: {(sum(v) / len(v))}")
 
-    print(f"""rows per second:    {runtime_metrics["rows"] / main}""")
-    print(f"""metrics per second: {runtime_metrics["metrics"] / main}""")
-    print(f"""batch_size:         {batch_size_automator.batch_times["best"]["size"]}""")
-    print(f"""batches/second:     {batch_size_automator.batch_times["best"]["batch_per_second"]}""")
+    logging.info(f"""rows per second:    {data_batch_size * config.ingest_size / main}""")
+    logging.info(f"""metrics per second: {data_batch_size * config.ingest_size * len(get_sub_element("metrics").keys()) / main}""")
+    # logging.info(f"""batch_size:         {batch_size_automator.batch_times["best"]["size"]}""")
+    # logging.info(f"""batches/second:     {batch_size_automator.batch_times["best"]["batch_per_second"]}""")
 
     # finished

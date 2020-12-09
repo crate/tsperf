@@ -47,6 +47,8 @@ class DataGeneratorConfig:
         self.aws_region_name = os.getenv("AWS_REGION_NAME", "")
 
     def validate_config(self) -> bool:
+        if self.num_threads < 1:
+            self.invalid_configs.append(f"NUM_THREADS: {self.num_threads} < 1")
         if self.id_start < 0:
             self.invalid_configs.append(f"ID_START: {self.id_start} < 0")
         if self.id_end < 0:

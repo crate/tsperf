@@ -1,9 +1,10 @@
 import json
-import queue
 import urllib3
 import time
 import logging
 import tictrack
+from queue import Queue
+from threading import Thread, current_thread
 from batch_size_automator import BatchSizeAutomator
 from modules.edge import Edge
 from modules.crate_db_writer import CrateDbWriter
@@ -14,7 +15,6 @@ from modules.postgres_db_writer import PostgresDbWriter
 from modules.timestream_db_writer import TimeStreamWriter
 from modules.mssql_db_writer import MsSQLDbWriter
 from modules.config import DataGeneratorConfig
-from threading import Thread
 from prometheus_client import start_http_server, Gauge, Counter
 
 
@@ -28,35 +28,36 @@ if not valid_config:
     logging.error(f"invalid configuration: {config.invalid_configs}")
     exit(-1)
 
-stop_thread = False
 # load the model we want to use and create the metrics
 f = open(config.model_path, "r")
 model = json.load(f)
 
+# global variables shared accross threads
 data_batch_size = (config.id_end - config.id_start + 1)
-batch_size_automator = BatchSizeAutomator(batch_size=config.batch_size,
-                                          active=bool(config.ingest_mode),
-                                          data_batch_size=data_batch_size)
-
 runtime_metrics = {"rows": 0, "metrics": 0, "batch_size": config.batch_size}
 edges = {}
-current_values = queue.Queue(5000 * config.num_threads)
 ingest_ts_factor = 1 / config.ingest_delta
 last_stat_ts = time.time()
 last_ts = config.ingest_ts
+current_values_queue = Queue(5000 * config.num_threads)
+inserted_values_queue = Queue(5000 * config.num_threads)
+stop_queue = Queue(1)
+insert_finished_queue = Queue(1)
 
+# prometheus metrics published to port 8000
 c_generated_values = Counter("data_gen_generated_values", "How many values have been generated")
 c_inserted_values = Counter("data_gen_inserted_values", "How many values have been inserted")
 g_insert_percentage = Gauge("data_gen_insert_percentage", "Percentage of values that have been inserted")
-if batch_size_automator.auto_batch_mode:
-    g_batch_size = Gauge("data_gen_batch_size", "The currently used batch size")
+if config.batch_size <= 0 and bool(config.ingest_mode):
+    g_batch_size = Gauge("data_gen_batch_size", "The currently used batch size", labelnames=("thread",))
     g_insert_time = Gauge("data_gen_insert_time", "The average time it took to insert the current batch into the "
-                                                  "database")
+                                                  "database", labelnames=("thread",))
     g_rows_per_second = Gauge("data_gen_rows_per_second", "The average number of rows per second with the latest "
-                                                          "batch_size")
+                                                          "batch_size", labelnames=("thread",))
     g_best_batch_size = Gauge("data_gen_best_batch_size", "The up to now best batch size found by the "
-                                                          "batch_size_automator")
-    g_best_batch_rps = Gauge("data_gen_best_batch_rps", "The rows per second for the up to now best batch size")
+                                                          "batch_size_automator", labelnames=("thread",))
+    g_best_batch_rps = Gauge("data_gen_best_batch_rps", "The rows per second for the up to now best batch size",
+                             labelnames=("thread",))
 
 
 def get_db_writer():
@@ -111,27 +112,33 @@ def get_next_value():
     # in the edge list
     edge_values = []
     for edge in edges.values():
-        c_generated_values.inc()
         edge_values.append(edge.calculate_next_value())
-    ts = last_ts + config.ingest_delta
-    last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
-    timestamps = [int(last_ts * 1000)] * len(edge_values)
-    current_values.put({"timestamps": timestamps, "batch": edge_values})
+    if config.ingest_mode == 1:
+        ts = last_ts + config.ingest_delta
+        last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
+        timestamps = [int(last_ts * 1000)] * len(edge_values)
+        current_values_queue.put_nowait({"timestamps": timestamps, "batch": edge_values})
+    else:
+        current_values_queue.put_nowait(edge_values)
 
 
-def log_stat_delta():
-    global last_stat_ts
-    if time.time() - last_stat_ts >= config.stat_delta:
+def calculate_next_value(edge):
+    return edge.calculate_next_value()
+
+
+def log_stat_delta(last_stat_ts_local):
+    if time.time() - last_stat_ts_local >= config.stat_delta:
         for key, value in tictrack.tic_toc_delta.items():
             logging.info(f"average time for {key}: {(sum(value) / len(value))}")
         tictrack.tic_toc_delta = {}
-        last_stat_ts = time.time()
+    return time.time()
 
 
 def stat_delta_thread_function():
-    while not stop_thread:
-        if time.time() - last_stat_ts >= config.stat_delta:
-            log_stat_delta()
+    last_stat_ts_local = time.time()
+    while not stop_process():
+        if time.time() - last_stat_ts_local >= config.stat_delta:
+            last_stat_ts_local = log_stat_delta(last_stat_ts_local)
         else:
             # we could calculate the exact time to sleep until next output but this would block the
             # the thread until it happens, this would mean at the end the whole data generator could
@@ -140,22 +147,24 @@ def stat_delta_thread_function():
 
 
 def insert_routine():
+    name = current_thread().name
     db_writer = get_db_writer()
     db_writer.prepare_database()
     insert_bsa = BatchSizeAutomator(batch_size=config.batch_size,
                                     active=bool(config.ingest_mode),
                                     data_batch_size=data_batch_size)
     local_batch_size = 0
-    while not current_values.empty() or not stop_thread:
+    while not current_values_queue.empty() or not stop_process():
         batch = []
         timestamps = []
 
         if insert_bsa.auto_batch_mode:
             local_batch_size = insert_bsa.get_next_batch_size()
+            g_batch_size.labels(thread=name).set(local_batch_size)
 
         while len(batch) < local_batch_size:
-            if not current_values.empty():
-                batch_values = current_values.get()
+            if not current_values_queue.empty():
+                batch_values = current_values_queue.get_nowait()
                 batch.extend(batch_values["batch"])
                 timestamps.extend(batch_values["timestamps"])
             else:
@@ -165,6 +174,7 @@ def insert_routine():
             start = time.time()
             try:
                 db_writer.insert_stmt(timestamps, batch)
+                inserted_values_queue.put_nowait(len(batch))
             except Exception as e:
                 # if an exception is thrown while inserting we don't want the whole data_generator to crash
                 # as the values have not been inserted we remove them from our runtime_metrics
@@ -173,30 +183,30 @@ def insert_routine():
 
             if insert_bsa.auto_batch_mode and len(batch) == local_batch_size:
                 duration = time.time() - start
-                # g_insert_time.set(duration)
-                # g_rows_per_second.set(len(batch)/duration)
-                # g_best_batch_size.set(insert_bsa.batch_times["best"]["size"])
-                # g_best_batch_rps.set(insert_bsa.batch_times["best"]["batch_per_second"])
+                g_insert_time.labels(thread=name).set(duration)
+                g_rows_per_second.labels(thread=name).set(len(batch)/duration)
+                g_best_batch_size.labels(thread=name).set(insert_bsa.batch_times["best"]["size"])
+                g_best_batch_rps.labels(thread=name).set(insert_bsa.batch_times["best"]["batch_per_second"])
                 insert_bsa.insert_batch_time(duration)
 
-            if len(batch) != local_batch_size:
-                logging.warning(f"batch size ({len(batch)}) is not required batch size ({local_batch_size})")
     db_writer.close_connection()
 
 
 def spawn_insert_threads():
     insert_threads = []
     for i in range(config.num_threads):
-        insert_threads.append(Thread(target=insert_routine))
+        insert_threads.append(Thread(target=insert_routine, name=f"insert_thread_{i}"))
     for thread in insert_threads:
         thread.start()
     for thread in insert_threads:
         thread.join()
+    # signal the prometheus thread that insert is finished
+    insert_finished_queue.put_nowait(True)
 
 
 def fast_insert():
-    fast_insert_threads = [Thread(target=spawn_insert_threads),
-                           Thread(target=stat_delta_thread_function)]
+    fast_insert_threads = [Thread(target=spawn_insert_threads, name="spawn_insert_threads"),
+                           Thread(target=stat_delta_thread_function, name="stat_delta_thread")]
     for thread in fast_insert_threads:
         thread.start()
     for thread in fast_insert_threads:
@@ -208,23 +218,24 @@ def consecutive_insert():
     db_writer = get_db_writer()
     db_writer.prepare_database()
     last_insert = config.ingest_ts
-    while not current_values.empty() or not stop_thread:
+    last_stat_ts_local = time.time()
+    while not current_values_queue.empty() or not stop_process():
         # we calculate the time delta from the last insert to the current timestamp
         insert_delta = time.time() - last_insert
         # delta needs to be bigger than ingest_delta
         # if delta is smaller than ingest_delta the time difference is waited (as we want an insert
         # every `config.ingest_delta` second
         if insert_delta > config.ingest_delta:
-            log_stat_delta()
+            last_stat_ts_local = log_stat_delta(last_stat_ts_local)
             c_inserted_values.inc(config.id_end - config.id_start + 1)
-            batch = current_values.get()
+            batch = current_values_queue.get_nowait()
             ts = time.time()
             # we want the same timestamp for each value this timestamp should be the same
             # even if the data_generator runs in multiple containers therefore we round the
             # timestamp to match ingest_delta this is done by multiplying
             # by ingest_delta and then dividing the result by ingest_delta
-            last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
-            timestamps = [int(last_ts * 1000)] * len(batch)
+            last_insert = round(ts * ingest_ts_factor) / ingest_ts_factor
+            timestamps = [int(last_insert * 1000)] * len(batch)
             try:
                 db_writer.insert_stmt(timestamps, batch)
                 runtime_metrics["rows"] += len(batch)
@@ -234,16 +245,36 @@ def consecutive_insert():
         else:
             time.sleep(config.ingest_delta - insert_delta)
     db_writer.close_connection()
+    # signal the prometheus thread that insert is finished
+    insert_finished_queue.put_nowait(True)
+
+
+def stop_process():
+    return not stop_queue.empty()
+
+
+def prometheus_insert_percentage():
+    while not inserted_values_queue.empty() or not insert_finished_queue.empty():
+        inserted_values = inserted_values_queue.get()
+        c_inserted_values.inc(inserted_values)
+        g_insert_percentage.set((c_inserted_values._value.get() /
+                                 (config.ingest_size * (config.id_end - config.id_start + 1))) * 100)
 
 
 @tictrack.timed_function()
 def main():
     # start the thread that writes to the db
     if config.ingest_mode == 0:
-        db_writer_thread = Thread(target=consecutive_insert)
+        db_writer_thread = Thread(target=consecutive_insert, name="consecutive_insert_thread")
     else:
-        db_writer_thread = Thread(target=fast_insert)
+        db_writer_thread = Thread(target=fast_insert, name="fast_insert_thread")
     db_writer_thread.start()
+
+    # start the thread that collects the insert metrics from the db_writer threads
+    prometheus_insert_percentage_thread = Thread(target=prometheus_insert_percentage,
+                                                 name="prometheus_insert_percentage_thread")
+    prometheus_insert_percentage_thread.start()
+
     try:
         create_edges()
 
@@ -257,9 +288,9 @@ def main():
         logging.exception(e)
     finally:
         # once value creation is finished we signal the db_writer thread to stop and wait for it to join
-        global stop_thread
-        stop_thread = True
+        stop_queue.put(True)
         db_writer_thread.join()
+        prometheus_insert_percentage_thread.join()
 
 
 if __name__ == '__main__':
@@ -276,7 +307,5 @@ if __name__ == '__main__':
 
     logging.info(f"""rows per second:    {data_batch_size * config.ingest_size / main}""")
     logging.info(f"""metrics per second: {data_batch_size * config.ingest_size * len(get_sub_element("metrics").keys()) / main}""")
-    # logging.info(f"""batch_size:         {batch_size_automator.batch_times["best"]["size"]}""")
-    # logging.info(f"""batches/second:     {batch_size_automator.batch_times["best"]["batch_per_second"]}""")
 
     # finished

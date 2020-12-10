@@ -117,9 +117,9 @@ def get_next_value():
         ts = last_ts + config.ingest_delta
         last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
         timestamps = [int(last_ts * 1000)] * len(edge_values)
-        current_values_queue.put_nowait({"timestamps": timestamps, "batch": edge_values})
+        current_values_queue.put({"timestamps": timestamps, "batch": edge_values})
     else:
-        current_values_queue.put_nowait(edge_values)
+        current_values_queue.put(edge_values)
 
 
 def calculate_next_value(edge):

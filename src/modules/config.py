@@ -17,6 +17,7 @@ class DataGeneratorConfig:
         self.batch_size = int(os.getenv("BATCH_SIZE", -1))
         self.database = int(os.getenv("DATABASE", 0))  # 0:crate, 1:timescale, 2:influx, 3:mongo
         self.stat_delta = int(os.getenv("STAT_DELTA", 30))
+        self.num_threads = int(os.getenv("NUM_THREADS", 1))
 
         # environment variables used by multiple database clients
         self.host = os.getenv("HOST", "localhost")
@@ -46,6 +47,8 @@ class DataGeneratorConfig:
         self.aws_region_name = os.getenv("AWS_REGION_NAME", "")
 
     def validate_config(self) -> bool:
+        if self.num_threads < 1:
+            self.invalid_configs.append(f"NUM_THREADS: {self.num_threads} < 1")
         if self.id_start < 0:
             self.invalid_configs.append(f"ID_START: {self.id_start} < 0")
         if self.id_end < 0:

@@ -18,6 +18,7 @@ The Data Generator evolved as a standalone tool which can be used independently 
       - [Microsoft SQL Server](#mircosoft-sql-server)
   * [Data Generator Configuration](#data-generator-configuration)
     + [Environment variables configuring the behaviour of the Data Generator](#environment-variables-configuring-the-behaviour-of-the-data-generator)
+      - [NUM_THREADS](#num_threads)
       - [ID_START](#id_start)
       - [ID_END](#id_end)
       - [INGEST_MODE](#ingest_mode)
@@ -351,6 +352,17 @@ The Data Generator is mostly configured by setting Environment Variables. This c
 ### Environment variables configuring the behaviour of the Data Generator
 
 The environment variables in this chapter are used to configure the behaviour of the data generator
+
+#### NUM_THREADS
+
+Type: Integer
+
+Value: A positive number.
+
+Default: 1
+
+The Data Generator will split the insert into as many threads as this variable indicates. It will use `threading.Threads`
+as 
 
 #### ID_START
 

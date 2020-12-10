@@ -1,5 +1,6 @@
 from modules.db_writer import DbWriter
 from crate import client
+from tictrack import timed_function
 
 
 class CrateDbWriter(DbWriter):
@@ -26,10 +27,12 @@ PARTITIONED BY ("g_ts_{self.partition}")
 WITH (number_of_replicas = {self.replicas})"""
         self.cursor.execute(stmt)
 
+    @timed_function()
     def insert_stmt(self, timestamps, batch):
         stmt = f"""INSERT INTO {self.table_name} (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"""
         self.cursor.execute(stmt, (timestamps, batch))
 
+    @timed_function()
     def execute_query(self, query):
         self.cursor.execute(query)
         return self.cursor.fetchall()

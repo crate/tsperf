@@ -113,6 +113,7 @@ def get_next_value():
     edge_values = []
     for edge in edges.values():
         edge_values.append(edge.calculate_next_value())
+        c_generated_values.inc(len(edge_values))
     if config.ingest_mode == 1:
         ts = last_ts + config.ingest_delta
         last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
@@ -254,7 +255,7 @@ def stop_process():
 
 
 def prometheus_insert_percentage():
-    while not inserted_values_queue.empty() or not insert_finished_queue.empty():
+    while not inserted_values_queue.empty() or insert_finished_queue.empty():
         inserted_values = inserted_values_queue.get()
         c_inserted_values.inc(inserted_values)
         g_insert_percentage.set((c_inserted_values._value.get() /

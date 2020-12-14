@@ -165,9 +165,12 @@ def insert_routine():
 
         while len(batch) < local_batch_size:
             if not current_values_queue.empty():
-                batch_values = current_values_queue.get_nowait()
-                batch.extend(batch_values["batch"])
-                timestamps.extend(batch_values["timestamps"])
+                try:
+                    batch_values = current_values_queue.get_nowait()
+                    batch.extend(batch_values["batch"])
+                    timestamps.extend(batch_values["timestamps"])
+                except Exception as e:
+                    logging.info(f"current_values_queue was empty: {e}")
             else:
                 break
 

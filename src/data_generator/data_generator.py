@@ -3,7 +3,7 @@ import urllib3
 import time
 import logging
 import tictrack
-from queue import Queue
+from queue import Queue, Empty
 from threading import Thread, current_thread
 from batch_size_automator import BatchSizeAutomator
 from modules.edge import Edge
@@ -113,7 +113,7 @@ def get_next_value():
     edge_values = []
     for edge in edges.values():
         edge_values.append(edge.calculate_next_value())
-        c_generated_values.inc(len(edge_values))
+    c_generated_values.inc(len(edge_values))
     if config.ingest_mode == 1:
         ts = last_ts + config.ingest_delta
         last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
@@ -154,25 +154,19 @@ def insert_routine():
     insert_bsa = BatchSizeAutomator(batch_size=config.batch_size,
                                     active=bool(config.ingest_mode),
                                     data_batch_size=data_batch_size)
-    local_batch_size = 0
+
     while not current_values_queue.empty() or not stop_process():
         batch = []
         timestamps = []
 
+        local_batch_size = insert_bsa.get_next_batch_size()
         if insert_bsa.auto_batch_mode:
-            local_batch_size = insert_bsa.get_next_batch_size()
             g_batch_size.labels(thread=name).set(local_batch_size)
 
         while len(batch) < local_batch_size:
-            if not current_values_queue.empty():
-                try:
-                    batch_values = current_values_queue.get_nowait()
-                    batch.extend(batch_values["batch"])
-                    timestamps.extend(batch_values["timestamps"])
-                except Exception as e:
-                    logging.info(f"current_values_queue was empty: {e}")
-            else:
-                break
+            batch_values = current_values_queue.get()
+            batch.extend(batch_values["batch"])
+            timestamps.extend(batch_values["timestamps"])
 
         if len(batch) > 0:
             start = time.time()
@@ -259,10 +253,15 @@ def stop_process():
 
 def prometheus_insert_percentage():
     while not inserted_values_queue.empty() or insert_finished_queue.empty():
-        inserted_values = inserted_values_queue.get()
-        c_inserted_values.inc(inserted_values)
-        g_insert_percentage.set((c_inserted_values._value.get() /
-                                 (config.ingest_size * (config.id_end - config.id_start + 1))) * 100)
+        try:
+            inserted_values = inserted_values_queue.get_nowait()
+            c_inserted_values.inc(inserted_values)
+            g_insert_percentage.set((c_inserted_values._value.get() /
+                                     (config.ingest_size * (config.id_end - config.id_start + 1))) * 100)
+        except Empty:
+            # get_nowait throws Empty exception which might happen if the inserted_values_queue
+            # is empty and the insert_finished_queue is as well
+            pass
 
 
 @tictrack.timed_function()

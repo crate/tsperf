@@ -1,7 +1,7 @@
 import psycopg2
 import psycopg2.extras
 from tictrack import timed_function
-from modules.db_writer import DbWriter
+from data_generator.db_writer import DbWriter
 from datetime import datetime
 from datetime_truncate import truncate
 

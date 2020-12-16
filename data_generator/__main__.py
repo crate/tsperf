@@ -6,15 +6,15 @@ import tictrack
 from queue import Queue, Empty
 from threading import Thread, current_thread
 from batch_size_automator import BatchSizeAutomator
-from modules.edge import Edge
-from modules.crate_db_writer import CrateDbWriter
-from modules.timescale_db_writer import TimescaleDbWriter
-from modules.influx_db_writer import InfluxDbWriter
-from modules.mongo_db_writer import MongoDbWriter
-from modules.postgres_db_writer import PostgresDbWriter
-from modules.timestream_db_writer import TimeStreamWriter
-from modules.mssql_db_writer import MsSQLDbWriter
-from modules.config import DataGeneratorConfig
+from data_generator.edge import Edge
+from data_generator.crate_db_writer import CrateDbWriter
+from data_generator.timescale_db_writer import TimescaleDbWriter
+from data_generator.influx_db_writer import InfluxDbWriter
+from data_generator.mongo_db_writer import MongoDbWriter
+from data_generator.postgres_db_writer import PostgresDbWriter
+from data_generator.timestream_db_writer import TimeStreamWriter
+from data_generator.mssql_db_writer import MsSQLDbWriter
+from data_generator.config import DataGeneratorConfig
 from prometheus_client import start_http_server, Gauge, Counter
 
 
@@ -164,9 +164,12 @@ def insert_routine():
             g_batch_size.labels(thread=name).set(local_batch_size)
 
         while len(batch) < local_batch_size:
-            batch_values = current_values_queue.get()
-            batch.extend(batch_values["batch"])
-            timestamps.extend(batch_values["timestamps"])
+            try:
+                batch_values = current_values_queue.get_nowait()
+                batch.extend(batch_values["batch"])
+                timestamps.extend(batch_values["timestamps"])
+            except Empty:
+                break
 
         if len(batch) > 0:
             start = time.time()
@@ -265,7 +268,7 @@ def prometheus_insert_percentage():
 
 
 @tictrack.timed_function()
-def main():
+def run_dg():
     # start the thread that writes to the db
     if config.ingest_mode == 0:
         db_writer_thread = Thread(target=consecutive_insert, name="consecutive_insert_thread")
@@ -296,19 +299,24 @@ def main():
         prometheus_insert_percentage_thread.join()
 
 
-if __name__ == '__main__':
+def main():
     # start prometheus server
-    start_http_server(8000)
+    start_http_server(config.prometheus_port)
 
-    main()
-    main = 0
+    run_dg()
+    run = 0
     # we analyze the runtime of the different function
     for k, v in tictrack.tic_toc.items():
-        if k == "main":
-            main = sum(v) / len(v)
+        if k == "run_dg":
+            run = sum(v) / len(v)
         logging.info(f"average time for {k}: {(sum(v) / len(v))}")
 
-    logging.info(f"""rows per second:    {data_batch_size * config.ingest_size / main}""")
-    logging.info(f"""metrics per second: {data_batch_size * config.ingest_size * len(get_sub_element("metrics").keys()) / main}""")
+    logging.info(f"""rows per second:    {data_batch_size * config.ingest_size / run}""")
+    logging.info(
+        f"""metrics per second: {data_batch_size * config.ingest_size * len(get_sub_element("metrics").keys()) / run}""")
 
     # finished
+
+
+if __name__ == '__main__':
+    main()

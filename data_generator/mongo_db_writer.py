@@ -1,5 +1,5 @@
 from tictrack import timed_function
-from modules.db_writer import DbWriter
+from data_generator.db_writer import DbWriter
 from pymongo import MongoClient
 from pymongo import CursorType
 from datetime import datetime

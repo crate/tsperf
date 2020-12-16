@@ -3,7 +3,7 @@ import math
 import numpy
 from tictrack import timed_function
 from botocore.config import Config
-from modules.db_writer import DbWriter
+from data_generator.db_writer import DbWriter
 
 
 class TimeStreamWriter(DbWriter):
@@ -60,7 +60,7 @@ class TimeStreamWriter(DbWriter):
             page_iterator = paginator.paginate(QueryString=query)
             for page in page_iterator:
                 result.append(page)
-        except Exception as e:
+        except Exception:
             if retry:
                 result = self.execute_query(query, False)
         return result
@@ -110,7 +110,7 @@ class TimeStreamWriter(DbWriter):
         }
         try:
             self.write_client.create_table(DatabaseName=self.database_name, TableName=self.table_name,
-                                     RetentionProperties=retention_properties)
+                                           RetentionProperties=retention_properties)
             print("Table [%s] successfully created." % self.table_name)
         except Exception as err:
             print("Create table failed:", err)

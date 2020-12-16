@@ -4,16 +4,16 @@ import urllib3
 import statistics
 import time
 import shutil
-from tictrack import timed_function, tic_toc
-from modules.config import DataGeneratorConfig
-from modules.crate_db_writer import CrateDbWriter
-from modules.postgres_db_writer import PostgresDbWriter
-from modules.timescale_db_writer import TimescaleDbWriter
-from modules.influx_db_writer import InfluxDbWriter
-from modules.mongo_db_writer import MongoDbWriter
+from tictrack import tic_toc
+from config import DataGeneratorConfig
+from crate_db_writer import CrateDbWriter
+from postgres_db_writer import PostgresDbWriter
+from timescale_db_writer import TimescaleDbWriter
+from influx_db_writer import InfluxDbWriter
+from data_generator.mongo_db_writer import MongoDbWriter
 from threading import Thread
 
-from modules.timestream_db_writer import TimeStreamWriter
+from data_generator.timestream_db_writer import TimeStreamWriter
 
 console = curses.initscr()
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

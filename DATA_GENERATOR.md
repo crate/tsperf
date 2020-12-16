@@ -87,7 +87,7 @@ The easiest way to use the Data Generator is to build the Docker Image:
 
 + navigate to root directory of this repository
 + build docker image with `docker build -t data_gen -f Dockerfile .`
-+ Adapt one of the example docker-compose files in the [example folder](src/data_generator/examples)
++ Adapt one of the example docker-compose files in the [example folder](examples)
 + start (e.g. crate example) with `docker-compose -f src/data_generator/examples/docker-compose_crate.yml up`
 
 For an explanation on how to set the environment variables see [Environment variables](#data-generator-configuration).
@@ -751,7 +751,7 @@ The `button_sensor` metric is another object describing how the value of this ob
 }
 ```
 
-The `button_press` metric is of type `BOOL` and has a true_ratio of `0.001` which means it is true in 1 out of 1000 cases. Go to [Sensor Types](#sensor-types) to get a more detailed overview over the different Sensor types. Or look at [motor.json](src/data_generator/examples/motor.json) or [temperature.json](src/data_generator/examples/temperature.json) for examples containing descriptions.
+The `button_press` metric is of type `BOOL` and has a true_ratio of `0.001` which means it is true in 1 out of 1000 cases. Go to [Sensor Types](#sensor-types) to get a more detailed overview over the different Sensor types. Or look at [motor.json](examples/motor.json) or [temperature.json](examples/temperature.json) for examples containing descriptions.
 
 This is the basic structure of a Data Generator model. It can contain any amount of tags and metrics, but row/document size increases with each add value, as well as calculation time with each metric.
 
@@ -876,11 +876,11 @@ Let's explain what this means. We take the normal voltage output of a european s
 
 Using this model to generate 100.000 values the curve will look something like this (the spikes are the errors):
 
-![Image of docu_example model curve](src/data_generator/examples/pictures/curve.png)
+![Image of docu_example model curve](examples/pictures/curve.png)
 
 And the value distribution of this curve will look something like this:
 
-![Image of docu_example model value distribution](src/data_generator/examples/pictures/distribution.png)
+![Image of docu_example model value distribution](examples/pictures/distribution.png)
 
 #### Bool Sensor
 
@@ -931,7 +931,7 @@ This chapter gives an overview over the available prometheus metrics and what th
 
 ## Example Use Cases
 
-This chapter gives examples on how the Data Generator can be used. Files for these examples can be found [here](src/data_generator/examples)
+This chapter gives examples on how the Data Generator can be used. Files for these examples can be found [here](examples)
 
 ### Single Type of Edge
 
@@ -944,7 +944,7 @@ Every 5 seconds each sensor reports a value and we want our simulation to run fo
 
 #### Setup
 
-The resulting JSON-model could look like this (you can find it as file [here](src/data_generator/examples/SingleType/example_model.json)):
+The resulting JSON-model could look like this (you can find it as file [here](examples/SingleType/example_model.json)):
 
 ```JSON
 {
@@ -1030,7 +1030,7 @@ To run this example follow the following steps:
 + navigate to root directory of this repository
 + build docker image with `docker build -t data_gen -f src/data_generator/Dockerfile .`
 + start an instance of CrateDB on localhost with `docker run -p "4200:4200" crate`
-+ Enter USERNAME and PASSWORD in the [docker-compose file](src/data_generator/examples/SingleType/docker-compose_example_crate.yml)
++ Enter USERNAME and PASSWORD in the [docker-compose file](examples/SingleType/docker-compose_example_crate.yml)
     + If no user was created you can just delete both environment variables (crate will use a default user)
 + start the docker-compose file with `docker-compose -f src/data_generator/examples/SingleType/docker-compose_example_crate.yml up`
 
@@ -1048,9 +1048,9 @@ We want to simulate ten factories in ten different countries (defined by country
 
 #### Setup
 
-As we actually use four different models (temperature metric is different for upper and lower lines) we also have four different model-files. You can find all the model-files [here](src/data_generator/examples/MultiType).
+As we actually use four different models (temperature metric is different for upper and lower lines) we also have four different model-files. You can find all the model-files [here](examples/MultiType).
 
-To run this use-case we have to write a more complex docker-compose [file](src/data_generator/examples/MultiType/docker-compose_multitype_example.yml):
+To run this use-case we have to write a more complex docker-compose [file](examples/MultiType/docker-compose_multitype_example.yml):
 
 ```YML
 version: "2.3"
@@ -1126,7 +1126,7 @@ To run this example follow the following steps:
 + navigate to root directory of this repository
 + build docker image with `docker build -t data_gen -f src/data_generator/Dockerfile .`
 + start an instance of CrateDB on localhost with `docker run -p "4200:4200" crate`
-+ Add USERNAME and PASSWORD in the [docker-compose file](src/data_generator/examples/MultiType/docker-compose_multitype_example.yml)
++ Add USERNAME and PASSWORD in the [docker-compose file](examples/MultiType/docker-compose_multitype_example.yml)
     + If no user was created you can just ignore both environment variables (crate will use a default user)
 + start the docker-compose file with `docker-compose -f src/data_generator/examples/MultiType/docker-compose_multitype_example.yml up`
 

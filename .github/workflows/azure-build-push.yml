@@ -3,8 +3,7 @@ on:
     branches:
       - master
     paths:
-      - 'src/data_generator/**'
-      - 'src/modules/**'
+      - '/data_generator/**'
       - 'Dockerfile'
 
 name: tag_build_and_push

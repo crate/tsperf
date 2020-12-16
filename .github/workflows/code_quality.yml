@@ -3,7 +3,7 @@ on:
     branches:
       - master
     paths:
-      - 'src/**'
+      - 'data_generator/**'
 
 name: code_quality
 
@@ -19,13 +19,14 @@ jobs:
         - name: Install dependencies
           run: |
             python -m pip install --upgrade pip
-            pip install -r src/test/requirements.txt
+            pip install -e .
+            pip install -e ."[testing]"
         - name: Lint with flake8
           run: |
             # stop the build if there are Python syntax errors or undefined names
-            flake8 ./src/ --count --select=E9,F63,F7,F82 --show-source --statistics
+            flake8 ./data_generator/ --count --select=E9,F63,F7,F82 --show-source --statistics
             # exit-zero treats all errors as warnings.
-            flake8 ./src/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+            flake8 ./data_generator/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     unit_tests:
       runs-on: ubuntu-latest
       steps:
@@ -37,10 +38,11 @@ jobs:
         - name: Install dependencies
           run: |
             python -m pip install --upgrade pip
-            pip install -r src/test/requirements.txt
+            pip install -e .
+            pip install -e ."[testing]"
         - name: Test with pytest
           run: |
-            pytest ./src/test/
+            pytest ./tests/
     code_coverage:
       runs-on: ubuntu-latest
       steps:
@@ -52,7 +54,8 @@ jobs:
         - name: Install dependencies
           run: |
             python -m pip install --upgrade pip
-            pip install -r src/test/requirements.txt
+            pip install -e .
+            pip install -e ."[testing]"
         - name: Measure code coverage
           run: |
-            pytest --cov=./src/modules/ --cov-fail-under=95 --cov-report term ./src/test
+            pytest --cov=./data_generator/ --cov-fail-under=95 --cov-report term ./tests

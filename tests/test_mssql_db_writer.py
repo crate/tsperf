@@ -1,7 +1,7 @@
 import mock
 import pyodbc
-from modules.mssql_db_writer import MsSQLDbWriter
-from test.test_models import test_model, test_model2
+from data_generator.mssql_db_writer import MsSQLDbWriter
+from tests.test_models import test_model, test_model2
 
 
 @mock.patch.object(pyodbc, 'connect', autospec=True)

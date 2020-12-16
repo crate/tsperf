@@ -3,7 +3,7 @@ import time
 import os
 import mock
 import os.path
-from modules.config import DataGeneratorConfig
+from data_generator.config import DataGeneratorConfig
 
 
 def test_config_constructor_no_env_set():

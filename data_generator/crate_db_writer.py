@@ -1,4 +1,4 @@
-from modules.db_writer import DbWriter
+from data_generator.db_writer import DbWriter
 from crate import client
 from tictrack import timed_function
 

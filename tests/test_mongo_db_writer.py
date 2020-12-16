@@ -1,10 +1,10 @@
 import mock
 from datetime import datetime
-from modules.mongo_db_writer import MongoDbWriter
-from test.test_models import test_model
+from data_generator.mongo_db_writer import MongoDbWriter
+from tests.test_models import test_model
 
 
-@mock.patch("modules.mongo_db_writer.MongoClient", autospec=True)
+@mock.patch("data_generator.mongo_db_writer.MongoClient", autospec=True)
 def test_close_connection(mock_client):
     """
     This function tests if the .close_connection() function of MongoDbWriter calls the close() function of self.client
@@ -29,7 +29,7 @@ def test_close_connection(mock_client):
     client.close.assert_called()
 
 
-@mock.patch("modules.mongo_db_writer.MongoClient", autospec=True)
+@mock.patch("data_generator.mongo_db_writer.MongoClient", autospec=True)
 def test_insert_stmt(mock_client):
     """
     This function tests if the .insert_stmt() function of MongoDbWriter creates the correct json object
@@ -62,7 +62,7 @@ def test_insert_stmt(mock_client):
     assert args[0] == [document]
 
 
-@mock.patch("modules.mongo_db_writer.MongoClient", autospec=True)
+@mock.patch("data_generator.mongo_db_writer.MongoClient", autospec=True)
 def test_execute_query(mock_client):
     """
     This function tests if the .execute_query() function of MongoDbWriter uses the correct argument

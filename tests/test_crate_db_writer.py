@@ -1,7 +1,7 @@
 import mock
 from crate import client
-from modules.crate_db_writer import CrateDbWriter
-from test.test_models import test_model, test_model2
+from data_generator.crate_db_writer import CrateDbWriter
+from tests.test_models import test_model, test_model2
 
 
 @mock.patch.object(client, 'connect', autospec=True)

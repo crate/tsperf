@@ -1,5 +1,5 @@
 from tictrack import timed_function
-from modules.db_writer import DbWriter
+from data_generator.db_writer import DbWriter
 from influxdb_client import InfluxDBClient, Bucket
 from influxdb_client.client.write_api import SYNCHRONOUS, Point
 from datetime import datetime

@@ -151,38 +151,7 @@ tag_model_plant100_line5_sensorId = {
     "line": 5,
     "sensor_id": "id"
 }
-float_model = {
-    "key": {
-        "value": "test"
-    },
-    "type": {
-        "value": "FLOAT"
-    },
-    "min": {
-        "value": 6.0,
-    },
-    "max": {
-        "value": 7.4,
-    },
-    "mean": {
-        "value": 6.4,
-    },
-    "median": {
-        "value": 6.3,
-    },
-    "stdev": {
-        "value": 0.2,
-    },
-    "variance": {
-        "value": 0.03,
-    },
-    "error_rate": {
-        "value": 0.001,
-    },
-    "error_length": {
-        "value": 1.08,
-    }
-}
+
 bool_model = {
     "key": {
         "value": "button_press"

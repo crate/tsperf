@@ -18,6 +18,7 @@ class DataGeneratorConfig:
         self.database = int(os.getenv("DATABASE", 0))  # 0:crate, 1:timescale, 2:influx, 3:mongo
         self.stat_delta = int(os.getenv("STAT_DELTA", 30))
         self.num_threads = int(os.getenv("NUM_THREADS", 1))
+        self.prometheus_port = int(os.getenv("PROMETHEUS_PORT", 8000))
 
         # environment variables used by multiple database clients
         self.host = os.getenv("HOST", "localhost")

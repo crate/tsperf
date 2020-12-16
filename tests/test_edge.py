@@ -1,9 +1,8 @@
 import pytest
 import numpy
-import statistics
-from modules.edge import Edge, FloatSensor, BoolSensor
-from test.test_models import metrics_model_float1_bool1, metrics_model_string, \
-    tag_model_plant100_line5_sensorId, float_model, bool_model
+from data_generator.edge import Edge, BoolSensor
+from tests.test_models import metrics_model_float1_bool1, metrics_model_string, \
+    tag_model_plant100_line5_sensorId, bool_model
 
 
 def test_init_sensors():

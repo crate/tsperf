@@ -2,11 +2,11 @@ import mock
 from dotmap import DotMap
 from influxdb_client import Bucket
 from influxdb_client.client.write_api import Point
-from modules.influx_db_writer import InfluxDbWriter
-from test.test_models import test_model
+from data_generator.influx_db_writer import InfluxDbWriter
+from tests.test_models import test_model
 
 
-@mock.patch("modules.influx_db_writer.InfluxDBClient", autospec=True)
+@mock.patch("data_generator.influx_db_writer.InfluxDBClient", autospec=True)
 def test_close_connection(mock_client):
     """
     This function tests if the .close_connection() function of InfluxDbWriter calls the close() function of self.client
@@ -31,7 +31,7 @@ def test_close_connection(mock_client):
     client.close.assert_called()
 
 
-@mock.patch("modules.influx_db_writer.InfluxDBClient", autospec=True)
+@mock.patch("data_generator.influx_db_writer.InfluxDBClient", autospec=True)
 def test_prepare_database_bucket_exists(mock_client):
     """
     This function tests if the .prepare_database() function of InfluxDbWriter loads the correct bucket
@@ -63,7 +63,7 @@ def test_prepare_database_bucket_exists(mock_client):
     buckets_api.create_bucket.assert_not_called()
 
 
-@mock.patch("modules.influx_db_writer.InfluxDBClient", autospec=True)
+@mock.patch("data_generator.influx_db_writer.InfluxDBClient", autospec=True)
 def test_prepare_database_bucket_not_exists(mock_client):
     """
     This function tests if the .prepare_database() function of InfluxDbWriter loads the correct bucket
@@ -95,7 +95,7 @@ def test_prepare_database_bucket_not_exists(mock_client):
     buckets_api.create_bucket.assert_called()
 
 
-@mock.patch("modules.influx_db_writer.InfluxDBClient", autospec=True)
+@mock.patch("data_generator.influx_db_writer.InfluxDBClient", autospec=True)
 def test_insert_stmt(mock_client):
     """
     This function tests if the .insert_stmt() function of InfluxDbWriter uses the correct arguments for write_api.write
@@ -131,7 +131,7 @@ def test_insert_stmt(mock_client):
     assert isinstance(data[0], Point)
 
 
-@mock.patch("modules.influx_db_writer.InfluxDBClient", autospec=True)
+@mock.patch("data_generator.influx_db_writer.InfluxDBClient", autospec=True)
 def test_execute_query(mock_client):
     """
     This function tests if the .execute_query() function of InfluxDbWriter uses the correct arguments

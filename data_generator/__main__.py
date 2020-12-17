@@ -21,43 +21,33 @@ from prometheus_client import start_http_server, Gauge, Counter
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# load an validate the configuration
-config = DataGeneratorConfig()
-valid_config = config.validate_config()
-if not valid_config:
-    logging.error(f"invalid configuration: {config.invalid_configs}")
-    exit(-1)
-
-# load the model we want to use and create the metrics
-f = open(config.model_path, "r")
-model = json.load(f)
-
 # global variables shared accross threads
-data_batch_size = (config.id_end - config.id_start + 1)
-runtime_metrics = {"rows": 0, "metrics": 0, "batch_size": config.batch_size}
-edges = {}
-ingest_ts_factor = 1 / config.ingest_delta
-last_stat_ts = time.time()
-last_ts = config.ingest_ts
-current_values_queue = Queue(5000 * config.num_threads)
-inserted_values_queue = Queue(5000 * config.num_threads)
+config = DataGeneratorConfig()
+model = {}
+last_ts = 0
+current_values_queue = Queue(10000)
+inserted_values_queue = Queue(10000)
 stop_queue = Queue(1)
 insert_finished_queue = Queue(1)
 
-# prometheus metrics published to port 8000
+# prometheus metrics published to port config.prometheus_port
+c_values_queue_was_empty = Counter("data_gen_values_queue_empty", "How many times the values_queue was empty when "
+                                                                  "insert_routine needed more values")
+c_inserts_performed_success = Counter("data_gen_inserts_performed_success", "How many times the an insert into the "
+                                                                            "database was performed successfully")
+c_inserts_failed = Counter("data_gen_inserts_failed", "How many times an insert operation failed due to an error")
 c_generated_values = Counter("data_gen_generated_values", "How many values have been generated")
 c_inserted_values = Counter("data_gen_inserted_values", "How many values have been inserted")
 g_insert_percentage = Gauge("data_gen_insert_percentage", "Percentage of values that have been inserted")
-if config.batch_size <= 0 and bool(config.ingest_mode):
-    g_batch_size = Gauge("data_gen_batch_size", "The currently used batch size", labelnames=("thread",))
-    g_insert_time = Gauge("data_gen_insert_time", "The average time it took to insert the current batch into the "
-                                                  "database", labelnames=("thread",))
-    g_rows_per_second = Gauge("data_gen_rows_per_second", "The average number of rows per second with the latest "
-                                                          "batch_size", labelnames=("thread",))
-    g_best_batch_size = Gauge("data_gen_best_batch_size", "The up to now best batch size found by the "
-                                                          "batch_size_automator", labelnames=("thread",))
-    g_best_batch_rps = Gauge("data_gen_best_batch_rps", "The rows per second for the up to now best batch size",
-                             labelnames=("thread",))
+g_batch_size = Gauge("data_gen_batch_size", "The currently used batch size", labelnames=("thread",))
+g_insert_time = Gauge("data_gen_insert_time", "The average time it took to insert the current batch into the "
+                                              "database", labelnames=("thread",))
+g_rows_per_second = Gauge("data_gen_rows_per_second", "The average number of rows per second with the latest "
+                                                      "batch_size", labelnames=("thread",))
+g_best_batch_size = Gauge("data_gen_best_batch_size", "The up to now best batch size found by the "
+                                                      "batch_size_automator", labelnames=("thread",))
+g_best_batch_rps = Gauge("data_gen_best_batch_rps", "The rows per second for the up to now best batch size",
+                         labelnames=("thread",))
 
 
 def get_db_writer():
@@ -90,8 +80,10 @@ def get_db_writer():
 @tictrack.timed_function()
 def create_edges():
     # this function creates metric objects in the given range [id_start, id_end]
+    edges = {}
     for i in range(config.id_start, config.id_end + 1):
         edges[i] = Edge(i, get_sub_element("tags"), get_sub_element("metrics"))
+    return edges
 
 
 def get_sub_element(sub):
@@ -105,7 +97,7 @@ def get_sub_element(sub):
 
 
 @tictrack.timed_function()
-def get_next_value():
+def get_next_value(edges):
     global last_ts
     # for each edge in the edges list all next values are calculated and saved to the edge_value list
     # this list is then added to the FIFO queue, so each entry of the FIFO queue contains all next values for each edge
@@ -116,15 +108,12 @@ def get_next_value():
     c_generated_values.inc(len(edge_values))
     if config.ingest_mode == 1:
         ts = last_ts + config.ingest_delta
+        ingest_ts_factor = 1 / config.ingest_delta
         last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
         timestamps = [int(last_ts * 1000)] * len(edge_values)
         current_values_queue.put({"timestamps": timestamps, "batch": edge_values})
     else:
         current_values_queue.put(edge_values)
-
-
-def calculate_next_value(edge):
-    return edge.calculate_next_value()
 
 
 def log_stat_delta(last_stat_ts_local):
@@ -151,6 +140,7 @@ def insert_routine():
     name = current_thread().name
     db_writer = get_db_writer()
     db_writer.prepare_database()
+    data_batch_size = (config.id_end - config.id_start + 1)
     insert_bsa = BatchSizeAutomator(batch_size=config.batch_size,
                                     active=bool(config.ingest_mode),
                                     data_batch_size=data_batch_size)
@@ -169,17 +159,22 @@ def insert_routine():
                 batch.extend(batch_values["batch"])
                 timestamps.extend(batch_values["timestamps"])
             except Empty:
+                # if there are no more values in the queue the insert is done
+                # without proper batch_size
+                c_values_queue_was_empty.inc()
                 break
 
         if len(batch) > 0:
             start = time.time()
             try:
                 db_writer.insert_stmt(timestamps, batch)
+                c_inserts_performed_success.inc()
                 inserted_values_queue.put_nowait(len(batch))
             except Exception as e:
                 # if an exception is thrown while inserting we don't want the whole data_generator to crash
                 # as the values have not been inserted we remove them from our runtime_metrics
                 # TODO: more sophistic error handling on db_writer level
+                c_inserts_failed.inc()
                 logging.error(e)
 
             if insert_bsa.auto_batch_mode and len(batch) == local_batch_size:
@@ -235,12 +230,11 @@ def consecutive_insert():
             # even if the data_generator runs in multiple containers therefore we round the
             # timestamp to match ingest_delta this is done by multiplying
             # by ingest_delta and then dividing the result by ingest_delta
+            ingest_ts_factor = 1 / config.ingest_delta
             last_insert = round(ts * ingest_ts_factor) / ingest_ts_factor
             timestamps = [int(last_insert * 1000)] * len(batch)
             try:
                 db_writer.insert_stmt(timestamps, batch)
-                runtime_metrics["rows"] += len(batch)
-                runtime_metrics["metrics"] += len(batch) * len(get_sub_element("metrics").keys())
             except Exception as e:
                 logging.error(e)
         else:
@@ -282,30 +276,51 @@ def run_dg():
     prometheus_insert_percentage_thread.start()
 
     try:
-        create_edges()
+        edges = create_edges()
 
         # TODO: this should not have an endless loop for now stop with ctrl+C
         # we are either in endless mode or have a certain amount of values to create
         while_count = 0
         while config.ingest_size == 0 or while_count < config.ingest_size:
             while_count += 1
-            get_next_value()
+            get_next_value(edges)
     except Exception as e:
         logging.exception(e)
     finally:
-        # once value creation is finished we signal the db_writer thread to stop and wait for it to join
+        # once value creation is finished we signal the other threads to stop and wait for them to join
         stop_queue.put(True)
         db_writer_thread.join()
         prometheus_insert_percentage_thread.join()
 
 
 def main():
-    # start prometheus server
-    start_http_server(config.prometheus_port)
+    global last_ts, model
 
+    # load configuration an set everything up
+    valid_config = config.validate_config()
+    if not valid_config:
+        logging.error(f"invalid configuration: {config.invalid_configs}")
+        exit(-1)
+
+    f = open(config.model_path, "r")
+    model = json.load(f)
+
+    if config.ingest_mode == 0 or config.batch_size > 0:
+        g_batch_size.remove()
+        g_insert_time.remove()
+        g_rows_per_second.remove()
+        g_best_batch_size.remove()
+        g_best_batch_rps.remove()
+
+    start_http_server(config.prometheus_port)
+    data_batch_size = (config.id_end - config.id_start + 1)
+    last_ts = config.ingest_ts
+
+    # start the data_generator logic
     run_dg()
-    run = 0
+
     # we analyze the runtime of the different function
+    run = 0
     for k, v in tictrack.tic_toc.items():
         if k == "run_dg":
             run = sum(v) / len(v)

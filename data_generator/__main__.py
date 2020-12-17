@@ -15,6 +15,7 @@ from data_generator.postgres_db_writer import PostgresDbWriter
 from data_generator.timestream_db_writer import TimeStreamWriter
 from data_generator.mssql_db_writer import MsSQLDbWriter
 from data_generator.config import DataGeneratorConfig
+from data_generator.argument_parser import parse_arguments
 from prometheus_client import start_http_server, Gauge, Counter
 
 
@@ -297,6 +298,7 @@ def main():
     global last_ts, model
 
     # load configuration an set everything up
+    parse_arguments(config)
     valid_config = config.validate_config()
     if not valid_config:
         logging.error(f"invalid configuration: {config.invalid_configs}")

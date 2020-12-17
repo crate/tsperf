@@ -472,7 +472,7 @@ Default: -1
 
 Type: Integer
 
-Values: 0..4
+Values: 0..6
 
 Default: 0
 
@@ -482,6 +482,8 @@ The value will define which database is used:
 + 2: InfluxDB
 + 3: MongoDB
 + 4: PostgreSQL
++ 5: Timestream
++ 6: Microsoft SQL Server
 
 #### STAT_DELTA
 

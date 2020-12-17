@@ -40,12 +40,13 @@ class DataGeneratorConfig:
         # environment variables to connect to influxdb
         self.token = os.getenv("TOKEN", "")
         self.organization = os.getenv("ORG", "")
-        self.invalid_configs = []
 
         # environment variable to connect to aws timestream
         self.aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID", "")
         self.aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY", "")
         self.aws_region_name = os.getenv("AWS_REGION_NAME", "")
+
+        self.invalid_configs = []
 
     def validate_config(self) -> bool:
         if self.num_threads < 1:
@@ -81,3 +82,8 @@ class DataGeneratorConfig:
             self.invalid_configs.append(f"PORT: {self.port} <= 0")
 
         return len(self.invalid_configs) == 0
+
+    def load_args(self, args):
+        for element in vars(self):
+            if element in args:
+                setattr(self, element, args[element])

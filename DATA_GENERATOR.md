@@ -22,8 +22,8 @@ The Data Generator evolved as a standalone tool which can be used independently 
       - [ID_START](#id_start)
       - [ID_END](#id_end)
       - [INGEST_MODE](#ingest_mode)
-        * [INGEST_MODE 0](#ingest_mode-0)
-        * [INGEST_MODE 1](#ingest_mode-1)
+        * [INGEST_MODE False](#ingest_mode-false)
+        * [INGEST_MODE True](#ingest_mode-true)
       - [INGEST_SIZE](#ingest_size)
       - [INGEST_TS](#ingest_ts)
       - [INGEST_DELTA](#ingest_delta)
@@ -31,6 +31,7 @@ The Data Generator evolved as a standalone tool which can be used independently 
       - [BATCH_SIZE](#batch_size)
       - [DATABASE](#database)
       - [STAT_DELTA](#stat_delta)
+      - [PROMETHEUS_PORT](#prometheus_port)
     + [Environment variables used to configure different databases](#environment-variables-used-to-configure-different-databases)
       - [HOST](#host)
       - [USERNAME](#username)
@@ -386,23 +387,23 @@ The Data Generator will create `(ID_END + 1) - ID_START` edges.
 
 #### INGEST_MODE
 
-Type: Integer
+Type: Boolean
 
-Values: 0 or 1
+Values: False or True
 
-Default: 1
+Default: True
 
-##### INGEST_MODE 0
+##### INGEST_MODE False
 
-When `INGEST_MODE` is set to `0` the Data Generator goes into "steady load"-mode. This means for all edges controlled by the Data Generator an insert is performed each [INGEST_DELTA](#ingest_delta) seconds.
+When `INGEST_MODE` is set to `False` the Data Generator goes into "steady load"-mode. This means for all edges controlled by the Data Generator an insert is performed each [INGEST_DELTA](#ingest_delta) seconds.
 
 **Note: If too many edges are controlled by one Data Generator instance so an insert cannot be performed in the timeframe set by INGEST_DELTA it is advised to split half the IDs to a separate Data Generator instance: e.g. one instance uses `ID_START=1, ID_END=500` and the other `ID_START=501, ID_END=1000`**
 
 With this configuration the [Batch Size Automator](#batch-size-automator) is disabled. Therefor the [Prometheus metrics](#prometheus-metrics) g_insert_time, g_rows_per_second, g_best_batch_size, g_best_batch_rps, will stay at 0.
 
-##### INGEST_MODE 1
+##### INGEST_MODE True
 
-When `INGEST_MODE` is set to `1` the Data Generator goes into "burst insert"-mode. This means it tries to insert as many values as possible. This mode is used populate a database and can be used to measure insert performance.
+When `INGEST_MODE` is set to `True` the Data Generator goes into "burst insert"-mode. This means it tries to insert as many values as possible. This mode is used populate a database and can be used to measure insert performance.
 
 Using this mode results in values inserted into the database at a faster rate than defined by [INGEST_DELTA](#ingest_delta) but the timestamp values will still adhere to this value and be in the defined time interval. This means that if [INGEST_TS](#ingest_ts) is not set to a specific value timestamps will point to the future. By adjusting INGEST_TS to a timestamp in the past in combination with a limited [INGEST_SIZE](#ingest_size) the rang of timestamps can be controlled.
 
@@ -436,7 +437,7 @@ Values: A valid UNIX timestamp
 
 Default: timestamp at the time the Data Generator was started
 
-This variable defines the first timestamp used for the generated values. When using [INGEST_MODE 1](#ingest_mode-1) all following timestamps have an interval to the previous timestamp by the value of [INGEST_DELTA](#ingest_delta). When using [INGEST_MODE 0](#ingest_mode-0) the second insert happens when `INGEST_TS + INGEST_DELTA` is equal or bigger than the current timestamp (real life). This means that if INGEST_TS is set to the future no inserts will happen until the `INGEST_TS + INGEST_DELTA` timestamp is reached.
+This variable defines the first timestamp used for the generated values. When using [INGEST_MODE True](#ingest_mode-true) all following timestamps have an interval to the previous timestamp by the value of [INGEST_DELTA](#ingest_delta). When using [INGEST_MODE False](#ingest_mode-false) the second insert happens when `INGEST_TS + INGEST_DELTA` is equal or bigger than the current timestamp (real life). This means that if INGEST_TS is set to the future no inserts will happen until the `INGEST_TS + INGEST_DELTA` timestamp is reached.
 
 #### INGEST_DELTA
 
@@ -466,7 +467,7 @@ Values: Any number.
 
 Default: -1
 
-`BATCH_SIZE` is only taken into account when [INGEST MODE](#ingest_mode) is set to `1`. The value of `BATCH_SIZE` defines how many rows will be inserted with one insert statement. If the value is smaller or equal to `0` the [Batch Size Automator](#batch-size-automator) will take control over the batch size and dynamically adjusts the batch size to get the best insert performance.
+`BATCH_SIZE` is only taken into account when [INGEST MODE](#ingest_mode) is set to `True`. The value of `BATCH_SIZE` defines how many rows will be inserted with one insert statement. If the value is smaller or equal to `0` the [Batch Size Automator](#batch-size-automator) will take control over the batch size and dynamically adjusts the batch size to get the best insert performance.
 
 #### DATABASE
 
@@ -495,6 +496,16 @@ Default: 30
 
 Prints statistics of average function execution time every `STAT_DELTA` seconds.
 
+#### PROMETHEUS_PORT
+
+Type: Integer
+
+Values: 1 to 65535
+
+Default: 8000
+
+The port that is used to publish prometheus metrics.
+
 ### Environment variables used to configure different databases
 
 The environment variables in this chapter are used by different databases to connect and configure them. Each entry will contain the databases for which they are used and example values. For collected information for a single database see the chapters for the database:
@@ -503,6 +514,8 @@ The environment variables in this chapter are used by different databases to con
 + [TimescaleDB](#timescaledb)
 + [MongoDB](#mongodb)
 + [AWS Timestream](#aws-timestream)
++ [Postgresql](#postgresql)
++ [MS SQL Server](#mircosoft-sql-server)
 
 #### HOST
 
@@ -512,19 +525,23 @@ Values: hostname according to database client requirements
 
 Default: localhost
 
-used with CrateDB, TimescaleDB, MongoDB.
+used with CrateDB, TimescaleDB, InfluxDB, MongoDB, Postgresql, MSSQL.
 
 **CrateDB:**
 
 host must include port, e.g.: `"localhost:4200"`
 
-**TimescaleDB:**
+**TimescaleDB, Postgresql and InfluxDB:**
 
 host must be hostname excluding port, e.g.: `"localhost"`
 
 **MongoDB:**
 
 host can be either without port (e.g. `"localhost"`) or with port (e.g. `"localhost:27017"`)
+
+**MSSQL:**
+
+host must start with `tcp:`
 
 #### USERNAME
 

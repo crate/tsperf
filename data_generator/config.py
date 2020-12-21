@@ -9,7 +9,7 @@ class DataGeneratorConfig:
         # environment variables describing how the data_generator behaves
         self.id_start = int(os.getenv("ID_START", 1))
         self.id_end = int(os.getenv("ID_END", 500))
-        self.ingest_mode = int(os.getenv("INGEST_MODE", 1))
+        self.ingest_mode = strtobool(os.getenv("INGEST_MODE", "True"))
         self.ingest_size = int(os.getenv("INGEST_SIZE", 1000))
         self.ingest_ts = float(os.getenv("INGEST_TS", time.time()))
         self.ingest_delta = float(os.getenv("INGEST_DELTA", 0.5))
@@ -80,6 +80,8 @@ class DataGeneratorConfig:
             self.invalid_configs.append(f"REPLICAS: {self.replicas} < 0")
         if int(self.port) <= 0:
             self.invalid_configs.append(f"PORT: {self.port} <= 0")
+        if 1 > self.prometheus_port > 65535:
+            self.invalid_configs.append(f"PROMETHEUS_PORT: {self.prometheus_port} not in valid port range")
 
         return len(self.invalid_configs) == 0
 

@@ -80,7 +80,7 @@ class DataGeneratorConfig:
             self.invalid_configs.append(f"REPLICAS: {self.replicas} < 0")
         if int(self.port) <= 0:
             self.invalid_configs.append(f"PORT: {self.port} <= 0")
-        if 1 > self.prometheus_port > 65535:
+        if self.prometheus_port < 1 or self.prometheus_port > 65535:
             self.invalid_configs.append(f"PROMETHEUS_PORT: {self.prometheus_port} not in valid port range")
 
         return len(self.invalid_configs) == 0

@@ -45,8 +45,8 @@ args_info = {
     },
     "model_path": {
         "help": "A relative or absolute path to a model in the json format (see the data generator documentation for "
-                "more details: https://github.com/crate/ts-data-generator/blob/master/DATA_GENERATOR.md#data"
-                "-generator-models)",
+                "more details: "
+                "https://github.com/crate/ts-data-generator/blob/master/DATA_GENERATOR.md#data-generator-models)",
         "choices": ["Absolute or relative file path"],
         "type": str
     },
@@ -73,91 +73,100 @@ args_info = {
         "type": int
     },
     "host": {
-        "help": "hostname according to the database client requirements",
+        "help": "hostname according to the database client requirements. See documentation for further details:"
+                "https://github.com/crate/ts-data-generator/blob/master/DATA_GENERATOR.md#host",
         "choices": [],
-        "type": int
+        "type": str
     },
     "username": {
-        "help": "",
+        "help": "username of user used for authentication against the database. Used with CrateDB, TimescaleDB, "
+                "MongoDB, Postgresql, MSSQL",
         "choices": [],
-        "type": int
+        "type": str
     },
     "password": {
-        "help": "",
+        "help": "password of user used for authentication against the database. used with CrateDB, TimescaleDB, "
+                "MongoDB, Postgresql, MSSQL.",
         "choices": [],
-        "type": int
+        "type": str
     },
     "db_name": {
-        "help": "",
+        "help": "Name of the database where table will be created. Used with InfluxDB, TimescaleDB, MongoDB, "
+                "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
+                "https://github.com/crate/ts-data-generator/blob/master/DATA_GENERATOR.md#db-name",
         "choices": [],
-        "type": int
+        "type": str
     },
     "table_name": {
-        "help": "",
+        "help": "Name of the table where values are stored. Used with CrateDB, Postgresql, MSSQL and TimescaleDB.",
         "choices": [],
-        "type": int
+        "type": str
     },
     "partition": {
-        "help": "",
-        "choices": [],
-        "type": int
+        "help": "Is used to partition table by a specified value. Used with CrateDB, Postgresql and TimescaleDB.",
+        "choices": ["second", "minute", "hour", "day", "week", "month", "quarter", "year"],
+        "type": str
     },
     "shards": {
-        "help": "",
-        "choices": [],
+        "help": "Is used to set the sharding of the CrateDB table: "
+                "https://crate.io/docs/crate/reference/en/latest/general/ddl/sharding.html",
+        "choices": ["x > 0"],
         "type": int
     },
     "replicas": {
-        "help": "",
-        "choices": [],
+        "help": "Is used to set the number of replicas for CrateDB: "
+                "https://crate.io/docs/crate/reference/en/latest/general/ddl/replication.html",
+        "choices": ["x >= 0"],
         "type": int
     },
     "port": {
-        "help": "",
-        "choices": [],
+        "help": "Defines the port number of the host where the DB is reachable.",
+        "choices": ["1 to 65535"],
         "type": int
     },
     "copy": {
-        "help": "",
-        "choices": [],
-        "type": int
+        "help": "Used to toggle between pgcopy and psycopg2 library with TimescaleDB. When set to True pgcopy is used "
+                "for inserts",
+        "choices": [True, False],
+        "type": bool
     },
     "distributed": {
-        "help": "",
-        "choices": [],
-        "type": int
+        "help": "Defines if Timescale is used with distributed hypertables or not. Must only be set to True when "
+                "Timescale > v2.0 in distributed mode is run.",
+        "choices": [True, False],
+        "type": bool
     },
     "token": {
-        "help": "",
+        "help": "token gotten from InfluxDB V2: https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/",
         "choices": [],
-        "type": int
+        "type": str
     },
     "organization": {
-        "help": "",
+        "help": "org_id gotten from InfluxDB V2: https://v2.docs.influxdata.com/v2.0/organizations/",
         "choices": [],
-        "type": int
+        "type": str
     },
     "aws_access_key_id": {
-        "help": "",
+        "help": "AWS Access Key ID",
         "choices": [],
-        "type": int
+        "type": str
     },
     "aws_secret_access_key": {
-        "help": "",
+        "help": "AWS Secret Access Key",
         "choices": [],
-        "type": int
+        "type": str
     },
     "aws_region_name": {
-        "help": "",
+        "help": "AWS region name",
         "choices": [],
-        "type": int
-    },
-
+        "type": str
+    }
 }
 
 
 def parse_arguments(config: DataGeneratorConfig):
-    parser = argparse.ArgumentParser(description="Timeseries Database Data Generator - A program to benchmark TSDBs.")
+    parser = argparse.ArgumentParser(description="Timeseries Database Data Generator - A program to benchmark TSDBs.",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     for element in vars(config):
         if element in args_info:

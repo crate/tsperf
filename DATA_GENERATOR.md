@@ -39,11 +39,11 @@ The Data Generator evolved as a standalone tool which can be used independently 
       - [DB_NAME](#db_name)
       - [TABLE_NAME](#table_name)
       - [PARTITION](#partition)
+      - [PORT](#port)
     + [Environment variables used to configure CrateDB](#environment-variables-used-to-configure-cratedb)
       - [SHARDS](#shards)
       - [REPLICAS](#replicas)
     + [Environment variables used to configure TimescaleDB](#environment-variables-used-to-configure-timescaledb)
-      - [PORT](#port)
       - [TIMESCALE_COPY](#timescale_copy)
       - [TIMESCALE_DISTRIBUTED](#timescale_distributed)
     + [Environment variables used to configure InfluxDB](#environment-variables-used-to-configure-influxdb)
@@ -551,7 +551,7 @@ Values: username of user used for authentication against the database
 
 Default: None
 
-used with CrateDB, TimescaleDB, MongoDB.
+used with CrateDB, TimescaleDB, MongoDB, Postgresql, MSSQL.
 
 #### PASSWORD
 
@@ -561,7 +561,7 @@ Values: password of user used for authentication against the database
 
 Default: None
 
-used with CrateDB, TimescaleDB, MongoDB.
+used with CrateDB, TimescaleDB, MongoDB, Postgresql, MSSQL.
 
 #### DB_NAME
 
@@ -571,12 +571,12 @@ Values: Name of the database where table will be created
 
 Default: empty string
 
-used with InfluxDB, TimescaleDB, MongoDB, AWS Timestream.
+used with InfluxDB, TimescaleDB, MongoDB, AWS Timestream, Postgresql, MSSQL.
 
 **InfluxDB:**
 This is an optional parameter for InfluxDB. In case it is set the Bucket where the values are inserted will use the value of `DB_NAME` as name. If `DB_NAME` is empty string than the name of the model (see [Data Generator models](#data-generator-models) for more information) will be used as Bucket name.
 
-**TimescaleDB:**
+**TimescaleDB, Postgresql, MSSQL:**
 The value of `DB_NAME` is used when connecting to TimescaleDB. This database must already exist in your TimescaleDB instance and must have already been initialized with `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;`.
 
 **MongoDB:**
@@ -593,7 +593,7 @@ Values: Name of the table where values are stored
 
 Default: empty string
 
-used with CrateDB and TimescaleDB. It is an optional parameter to overwrite the default table_name defined in the model (see [Data Generator models](#data-generator-models)).
+used with CrateDB, Postgresql, MSSQL and TimescaleDB. It is an optional parameter to overwrite the default table_name defined in the model (see [Data Generator models](#data-generator-models)).
 
 #### PARTITION
 
@@ -603,7 +603,19 @@ Values: second, minute, hour, day, week, month, quarter, year
 
 Default: week
 
-used with CrateDB and TimescaleDB. Is used to define an additional Column to partition the table. E.g. when using `week` an additional column is created (Crate: `g_ts_week`, Timescale `ts_week`) and the value from the `ts` column is truncated to its week value.
+used with CrateDB, Postgresql and TimescaleDB. Is used to define an additional Column to partition the table. E.g. when using `week` an additional column is created (Crate: `g_ts_week`, Timescale/Postgres `ts_week`) and the value from the `ts` column is truncated to its week value.
+
+#### PORT
+
+Type: Integer
+
+Values: positive number
+
+Default: 5432
+
+Defines the port number of the host where the DB is reachable.
+
+used with TimescaleDB, Postgresql and MSSQL
 
 ### Environment variables used to configure CrateDB
 
@@ -632,16 +644,6 @@ Defines how many [replicas](https://crate.io/docs/crate/reference/en/latest/gene
 ### Environment variables used to configure TimescaleDB
 
 The environment variables in this chapter are only used to configure TimescaleDB
-
-#### PORT
-
-Type: Integer
-
-Values: positive number
-
-Default: 5432
-
-Defines the port number of the host where TimescaleDB is reachable.
 
 #### TIMESCALE_COPY
 

@@ -374,3 +374,14 @@ def test_validate_config_port_false(mock_isfile):
     assert not config.validate_config()
     assert len(config.invalid_configs) == 1
     assert "PORT" in config.invalid_configs[0]
+
+
+@mock.patch("os.path.isfile")
+def test_validate_config_prometheus_port_false(mock_isfile):
+    mock_isfile.return_value = True
+    test_port = 0
+    config = DataGeneratorConfig()
+    config.prometheus_port = test_port
+    assert not config.validate_config()
+    assert len(config.invalid_configs) == 1
+    assert "PROMETHEUS_PORT" in config.invalid_configs[0]

@@ -307,13 +307,6 @@ def main():
     f = open(config.model_path, "r")
     model = json.load(f)
 
-    if config.ingest_mode == 0 or config.batch_size > 0:
-        g_batch_size.remove()
-        g_insert_time.remove()
-        g_rows_per_second.remove()
-        g_best_batch_size.remove()
-        g_best_batch_rps.remove()
-
     start_http_server(config.prometheus_port)
     data_batch_size = (config.id_end - config.id_start + 1)
     last_ts = config.ingest_ts

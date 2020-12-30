@@ -50,7 +50,7 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts': [
-            'dg = data_generator.__main__:main',
+            'tsdg = data_generator.__main__:main',
         ]
     },
     install_requires=requires,

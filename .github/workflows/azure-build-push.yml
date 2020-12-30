@@ -15,20 +15,42 @@ jobs:
         - uses: actions/checkout@master
           with:
             fetch-depth: '0'
-        - name: "Bump version and push tag"
+        - name: "Get Tag"
+          id: get_tag
+          run: |
+            get_tag=$(cat setup.py | grep -E '__version__ =' | awk '{print $3}' | tr -d \")
+            last_tag=$(git describe --tags --abbrev=0)
+            echo ::set-output name=tag::$get_tag
+            echo ::set-output name=last_tag::$last_tag
+        - if: steps.get_tag.outputs.tag != steps.get_tag.outputs.last_tag
+          name: "Bump version and push tag"
           id: bumptag
           uses: anothrNick/github-tag-action@master
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            DEFAULT_BUMP: patch
-            WITH_V: true
-        - name: 'Build and push image'
+            CUSTOM_TAG: ${{ steps.get_tag.outputs.tag }}
+        - if: steps.get_tag.outputs.tag != steps.get_tag.outputs.last_tag
+          name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install setuptools wheel twine
+        - if: steps.get_tag.outputs.tag != steps.get_tag.outputs.last_tag
+          name: Build and publish
+          env:
+            TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+            TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          run: |
+            python setup.py sdist bdist_wheel
+            twine upload dist/*
+        - if: steps.get_tag.outputs.tag != steps.get_tag.outputs.last_tag
+          name: 'Build and push image'
           uses: azure/docker-login@v1
           with:
             login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
             username: ${{ secrets.REGISTRY_USERNAME }}
             password: ${{ secrets.REGISTRY_PASSWORD }}
-        - run: |
-            docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/data-generator:${{ steps.bumptag.outputs.new_tag }} .
-            docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/data-generator:${{ steps.bumptag.outputs.new_tag }}
+        - if: steps.get_tag.outputs.tag != steps.get_tag.outputs.last_tag
+          run: |
+            docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/data-generator:${{ steps.get_tag.outputs.tag }} .
+            docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/data-generator:${{ steps.get_tag.outputs.tag }}
 

@@ -90,7 +90,7 @@ def create_edges():
 def get_sub_element(sub):
     element = {}
     for key in model.keys():
-        if key != "description":
+        if key != "description" and sub in model[key]:
             element = model[key][sub]
     if "description" in element:
         element.pop("description")
@@ -106,15 +106,16 @@ def get_next_value(edges):
     edge_values = []
     for edge in edges.values():
         edge_values.append(edge.calculate_next_value())
-    c_generated_values.inc(len(edge_values))
-    if config.ingest_mode == 1:
-        ts = last_ts + config.ingest_delta
-        ingest_ts_factor = 1 / config.ingest_delta
-        last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
-        timestamps = [int(last_ts * 1000)] * len(edge_values)
-        current_values_queue.put({"timestamps": timestamps, "batch": edge_values})
-    else:
-        current_values_queue.put(edge_values)
+    if len(edge_values) > 0:
+        c_generated_values.inc(len(edge_values))
+        if config.ingest_mode == 1:
+            ts = last_ts + config.ingest_delta
+            ingest_ts_factor = 1 / config.ingest_delta
+            last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
+            timestamps = [int(last_ts * 1000)] * len(edge_values)
+            current_values_queue.put({"timestamps": timestamps, "batch": edge_values})
+        else:
+            current_values_queue.put(edge_values)
 
 
 def log_stat_delta(last_stat_ts_local):
@@ -125,7 +126,7 @@ def log_stat_delta(last_stat_ts_local):
     return time.time()
 
 
-def stat_delta_thread_function():
+def stat_delta_thread_function():  # pragma: no cover
     last_stat_ts_local = time.time()
     while not stop_process():
         if time.time() - last_stat_ts_local >= config.stat_delta:
@@ -135,6 +136,19 @@ def stat_delta_thread_function():
             # the thread until it happens, this would mean at the end the whole data generator could
             # sleep for another `config.stat_delta` seconds before finishing
             time.sleep(1)
+
+
+def do_insert(db_writer, timestamps, batch):
+    try:
+        db_writer.insert_stmt(timestamps, batch)
+        c_inserts_performed_success.inc()
+        inserted_values_queue.put_nowait(len(batch))
+    except Exception as e:
+        # if an exception is thrown while inserting we don't want the whole data_generator to crash
+        # as the values have not been inserted we remove them from our runtime_metrics
+        # TODO: more sophistic error handling on db_writer level
+        c_inserts_failed.inc()
+        logging.error(e)
 
 
 def insert_routine():
@@ -167,16 +181,7 @@ def insert_routine():
 
         if len(batch) > 0:
             start = time.time()
-            try:
-                db_writer.insert_stmt(timestamps, batch)
-                c_inserts_performed_success.inc()
-                inserted_values_queue.put_nowait(len(batch))
-            except Exception as e:
-                # if an exception is thrown while inserting we don't want the whole data_generator to crash
-                # as the values have not been inserted we remove them from our runtime_metrics
-                # TODO: more sophistic error handling on db_writer level
-                c_inserts_failed.inc()
-                logging.error(e)
+            do_insert(db_writer, timestamps, batch)
 
             if insert_bsa.auto_batch_mode and len(batch) == local_batch_size:
                 duration = time.time() - start
@@ -189,7 +194,7 @@ def insert_routine():
     db_writer.close_connection()
 
 
-def spawn_insert_threads():
+def spawn_insert_threads():  # pragma: no cover
     insert_threads = []
     for i in range(config.num_threads):
         insert_threads.append(Thread(target=insert_routine, name=f"insert_thread_{i}"))
@@ -201,7 +206,7 @@ def spawn_insert_threads():
     insert_finished_queue.put_nowait(True)
 
 
-def fast_insert():
+def fast_insert():  # pragma: no cover
     fast_insert_threads = [Thread(target=spawn_insert_threads, name="spawn_insert_threads"),
                            Thread(target=stat_delta_thread_function, name="stat_delta_thread")]
     for thread in fast_insert_threads:
@@ -234,10 +239,7 @@ def consecutive_insert():
             ingest_ts_factor = 1 / config.ingest_delta
             last_insert = round(ts * ingest_ts_factor) / ingest_ts_factor
             timestamps = [int(last_insert * 1000)] * len(batch)
-            try:
-                db_writer.insert_stmt(timestamps, batch)
-            except Exception as e:
-                logging.error(e)
+            do_insert(db_writer, timestamps, batch)
         else:
             time.sleep(config.ingest_delta - insert_delta)
     db_writer.close_connection()
@@ -249,7 +251,7 @@ def stop_process():
     return not stop_queue.empty()
 
 
-def prometheus_insert_percentage():
+def prometheus_insert_percentage():  # pragma: no cover
     while not inserted_values_queue.empty() or insert_finished_queue.empty():
         try:
             inserted_values = inserted_values_queue.get_nowait()
@@ -263,7 +265,7 @@ def prometheus_insert_percentage():
 
 
 @tictrack.timed_function()
-def run_dg():
+def run_dg():  # pragma: no cover
     # start the thread that writes to the db
     if config.ingest_mode == 0:
         db_writer_thread = Thread(target=consecutive_insert, name="consecutive_insert_thread")
@@ -294,7 +296,7 @@ def run_dg():
         prometheus_insert_percentage_thread.join()
 
 
-def main():
+def main():  # pragma: no cover
     global last_ts, model
 
     # load configuration an set everything up
@@ -328,5 +330,5 @@ def main():
     # finished
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()

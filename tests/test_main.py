@@ -123,6 +123,28 @@ def test_do_insert(mock_log):
     mock_log.error.assert_called_once()
 
 
+def test_get_insert_values():
+    # current_values_queue is empty
+    batch, timestamps = dg.get_insert_values(1)
+    assert len(batch) == 0
+    assert len(timestamps) == 0
+    assert dg.c_values_queue_was_empty._value.get() == 1
+
+    # current_values_queue has to few entries
+    dg.current_values_queue.put({"timestamps": [1, 1, 1], "batch": [1, 2, 3]})
+    batch, timestamps = dg.get_insert_values(4)
+    assert len(batch) == 3
+    assert len(timestamps) == 3
+    assert dg.c_values_queue_was_empty._value.get() == 2
+
+    # current_values_queue has to few entries
+    dg.current_values_queue.put({"timestamps": [1, 1, 1], "batch": [1, 2, 3]})
+    batch, timestamps = dg.get_insert_values(1)
+    assert len(batch) == 3
+    assert len(timestamps) == 3
+    assert dg.c_values_queue_was_empty._value.get() == 2
+
+
 def test_insert_routine():
     assert False
 

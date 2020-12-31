@@ -151,6 +151,22 @@ def do_insert(db_writer, timestamps, batch):
         logging.error(e)
 
 
+def get_insert_values(batch_size):
+    batch = []
+    timestamps = []
+    while len(batch) < batch_size:
+        try:
+            batch_values = current_values_queue.get_nowait()
+            batch.extend(batch_values["batch"])
+            timestamps.extend(batch_values["timestamps"])
+        except Empty:
+            # if there are no more values in the queue the insert is done
+            # without proper batch_size
+            c_values_queue_was_empty.inc()
+            break
+    return batch, timestamps
+
+
 def insert_routine():
     name = current_thread().name
     db_writer = get_db_writer()
@@ -161,23 +177,11 @@ def insert_routine():
                                     data_batch_size=data_batch_size)
 
     while not current_values_queue.empty() or not stop_process():
-        batch = []
-        timestamps = []
-
         local_batch_size = insert_bsa.get_next_batch_size()
         if insert_bsa.auto_batch_mode:
             g_batch_size.labels(thread=name).set(local_batch_size)
 
-        while len(batch) < local_batch_size:
-            try:
-                batch_values = current_values_queue.get_nowait()
-                batch.extend(batch_values["batch"])
-                timestamps.extend(batch_values["timestamps"])
-            except Empty:
-                # if there are no more values in the queue the insert is done
-                # without proper batch_size
-                c_values_queue_was_empty.inc()
-                break
+        batch, timestamps = get_insert_values(local_batch_size)
 
         if len(batch) > 0:
             start = time.time()

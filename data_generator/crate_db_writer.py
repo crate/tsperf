@@ -4,7 +4,8 @@ from tictrack import timed_function
 
 
 class CrateDbWriter(DbWriter):
-    def __init__(self, host, username, password, model, table_name=None, shards=None, replicas=None, partition="week"):
+    def __init__(self, host: str, username: str, password: str, model: dict, table_name: str = None, shards: int = None,
+                 replicas: int = None, partition: str = "week"):
         super().__init__()
         self.conn = client.connect(host, username=username, password=password)
         self.cursor = self.conn.cursor()
@@ -20,24 +21,24 @@ class CrateDbWriter(DbWriter):
 
     def prepare_database(self):
         stmt = f"""CREATE TABLE IF NOT EXISTS {self.table_name} ("ts" TIMESTAMP WITH TIME ZONE,
-"g_ts_{self.partition}" TIMESTAMP WITH TIME ZONE GENERATED ALWAYS AS date_trunc('{self.partition}', "ts"), 
-"payload" OBJECT(DYNAMIC))
-CLUSTERED INTO {self.shards} SHARDS
-PARTITIONED BY ("g_ts_{self.partition}")
-WITH (number_of_replicas = {self.replicas})"""
+ "g_ts_{self.partition}" TIMESTAMP WITH TIME ZONE GENERATED ALWAYS AS date_trunc('{self.partition}', "ts"),
+ "payload" OBJECT(DYNAMIC))
+ CLUSTERED INTO {self.shards} SHARDS
+ PARTITIONED BY ("g_ts_{self.partition}")
+ WITH (number_of_replicas = {self.replicas})"""
         self.cursor.execute(stmt)
 
     @timed_function()
-    def insert_stmt(self, timestamps, batch):
+    def insert_stmt(self, timestamps: list, batch: list):
         stmt = f"""INSERT INTO {self.table_name} (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"""
         self.cursor.execute(stmt, (timestamps, batch))
 
     @timed_function()
-    def execute_query(self, query):
+    def execute_query(self, query: str) -> list:
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    def _get_model_table_name(self):
+    def _get_model_table_name(self) -> str:
         for key in self.model.keys():
             if key != "description":
                 return key

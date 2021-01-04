@@ -164,7 +164,7 @@ args_info = {
 }
 
 
-def parse_arguments(config: DataGeneratorConfig):  # pragma: no cover
+def parse_arguments(config: DataGeneratorConfig) -> DataGeneratorConfig:  # pragma: no cover
     parser = argparse.ArgumentParser(description="Timeseries Database Data Generator - A program to benchmark TSDBs.",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 

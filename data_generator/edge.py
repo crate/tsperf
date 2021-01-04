@@ -6,7 +6,7 @@ factors = [-1, 1]
 
 
 class Edge:
-    def __init__(self, identifier, tags, edge_model):
+    def __init__(self, identifier: int, tags: dict, edge_model: dict):
         self.id = identifier
         self.tags = tags
         self.edge_model = edge_model
@@ -24,7 +24,7 @@ class Edge:
             else:
                 raise NotImplementedError("only FLOAT and BOOL Type have been implemented")
 
-    def calculate_next_value(self):
+    def calculate_next_value(self) -> dict:
         if self.payload == {}:
             self._assign_tag_values()
 
@@ -60,7 +60,7 @@ class Sensor:
     def __init__(self, model):
         self.model = model
 
-    def get_key(self):
+    def get_key(self) -> str:
         return self.model["key"]["value"]
 
 
@@ -75,7 +75,7 @@ class FloatSensor(Sensor):
                                               model["error_rate"]["value"],
                                               model["error_length"]["value"])
 
-    def calculate_next_value(self):
+    def calculate_next_value(self) -> float:
         return self.float_simulator.calculate_next_value()
 
 
@@ -84,5 +84,5 @@ class BoolSensor(Sensor):
         super().__init__(model)
         self.true_ratio = self.model["true_ratio"]["value"]
 
-    def calculate_next_value(self):
+    def calculate_next_value(self) -> bool:
         return random.randint(0, (1 / self.true_ratio)) < 1

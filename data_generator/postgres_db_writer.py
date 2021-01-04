@@ -7,7 +7,8 @@ from datetime_truncate import truncate
 
 
 class PostgresDbWriter(DbWriter):
-    def __init__(self, host, port, username, password, db_name, model, table_name=None, partition="week"):
+    def __init__(self, host: str, port: int, username: str, password: str, db_name: str, model: dict,
+                 table_name: str = None, partition: str = "week"):
         super().__init__()
         self.conn = psycopg2.connect(dbname=db_name, user=username, password=password, host=host, port=port)
         self.cursor = self.conn.cursor()
@@ -33,13 +34,13 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         self.conn.commit()
 
     @timed_function()
-    def insert_stmt(self, timestamps, batch):
+    def insert_stmt(self, timestamps: list, batch: list):
         stmt = self._prepare_postgres_stmt(timestamps, batch)
         self.cursor.execute(stmt)
         self.conn.commit()
 
     @timed_function()
-    def _prepare_postgres_stmt(self, timestamps, batch):
+    def _prepare_postgres_stmt(self, timestamps: list, batch: list) -> str:
         columns = self._get_tags_and_metrics().keys()
         stmt = f"""INSERT INTO {self.table_name} (ts, ts_{self.partition},"""
         for column in columns:
@@ -57,27 +58,11 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         return stmt
 
     @timed_function()
-    def execute_query(self, query):
+    def execute_query(self, query: str) -> list:
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    def _get_tags_and_metrics(self):
-        key = self._get_model_table_name()
-        tags = self.model[key]["tags"]
-        metrics = self.model[key]["metrics"]
-        columns = {}
-        for key, value in tags.items():
-            if key != "description":
-                if type(value).__name__ == "list":
-                    columns[key] = "TEXT"
-                else:
-                    columns[key] = "INTEGER"
-        for key, value in metrics.items():
-            if key != "description":
-                columns[value["key"]["value"]] = value["type"]["value"]
-        return columns
-
-    def _get_model_table_name(self):
+    def _get_model_table_name(self) -> str:
         for key in self.model.keys():
             if key != "description":
                 return key

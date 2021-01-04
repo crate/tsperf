@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from tictrack import timed_function
 from data_generator.db_writer import DbWriter
 from pymongo import MongoClient
@@ -6,7 +8,7 @@ from datetime import datetime
 
 
 class MongoDbWriter(DbWriter):
-    def __init__(self, host, username, password, database_name, model):
+    def __init__(self, host: str, username: str, password: str, database_name: str, model: dict):
         super().__init__()
         self.model = model
         if host == "localhost":
@@ -22,12 +24,12 @@ class MongoDbWriter(DbWriter):
         self.client.close()
 
     @timed_function()
-    def insert_stmt(self, timestamps, batch):
+    def insert_stmt(self, timestamps: list, batch: list):
         data = self._prepare_mongo_stmt(timestamps, batch)
         self.collection.insert_many(data)
 
     @timed_function()
-    def _prepare_mongo_stmt(self, timestamps, batch):
+    def _prepare_mongo_stmt(self, timestamps: list, batch: list) -> list:
         data = []
         tags, metrics = self._get_tags_and_metrics()
         for i in range(0, len(batch)):
@@ -44,11 +46,11 @@ class MongoDbWriter(DbWriter):
         return data
 
     @timed_function()
-    def execute_query(self, query):
+    def execute_query(self, query: str) -> list:
         cursor = self.collection.find(query, cursor_type=CursorType.EXHAUST)
         return list(cursor)
 
-    def _get_tags_and_metrics(self):
+    def _get_tags_and_metrics(self) -> Tuple[dict, dict]:
         key = self._get_model_collection_name()
         tags_ = self.model[key]["tags"]
         metrics_ = self.model[key]["metrics"]
@@ -62,7 +64,7 @@ class MongoDbWriter(DbWriter):
                 metrics.append(value["key"]["value"])
         return tags, metrics
 
-    def _get_model_collection_name(self):
+    def _get_model_collection_name(self) -> str:
         for key in self.model.keys():
             if key != "description":
                 return key

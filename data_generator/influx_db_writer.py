@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from tictrack import timed_function
 from data_generator.db_writer import DbWriter
 from influxdb_client import InfluxDBClient, Bucket
@@ -6,7 +8,7 @@ from datetime import datetime
 
 
 class InfluxDbWriter(DbWriter):
-    def __init__(self, host, token, org, model, database_name=None):
+    def __init__(self, host: str, token: str, org: str, model: dict, database_name: str = None):
         super().__init__()
         self.client = InfluxDBClient(url=host, token=token)
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
@@ -32,12 +34,12 @@ class InfluxDbWriter(DbWriter):
             self.bucket = self.client.buckets_api().create_bucket(bucket)
 
     @timed_function()
-    def insert_stmt(self, timestamps, batch):
+    def insert_stmt(self, timestamps: list, batch: list):
         data = self._prepare_influx_stmt(timestamps, batch)
         self.write_api.write(bucket=self.database_name, org=self.org, record=data)
 
     @timed_function()
-    def _prepare_influx_stmt(self, timestamps, batch):
+    def _prepare_influx_stmt(self, timestamps: list, batch: list) -> list:
         data = []
         tags, metrics = self._get_tags_and_metrics()
         for i in range(0, len(batch)):
@@ -52,10 +54,10 @@ class InfluxDbWriter(DbWriter):
         return data
 
     @timed_function()
-    def execute_query(self, query):
+    def execute_query(self, query: str) -> list:
         return self.query_api.query(query)
 
-    def _get_tags_and_metrics(self):
+    def _get_tags_and_metrics(self) -> Tuple[dict, dict]:
         key = self._get_model_database_name()
         tags_ = self.model[key]["tags"]
         metrics_ = self.model[key]["metrics"]
@@ -69,7 +71,7 @@ class InfluxDbWriter(DbWriter):
                 metrics.append(value["key"]["value"])
         return tags, metrics
 
-    def _get_model_database_name(self):
+    def _get_model_database_name(self) -> str:
         for key in self.model.keys():
             if key != "description":
                 return key

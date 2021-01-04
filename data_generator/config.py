@@ -1,6 +1,7 @@
 import os
 import time
 import os.path
+from argparse import Namespace
 from distutils.util import strtobool
 
 
@@ -48,7 +49,7 @@ class DataGeneratorConfig:
 
         self.invalid_configs = []
 
-    def validate_config(self) -> bool:
+    def validate_config(self) -> bool:  # noqa
         if self.num_threads < 1:
             self.invalid_configs.append(f"NUM_THREADS: {self.num_threads} < 1")
         if self.id_start < 0:
@@ -85,7 +86,7 @@ class DataGeneratorConfig:
 
         return len(self.invalid_configs) == 0
 
-    def load_args(self, args):
+    def load_args(self, args: Namespace):
         for element in vars(self):
             if element in args:
                 setattr(self, element, args[element])

@@ -1,4 +1,6 @@
 import json
+from typing import Tuple
+
 import urllib3
 import time
 import logging
@@ -7,6 +9,7 @@ from queue import Queue, Empty
 from threading import Thread, current_thread
 from batch_size_automator import BatchSizeAutomator
 from data_generator.edge import Edge
+from data_generator.db_writer import DbWriter
 from data_generator.crate_db_writer import CrateDbWriter
 from data_generator.timescale_db_writer import TimescaleDbWriter
 from data_generator.influx_db_writer import InfluxDbWriter
@@ -51,7 +54,7 @@ g_best_batch_rps = Gauge("data_gen_best_batch_rps", "The rows per second for the
                          labelnames=("thread",))
 
 
-def get_db_writer():
+def get_db_writer() -> DbWriter:  # noqa
     # initialize the db_writer based on environment variable
     if config.database == 0:  # crate
         db_writer = CrateDbWriter(config.host, config.username, config.password, model,
@@ -79,7 +82,7 @@ def get_db_writer():
 
 
 @tictrack.timed_function()
-def create_edges():
+def create_edges() -> dict:
     # this function creates metric objects in the given range [id_start, id_end]
     edges = {}
     for i in range(config.id_start, config.id_end + 1):
@@ -87,7 +90,7 @@ def create_edges():
     return edges
 
 
-def get_sub_element(sub):
+def get_sub_element(sub: str) -> dict:
     element = {}
     for key in model.keys():
         if key != "description" and sub in model[key]:
@@ -98,7 +101,7 @@ def get_sub_element(sub):
 
 
 @tictrack.timed_function()
-def get_next_value(edges):
+def get_next_value(edges: dict):
     global last_ts
     # for each edge in the edges list all next values are calculated and saved to the edge_value list
     # this list is then added to the FIFO queue, so each entry of the FIFO queue contains all next values for each edge
@@ -118,7 +121,7 @@ def get_next_value(edges):
             current_values_queue.put(edge_values)
 
 
-def log_stat_delta(last_stat_ts_local):
+def log_stat_delta(last_stat_ts_local: float) -> float:
     if time.time() - last_stat_ts_local >= config.stat_delta:
         for key, value in tictrack.tic_toc_delta.items():
             logging.info(f"average time for {key}: {(sum(value) / len(value))}")
@@ -151,7 +154,7 @@ def do_insert(db_writer, timestamps, batch):
         logging.error(e)
 
 
-def get_insert_values(batch_size):
+def get_insert_values(batch_size: int) -> Tuple[list, list]:
     batch = []
     timestamps = []
     while len(batch) < batch_size:
@@ -255,7 +258,7 @@ def consecutive_insert():
     insert_finished_queue.put_nowait(True)
 
 
-def stop_process():
+def stop_process() -> bool:
     return not stop_queue.empty()
 
 

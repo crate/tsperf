@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import boto3
 import logging
 import math
@@ -8,7 +10,8 @@ from data_generator.db_writer import DbWriter
 
 
 class TimeStreamWriter(DbWriter):
-    def __init__(self, aws_access_key_id, aws_secret_access_key, region_name, database_name, model):
+    def __init__(self, aws_access_key_id: str, aws_secret_access_key: str, region_name: str, database_name: str,
+                 model: dict):
         super().__init__()
         self.model = model
         self.database_name = database_name
@@ -21,7 +24,7 @@ class TimeStreamWriter(DbWriter):
         self.query_client = self.session.client('timestream-query')
 
     @timed_function()
-    def insert_stmt(self, timestamps, batch):
+    def insert_stmt(self, timestamps: list, batch: list):
         data = self._prepare_timestream_stmt(timestamps, batch)
         for key, values in data.items():
             common_attributes = values["common_attributes"]
@@ -35,7 +38,7 @@ class TimeStreamWriter(DbWriter):
                     logging.warning(e)
 
     @timed_function()
-    def _prepare_timestream_stmt(self, timestamps, batch):
+    def _prepare_timestream_stmt(self, timestamps: list, batch: list) -> dict:
         data = {}
         tags, metrics = self._get_tags_and_metrics()
         for i in range(0, len(batch)):
@@ -54,7 +57,7 @@ class TimeStreamWriter(DbWriter):
         return data
 
     @timed_function()
-    def execute_query(self, query, retry=True):
+    def execute_query(self, query: str, retry: bool = True) -> list:
         result = []
         try:
             paginator = self.query_client.get_paginator('query')
@@ -66,7 +69,7 @@ class TimeStreamWriter(DbWriter):
                 result = self.execute_query(query, False)
         return result
 
-    def _get_tags_and_metrics(self):
+    def _get_tags_and_metrics(self) -> Tuple[dict, dict]:
         key = self._get_model_collection_name()
         tags_ = self.model[key]["tags"]
         metrics_ = self.model[key]["metrics"]
@@ -93,7 +96,7 @@ class TimeStreamWriter(DbWriter):
         else:
             return "VARCHAR"
 
-    def _get_model_collection_name(self):
+    def _get_model_collection_name(self) -> str:
         for key in self.model.keys():
             if key != "description":
                 return key

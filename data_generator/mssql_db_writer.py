@@ -76,7 +76,10 @@ ts DATETIME NOT NULL,
         columns = {}
         for key, value in tags.items():
             if key != "description":
-                columns[key] = "INTEGER"
+                if type(value).__name__ == "list":
+                    columns[key] = "TEXT"
+                else:
+                    columns[key] = "INTEGER"
         for key, value in metrics.items():
             if key != "description":
                 if value["type"]["value"] == "BOOL":

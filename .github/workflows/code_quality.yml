@@ -58,4 +58,4 @@ jobs:
             pip install -e ."[testing]"
         - name: Measure code coverage
           run: |
-            pytest --cov=./data_generator/ --cov-fail-under=95 --cov-report term ./tests
+            pytest --cov=./data_generator/ --cov-fail-under=95 --cov-branch --cov-report term ./tests

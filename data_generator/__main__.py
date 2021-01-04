@@ -234,16 +234,20 @@ def consecutive_insert():
         if insert_delta > config.ingest_delta:
             last_stat_ts_local = log_stat_delta(last_stat_ts_local)
             c_inserted_values.inc(config.id_end - config.id_start + 1)
-            batch = current_values_queue.get_nowait()
-            ts = time.time()
-            # we want the same timestamp for each value this timestamp should be the same
-            # even if the data_generator runs in multiple containers therefore we round the
-            # timestamp to match ingest_delta this is done by multiplying
-            # by ingest_delta and then dividing the result by ingest_delta
-            ingest_ts_factor = 1 / config.ingest_delta
-            last_insert = round(ts * ingest_ts_factor) / ingest_ts_factor
-            timestamps = [int(last_insert * 1000)] * len(batch)
-            do_insert(db_writer, timestamps, batch)
+            try:
+                batch = current_values_queue.get_nowait()
+                ts = time.time()
+                # we want the same timestamp for each value this timestamp should be the same
+                # even if the data_generator runs in multiple containers therefore we round the
+                # timestamp to match ingest_delta this is done by multiplying
+                # by ingest_delta and then dividing the result by ingest_delta
+                ingest_ts_factor = 1 / config.ingest_delta
+                last_insert = round(ts * ingest_ts_factor) / ingest_ts_factor
+                timestamps = [int(last_insert * 1000)] * len(batch)
+                do_insert(db_writer, timestamps, batch)
+            except Empty:
+                c_values_queue_was_empty.inc()
+
         else:
             time.sleep(config.ingest_delta - insert_delta)
     db_writer.close_connection()

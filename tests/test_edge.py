@@ -2,7 +2,7 @@ import pytest
 import numpy
 from data_generator.edge import Edge, BoolSensor
 from tests.test_models import metrics_model_float1_bool1, metrics_model_string, \
-    tag_model_plant100_line5_sensorId, bool_model
+    tag_model_plant100_line5_sensorId, bool_model, tag_model_list
 
 
 def test_init_sensors():
@@ -109,3 +109,28 @@ def test_calculate_next_value_bool():
     sum_true = sum(results)
     true_ratio = sum_true / len(results)
     assert true_ratio == pytest.approx(bool_model["true_ratio"]["value"], abs=0.001)
+
+
+def test_calculate_next_value_tag_list():
+    results = [
+        ["A", "L1"],
+        ["A", "L2"],
+        ["A", "L3"],
+        ["B", "L1"],
+        ["B", "L2"],
+        ["B", "L3"],
+        ["C", "L1"],
+        ["C", "L2"],
+        ["C", "L3"],
+        ["D", "L1"],
+        ["D", "L2"],
+        ["D", "L3"],
+        ["E", "L1"],
+        ["E", "L2"],
+        ["E", "L3"],
+    ]
+    for i in range(1, 16):
+        edge = Edge(i, tag_model_list, metrics_model_float1_bool1)
+        payload = edge.calculate_next_value()
+        assert payload["plant"] == results[i - 1][0]
+        assert payload["line"] == results[i - 1][1]

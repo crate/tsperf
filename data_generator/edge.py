@@ -1,6 +1,5 @@
 import random
 from float_simulator import FloatSimulator
-from tictrack import timed_function
 
 
 factors = [-1, 1]

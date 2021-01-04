@@ -1,4 +1,5 @@
 import boto3
+import logging
 import math
 import numpy
 from tictrack import timed_function
@@ -31,7 +32,7 @@ class TimeStreamWriter(DbWriter):
                     self.write_client.write_records(DatabaseName=self.database_name, TableName=self.table_name,
                                                     Records=record_list, CommonAttributes=common_attributes)
                 except Exception as e:
-                    print(e)
+                    logging.warning(e)
 
     @timed_function()
     def _prepare_timestream_stmt(self, timestamps, batch):

@@ -102,7 +102,7 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         columns = {}
         for key, value in tags.items():
             if key != "description":
-                if type(value) == "list":
+                if type(value).__name__ == "list":
                     columns[key] = "TEXT"
                 else:
                     columns[key] = "INTEGER"

@@ -211,17 +211,6 @@ def test_validate_config_default_true(mock_isfile):
 
 
 @mock.patch("os.path.isfile")
-def test_validate_config_id_start_false(mock_isfile):
-    mock_isfile.return_value = True
-    test_id_start = -1
-    config = DataGeneratorConfig()
-    config.id_start = test_id_start
-    assert not config.validate_config()
-    assert len(config.invalid_configs) == 1
-    assert "ID_START" in config.invalid_configs[0]
-
-
-@mock.patch("os.path.isfile")
 def test_validate_config_id_end_false(mock_isfile):
     mock_isfile.return_value = True
     test_id_end = -1
@@ -385,3 +374,25 @@ def test_validate_config_prometheus_port_false(mock_isfile):
     assert not config.validate_config()
     assert len(config.invalid_configs) == 1
     assert "PROMETHEUS_PORT" in config.invalid_configs[0]
+
+
+@mock.patch("os.path.isfile")
+def test_validate_config_num_threads_false(mock_isfile):
+    mock_isfile.return_value = True
+    test_num_threads = 0
+    config = DataGeneratorConfig()
+    config.num_threads = test_num_threads
+    assert not config.validate_config()
+    assert len(config.invalid_configs) == 1
+    assert "NUM_THREADS" in config.invalid_configs[0]
+
+
+@mock.patch("os.path.isfile")
+def test_load_args(mock_isfile):
+    mock_isfile.return_value = True
+    test_num_threads = 1
+    config = DataGeneratorConfig()
+    config.num_threads = test_num_threads
+    args = {"num_threads": 4}
+    config.load_args(args)
+    assert config.num_threads == 4

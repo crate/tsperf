@@ -305,10 +305,10 @@ def run_dg():  # pragma: no cover
 
 
 def main():  # pragma: no cover
-    global last_ts, model
+    global last_ts, model, config
 
     # load configuration an set everything up
-    parse_arguments(config)
+    config = parse_arguments(config)
     valid_config = config.validate_config()
     if not valid_config:
         logging.error(f"invalid configuration: {config.invalid_configs}")

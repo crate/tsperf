@@ -1,7 +1,7 @@
 import mock
 import pyodbc
 from data_generator.mssql_db_writer import MsSQLDbWriter
-from tests.test_models import test_model, test_model2
+from tests.test_models import test_model, test_model2, test_model3
 
 
 @mock.patch.object(pyodbc, 'connect', autospec=True)
@@ -61,6 +61,36 @@ def test_prepare_database2(mock_connect):
     stmt = cursor.execute.call_args.args[0]
     # table name is in stmt
     assert "table_name" in stmt
+    conn.commit.assert_called()
+
+
+@mock.patch.object(pyodbc, 'connect', autospec=True)
+def test_prepare_database3(mock_connect):
+    """
+    This function tests if the .prepare_database() function uses the correct statement to create the database table
+
+    Pre Condition: pyodbc.connect() returns a Mock Object conn which returns a Mock Object
+        cursor when its .cursor() function is called.
+        MsSQLDbWriter is called.
+
+    Test Case 1: calling MsSQLDbWriter.prepare_database() with default values overwritten by constructor arguments
+    -> tags are of type STRING
+    -> conn.commit function has been called
+
+    :param mock_connect: mocked function call from psycopg2.client.connect()
+    """
+    # Pre Condition:
+    conn = mock.Mock()
+    cursor = mock.Mock()
+    mock_connect.return_value = conn
+    conn.cursor.return_value = cursor
+    db_writer = MsSQLDbWriter("localhost", "timescale2", "password2",
+                              "test", test_model3)
+    # Test Case 1:
+    db_writer.prepare_database()
+    stmt = cursor.execute.call_args.args[0]
+    assert "plant TEXT" in stmt
+    assert "line TEXT" in stmt
     conn.commit.assert_called()
 
 

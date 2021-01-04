@@ -1,6 +1,7 @@
 import time
 import mock
 import data_generator.__main__ as dg
+from queue import Empty
 
 
 @mock.patch("data_generator.__main__.CrateDbWriter", autospec=True)
@@ -145,12 +146,93 @@ def test_get_insert_values():
     assert dg.c_values_queue_was_empty._value.get() == 2
 
 
-def test_insert_routine():
-    assert False
+@mock.patch("data_generator.__main__.get_db_writer", autospec=True)
+def test_insert_routine_auto_batch_mode(mock_get_db_writer):
+    dg.stop_queue.put(True)  # we signal stop to not run indefinitely
+    dg.config.batch_size = 0
+    dg.config.ingest_mode = 1
+    dg.config.id_start = 0
+    dg.config.id_end = 0  # only a single edge
+    mock_db_writer = mock.MagicMock()
+    mock_get_db_writer.return_value = mock_db_writer
+    # populate current values
+    for i in range(0, 10000):
+        dg.current_values_queue.put({"timestamps": [1], "batch": [1]})
+    dg.insert_routine()
+    mock_db_writer.insert_stmt.assert_called()
+    mock_db_writer.close_connection.assert_called_once()
+    dg.stop_queue.get()  # resetting the stop queue
 
 
-def test_consecutive_insert():
-    assert False
+@mock.patch("data_generator.__main__.get_db_writer", autospec=True)
+def test_insert_routine_fixed_batch_mode(mock_get_db_writer):
+    dg.stop_queue.put(True)  # we signal stop to not run indefinitely
+    dg.config.batch_size = 5
+    dg.config.ingest_mode = 1
+    dg.config.id_start = 0
+    dg.config.id_end = 0  # only a single edge
+    mock_db_writer = mock.MagicMock()
+    mock_get_db_writer.return_value = mock_db_writer
+    # populate current values
+    dg.current_values_queue.put({"timestamps": [1], "batch": [1]})
+    dg.insert_routine()
+    mock_db_writer.insert_stmt.assert_called()
+    mock_db_writer.close_connection.assert_called_once()
+    dg.stop_queue.get()  # resetting the stop queue
+
+
+@mock.patch("data_generator.__main__.get_db_writer", autospec=True)
+@mock.patch("data_generator.__main__.current_values_queue", autospec=True)
+def test_insert_routine_empty_batch(mock_current_values_queue, mock_get_db_writer):
+    dg.stop_queue.put(True)  # we signal stop to not run indefinitely
+    mock_current_values_queue.empty.side_effect = [False, True]
+    mock_current_values_queue.get_nowait.side_effect = Empty()
+    dg.config.batch_size = 5
+    dg.config.ingest_mode = 1
+    dg.config.id_start = 0
+    dg.config.id_end = 0  # only a single edge
+    mock_db_writer = mock.MagicMock()
+    mock_get_db_writer.return_value = mock_db_writer
+    dg.insert_routine()
+    mock_db_writer.insert_stmt.assert_not_called()
+    mock_db_writer.close_connection.assert_called_once()
+    dg.stop_queue.get()  # resetting the stop queue
+
+
+@mock.patch("data_generator.__main__.get_db_writer", autospec=True)
+@mock.patch("data_generator.__main__.current_values_queue", autospec=True)
+def test_consecutive_insert_queue_empty(mock_current_values_queue, mock_get_db_writer):
+    dg.stop_queue.put(True)  # we signal stop to not run indefinitely
+    mock_current_values_queue.empty.side_effect = [False, True]
+    mock_current_values_queue.get_nowait.side_effect = Empty()
+    dg.config.ingest_mode = 0
+    dg.config.id_start = 0
+    dg.config.id_end = 0  # only a single edge
+    mock_db_writer = mock.MagicMock()
+    mock_get_db_writer.return_value = mock_db_writer
+    dg.consecutive_insert()
+    mock_db_writer.insert_stmt.assert_not_called()
+    mock_db_writer.close_connection.assert_called_once()
+    dg.stop_queue.get()  # resetting the stop queue
+    dg.insert_finished_queue.get()
+
+
+@mock.patch("data_generator.__main__.get_db_writer", autospec=True)
+def test_consecutive_insert(mock_get_db_writer):
+    dg.stop_queue.put(True)  # we signal stop to not run indefinitely
+    dg.config.ingest_mode = 0
+    dg.config.id_start = 0
+    dg.config.id_end = 0  # only a single edge
+    mock_db_writer = mock.MagicMock()
+    mock_get_db_writer.return_value = mock_db_writer
+    # populate current values
+    dg.current_values_queue.put({"timestamps": [1], "batch": [1]})
+    dg.current_values_queue.put({"timestamps": [1], "batch": [1]})
+    dg.consecutive_insert()
+    mock_db_writer.insert_stmt.assert_called()
+    mock_db_writer.close_connection.assert_called_once()
+    dg.stop_queue.get()  # resetting the stop queue
+    dg.insert_finished_queue.get()
 
 
 def test_stop_process():
@@ -159,4 +241,5 @@ def test_stop_process():
     # if stop_queue is not empty it returns true
     dg.stop_queue.put(1)
     assert dg.stop_process()
+    dg.stop_queue.get()  # resetting the stop queue
 

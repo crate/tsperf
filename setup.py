@@ -35,7 +35,7 @@ setuptools.setup(
     name="tsdb_data_generator",
     version=__version__,
     author="Joshua Hercher",
-    author_email="josh@bitperfect.at",
+    author_email="josh@crate.at",
     description="A tool to test performance of different timeseries databases",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -49,8 +49,9 @@ setuptools.setup(
         "Intended Audience :: Developers",
     ],
     entry_points={
-        'console_scripts': [
-            'tsdg = data_generator.__main__:main',
+        "console_scripts": [
+            "tsdg = data_generator.__main__:main",
+            "tsqt = query_timer.__main__:main",
         ]
     },
     install_requires=requires,

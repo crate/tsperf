@@ -55,7 +55,6 @@ g_best_batch_rps = Gauge("data_gen_best_batch_rps", "The rows per second for the
 
 
 def get_db_writer() -> DbWriter:  # noqa
-    # initialize the db_writer based on environment variable
     if config.database == 0:  # crate
         db_writer = CrateDbWriter(config.host, config.username, config.password, model,
                                   config.table_name, config.shards, config.replicas, config.partition)

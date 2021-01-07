@@ -1,6 +1,6 @@
 import setuptools
 
-__version__ = "1.0.4"
+__version__ = "2.0.0"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -34,8 +34,8 @@ test_requires = [
 setuptools.setup(
     name="tsdb_data_generator",
     version=__version__,
-    author="Joshua Hercher",
-    author_email="josh@crate.at",
+    author="Crate.io",
+    author_email="office@crate.at",
     description="A tool to test performance of different timeseries databases",
     long_description=long_description,
     long_description_content_type="text/markdown",

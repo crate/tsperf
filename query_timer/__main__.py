@@ -1,6 +1,6 @@
 import curses
+import logging
 import numpy
-import os
 import urllib3
 import statistics
 import time
@@ -8,34 +8,29 @@ import shutil
 from queue import Queue
 from tictrack import tic_toc, timed_function
 from threading import Thread
-from data_generator.config import DataGeneratorConfig
 from data_generator.crate_db_writer import CrateDbWriter
 from data_generator.postgres_db_writer import PostgresDbWriter
 from data_generator.timescale_db_writer import TimescaleDbWriter
 from data_generator.influx_db_writer import InfluxDbWriter
 from data_generator.mongo_db_writer import MongoDbWriter
 from data_generator.mssql_db_writer import MsSQLDbWriter
-from data_generator.db_writer import DbWriter
-
 from data_generator.timestream_db_writer import TimeStreamWriter
+from data_generator.db_writer import DbWriter
+from query_timer.config import QueryTimerConfig
+from query_timer.argument_parser import parse_arguments
 
 console = curses.initscr()
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-concurrency = int(os.getenv("CONCURRENCY", 100))
-iterations = int(os.getenv("ITERATIONS", 100))
-quantile_list = os.getenv("QUANTILES", "50,60,75,90,99")
-refresh_rate = float(os.getenv("REFRESH_RATE", 0.1))
-query = os.getenv("QUERY", 'SELECT * FROM table LIMIT 100')
 model = {"value": "none"}
-
 stop_thread = False
 start_time = time.time()
 success = 0
 failure = 0
 queries_done = Queue(1)
 
-config = DataGeneratorConfig()
+config = QueryTimerConfig()
 
 def get_db_writer() -> DbWriter:  # noqa
     if config.database == 0:  # crate
@@ -86,7 +81,7 @@ def print_progressbar(iteration, total, prefix="", suffix="", decimals=1, length
         console.addstr(3, 0, f"{prefix} |{bar}| {percent}%% {suffix} {round(now - start_time, 2)}s")
         if len(values) > 1:
             pass
-            console.addstr(5, 0, f"rate : {round((1 / numpy.mean(values)) * concurrency, 3)}qs/s\n")
+            console.addstr(5, 0, f"rate : {round((1 / numpy.mean(values)) * config.concurrency, 3)}qs/s\n")
             console.addstr(6, 0, f"mean : {round(numpy.mean(values) * 1000, 3)}ms\n")
             console.addstr(7, 0, f"stdev: {round(numpy.std(values) * 1000, 3)}ms\n")
             console.addstr(8, 0, f"min  : {round(min(values) * 1000, 3)}ms\n")
@@ -98,9 +93,9 @@ def print_progressbar(iteration, total, prefix="", suffix="", decimals=1, length
 def start_query_run():
     global success, failure
     db_writer = get_db_writer()
-    for x in range(0, iterations):
+    for x in range(0, config.iterations):
         try:
-            db_writer.execute_query(query)
+            db_writer.execute_query(config.query)
             success += 1
         except Exception:
             failure += 1
@@ -108,10 +103,10 @@ def start_query_run():
 
 def print_progress_thread():
     while queries_done.empty():
-        time.sleep(refresh_rate)
+        time.sleep(config.refresh_rate)
         total_queries = success + failure
         terminal_size = shutil.get_terminal_size()
-        print_progressbar(total_queries, concurrency * iterations,
+        print_progressbar(total_queries, config.concurrency * config.iterations,
                           prefix='Progress:', suffix='Complete', length=(terminal_size.columns - 40))
 
 
@@ -121,7 +116,7 @@ def run_qt():
     progress_thread = Thread(target=print_progress_thread)
     progress_thread.start()
     threads = []
-    for y in range(0, concurrency):
+    for y in range(0, config.concurrency):
         thread = Thread(target=start_query_run)
         threads.append(thread)
     for thread in threads:
@@ -133,18 +128,19 @@ def run_qt():
 
 
 def main():
-    terminal_size = shutil.get_terminal_size()
-    if concurrency * iterations < 100:
-        raise ValueError("query_timer needs at least 100 queries (concurrent * iterations) to work properly")
-    q_list = quantile_list.split(",")
-    if terminal_size.lines < len(q_list) + 11:
-        raise ValueError(f"query_timer needs a terminal windows with a hight of at least {len(q_list) + 10}. "
-                         f"Try reducing values in environment variable QUANTILES")
+    global config
 
-    console.addstr(f"""concurrency: {concurrency}\niterations : {iterations}""")
+    # load configuration an set everything up
+    config = parse_arguments(config)
+    valid_config = config.validate_config()
+    if not valid_config:
+        logging.error(f"invalid configuration: {config.invalid_configs}")
+        exit(-1)
+
+    console.addstr(f"""concurrency: {config.concurrency}\niterations : {config.iterations}""")
     console.refresh()
     terminal_size = shutil.get_terminal_size()
-    print_progressbar(0, concurrency * iterations,
+    print_progressbar(0, config.concurrency * config.iterations,
                       prefix='Progress:', suffix='Complete', length=(terminal_size.columns - 40))
 
     run_qt()
@@ -154,7 +150,7 @@ def main():
         qus = statistics.quantiles(values, n=100, method="inclusive")
         line = 11
         for i in range(0, len(qus)):
-            if str(i + 1) in q_list:
+            if str(i + 1) in config.quantiles:
                 line += 1
                 console.addstr(line, 0, f"p{i+1}  : {round(qus[i]*1000, 3)}ms")
     console.refresh()

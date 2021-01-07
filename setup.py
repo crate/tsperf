@@ -6,6 +6,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 requires = [
+    "blessed==1.17.12"
     "boto3==1.16.25",
     "botocore~=1.19.25",
     "crate==0.26.0",

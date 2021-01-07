@@ -16,7 +16,7 @@ class DataGeneratorConfig:
         self.ingest_delta = float(os.getenv("INGEST_DELTA", 0.5))
         self.model_path = os.getenv("MODEL_PATH", "")
         self.batch_size = int(os.getenv("BATCH_SIZE", -1))
-        self.database = int(os.getenv("DATABASE", 0))  # 0:crate, 1:timescale, 2:influx, 3:mongo
+        self.database = int(os.getenv("DATABASE", 0))
         self.stat_delta = int(os.getenv("STAT_DELTA", 30))
         self.num_threads = int(os.getenv("NUM_THREADS", 1))
         self.prometheus_port = int(os.getenv("PROMETHEUS_PORT", 8000))
@@ -28,13 +28,13 @@ class DataGeneratorConfig:
         self.db_name = os.getenv("DB_NAME", "")
         self.table_name = os.getenv("TABLE_NAME", "")
         self.partition = os.getenv("PARTITION", "week")
+        self.port = os.getenv("PORT", "5432")
 
         # environment variables to configure cratedb
         self.shards = int(os.getenv("SHARDS", 4))
         self.replicas = int(os.getenv("REPLICAS", 0))
 
         # environment variables to configure timescaledb
-        self.port = os.getenv("PORT", "5432")
         self.copy = strtobool(os.getenv("TIMESCALE_COPY", "True"))
         self.distributed = strtobool(os.getenv("TIMESCALE_DISTRIBUTED", "False"))
 

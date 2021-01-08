@@ -43,7 +43,8 @@ class QueryTimerConfig:
         terminal_size = shutil.get_terminal_size()
         if len(self.quantiles) > terminal_size.lines - 12:
             self.invalid_configs.append(f"QUANTILES: {self.quantiles}; TERMINAL_LINES: {terminal_size.lines}. "
-                                        f"QueryTimer needs a bigger terminal to display all results. Please increase "
+                                        f"QueryTimer needs a bigger terminal (at least {len(self.quantiles) + 12}) "
+                                        f"to display all results. Please increase "
                                         f"terminal size or reduce number of quantiles.")
 
         return len(self.invalid_configs) == 0

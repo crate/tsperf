@@ -9,3 +9,6 @@ venv
 .venv
 .python-version
 /tests/.pytest_cache/
+build
+dist
+*.egg-info

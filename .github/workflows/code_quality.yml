@@ -4,6 +4,7 @@ on:
       - master
     paths:
       - 'data_generator/**'
+      - 'query_timer/**'
 
 name: code_quality
 

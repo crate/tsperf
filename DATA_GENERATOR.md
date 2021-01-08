@@ -80,19 +80,31 @@ The Data Generator is a tool to generate timeseries data which adheres to a [sta
 
 ### How To
 
-The easiest way to use the Data Generator is to build the Docker Image:
+#### Pip install
+
+An easy way to use the Data Generator is to install it via `pip`:
+
++ Open a terminal and type `pip install tsdb-data-generator`
++ Look at the default configuration of the Data Generator by executing `tsdg -h` in a terminal
++ Run the Data Generator with the desired configuration values by executing `tsdg` in a terminal
+
+To look at example configurations navigate to the [example folder](examples). Each environment variable can be overwritten by using the corresponding command line argument.
+
+#### Docker Image
+
+Another way to use the Data Generator is to build the Docker Image:
 
 + navigate to root directory of this repository
 + build docker image with `docker build -t data_gen -f Dockerfile .`
 + Adapt one of the example docker-compose files in the [example folder](examples)
-+ start (e.g. crate example) with `docker-compose -f src/data_generator/examples/docker-compose_crate.yml up`
++ start (e.g. crate example) with `docker-compose -f examples/docker-compose_crate.yml up`
 
 For an explanation on how to set the environment variables see [Environment variables](#data-generator-configuration).
 For example use cases see [Example use cases](#example-use-cases)
 
 ### Supported Databases
 
-Currently 5 Databases are
+Currently 7 Databases are
 + [CrateDB](https://crate.io/)
 + [InfluxDB V2](https://www.influxdata.com/)
 + [TimescaleDB](https://www.timescale.com/)
@@ -317,6 +329,7 @@ The insert is done according to the optimized write [documentation](https://docs
 ##### Client Library
 
 For Microsoft SQL Server the [pyodcb](https://github.com/mkleehammer/pyodbc) library is used.
+If the Data Generator is run via `pip install` please ensure that pyodbc is properly installed on your system.
 
 To connect with Microsoft SQL Server the following environment variables must be set:
 
@@ -937,17 +950,17 @@ The BSA is only active when [INGEST_MODE](#ingest_mode) is set to `1` and [BATCH
 
 This chapter gives an overview over the available prometheus metrics and what they represent
 
-+ generated_values: how many values have been generated
-+ inserted_values: how many values have been inserted
-+ insert_percentage: [INGEST_SIZE](#ingest_size) times number of IDs divided by inserted_values
-+ batch_size: The currently used batch size (only available with [BSA](#batch-size-automator))
-+ insert_time: The average time it took to insert the current batch into the database (only available with [BSA](#batch-size-automator))
-+ rows_per_second: The average number of rows per second with the latest batch_size (only available with [BSA](#batch-size-automator))
-+ best_batch_size: The up to now best batch size found by the batch_size_automator (only available with [BSA](#batch-size-automator))
-+ best_batch_rps: The rows per second for the up to now best batch size (only available with [BSA](#batch-size-automator))
-+ values_queue_was_empty: How many times the internal queue was empty when the insert threads requested values (indicates data generation lacks behind data insertion)
-+ inserts_failed: How many times the insert operation has failed
-+ inserts_performed_success: How many time the insert operation was performed successfully. For Databases where a single insert operation has to be split in to multiple (AWS Timestream) still only one is counted.
++ data_gen_generated_values: how many values have been generated
++ data_gen_inserted_values: how many values have been inserted
++ data_gen_insert_percentage: [INGEST_SIZE](#ingest_size) times number of IDs divided by inserted_values
++ data_gen_batch_size: The currently used batch size (only available with [BSA](#batch-size-automator))
++ data_gen_insert_time: The average time it took to insert the current batch into the database (only available with [BSA](#batch-size-automator))
++ data_gen_rows_per_second: The average number of rows per second with the latest batch_size (only available with [BSA](#batch-size-automator))
++ data_gen_best_batch_size: The up to now best batch size found by the batch_size_automator (only available with [BSA](#batch-size-automator))
++ data_gen_best_batch_rps: The rows per second for the up to now best batch size (only available with [BSA](#batch-size-automator))
++ data_gen_values_queue_was_empty: How many times the internal queue was empty when the insert threads requested values (indicates data generation lacks behind data insertion)
++ data_gen_inserts_failed: How many times the insert operation has failed
++ data_gen_inserts_performed_success: How many time the insert operation was performed successfully. For Databases where a single insert operation has to be split in to multiple (AWS Timestream) still only one is counted.
 
 ## Example Use Cases
 
@@ -1048,11 +1061,11 @@ services:
 To run this example follow the following steps:
 
 + navigate to root directory of this repository
-+ build docker image with `docker build -t data_gen -f src/data_generator/Dockerfile .`
++ build docker image with `docker build -t data_gen -f Dockerfile .`
 + start an instance of CrateDB on localhost with `docker run -p "4200:4200" crate`
 + Enter USERNAME and PASSWORD in the [docker-compose file](examples/SingleType/docker-compose_example_crate.yml)
     + If no user was created you can just delete both environment variables (crate will use a default user)
-+ start the docker-compose file with `docker-compose -f src/data_generator/examples/SingleType/docker-compose_example_crate.yml up`
++ start the docker-compose file with `docker-compose -f examples/SingleType/docker-compose_example_crate.yml up`
 
 You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the metrics of the Data Generator.
 
@@ -1144,11 +1157,11 @@ services:
 To run this example follow the following steps:
 
 + navigate to root directory of this repository
-+ build docker image with `docker build -t data_gen -f src/data_generator/Dockerfile .`
++ build docker image with `docker build -t data_gen -f Dockerfile .`
 + start an instance of CrateDB on localhost with `docker run -p "4200:4200" crate`
 + Add USERNAME and PASSWORD in the [docker-compose file](examples/MultiType/docker-compose_multitype_example.yml)
     + If no user was created you can just ignore both environment variables (crate will use a default user)
-+ start the docker-compose file with `docker-compose -f src/data_generator/examples/MultiType/docker-compose_multitype_example.yml up`
++ start the docker-compose file with `docker-compose -f examples/MultiType/docker-compose_multitype_example.yml up`
 
 You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the metrics of the Data Generator.
 

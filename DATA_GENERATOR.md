@@ -8,6 +8,8 @@ The Data Generator evolved from a solution for a use case to a standalone tool. 
   * [General Information](#general-information)
     + [About](#about)
     + [How To](#how-to)
+      - [Pip install](#pip-install)
+      - [Docker Image](#docker-image)
     + [Supported Databases](#supported-databases)
       - [CrateDB](#cratedb)
       - [InfluxDB](#influxdb)

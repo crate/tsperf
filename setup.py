@@ -1,14 +1,14 @@
 import setuptools
 
-__version__ = "2.0.0"
+__version__ = "1.1.0"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 requires = [
-    "blessed==1.17.12"
+    "blessed==1.17.12",
     "boto3==1.16.25",
-    "botocore~=1.19.25",
+    "botocore~=1.19.51",
     "crate==0.26.0",
     "prometheus_client==0.9.0",
     "urllib3==1.26.2",

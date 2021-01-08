@@ -4,6 +4,7 @@ on:
       - master
     paths:
       - '/data_generator/**'
+      - '/query_timer/**'
       - 'Dockerfile'
 
 name: tag_build_and_push
@@ -53,4 +54,3 @@ jobs:
           run: |
             docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/data-generator:${{ steps.get_tag.outputs.tag }} .
             docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/data-generator:${{ steps.get_tag.outputs.tag }}
-

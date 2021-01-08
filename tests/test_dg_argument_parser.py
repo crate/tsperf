@@ -1,4 +1,4 @@
-from data_generator.argument_parser import args_info, parse_arguments
+from data_generator.argument_parser import args_info
 from data_generator.config import DataGeneratorConfig
 
 

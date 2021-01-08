@@ -12,7 +12,7 @@ from data_generator.crate_db_writer import CrateDbWriter
 from data_generator.postgres_db_writer import PostgresDbWriter
 from data_generator.timescale_db_writer import TimescaleDbWriter
 from data_generator.influx_db_writer import InfluxDbWriter
-from data_generator.mongo_db_writer import MongoDbWriter
+# from data_generator.mongo_db_writer import MongoDbWriter
 from data_generator.mssql_db_writer import MsSQLDbWriter
 from data_generator.timestream_db_writer import TimeStreamWriter
 from data_generator.db_writer import DbWriter
@@ -24,7 +24,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 model = {"value": "none"}
-stop_thread = False
 start_time = time.time()
 success = 0
 failure = 0
@@ -66,7 +65,7 @@ def percentage_to_rgb(percentage):
 
 
 @timed_function()
-def print_progressbar(iteration, total, prefix="", suffix="", decimals=1, length=100, fill='█'):
+def print_progressbar(iteration, total, prefix="", suffix="", decimals=1, length=100, fill='█'):  # pragma: no cover
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -111,7 +110,7 @@ def start_query_run():
             failure += 1
 
 
-def print_progress_thread():
+def print_progress_thread():  # pragma: no cover
     while queries_done.empty():
         time.sleep(config.refresh_rate)
         total_queries = success + failure
@@ -120,7 +119,7 @@ def print_progress_thread():
                           prefix='Progress:', suffix='Complete', length=(terminal_size.columns - 40))
 
 
-def run_qt():
+def run_qt():  # pragma: no cover
     global start_time
     start_time = time.time()
     progress_thread = Thread(target=print_progress_thread)
@@ -137,7 +136,7 @@ def run_qt():
     progress_thread.join()
 
 
-def main():
+def main():  # pragma: no cover
     global config
     with terminal.hidden_cursor():
         # load configuration an set everything up
@@ -163,5 +162,5 @@ def main():
                     print(f"p{i+1}  : {round(qus[i]*1000, 3)}ms")
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()

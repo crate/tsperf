@@ -25,8 +25,9 @@ requires = [
 ]
 
 test_requires = [
-    "numpy==1.19.4",
+    "dotmap==1.3.23",
     "mock==4.0.2",
+    "numpy==1.19.4",
     "pytest==6.1.2",
     "pytest-cov==2.10.1",
     "flake8==3.8.4"

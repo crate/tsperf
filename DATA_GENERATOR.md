@@ -359,7 +359,7 @@ The insert is done using the `executemany` function
 
 ## Data Generator Configuration
 
-The Data Generator is mostly configured by setting Environment Variables. This chapter lists all available Environment Variables and explains their use in the Data Generator.
+The Data Generator is mostly configured by setting Environment Variables (or command line arguments start with `-h` for more information). This chapter lists all available Environment Variables and explains their use in the Data Generator.
 
 ### Environment variables configuring the behaviour of the Data Generator
 

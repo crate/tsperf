@@ -64,9 +64,11 @@ class TimeStreamWriter(DbWriter):
             page_iterator = paginator.paginate(QueryString=query)
             for page in page_iterator:
                 result.append(page)
-        except Exception:
+        except Exception as e:
             if retry:
                 result = self.execute_query(query, False)
+            else:
+                raise RuntimeError(e)
         return result
 
     def _get_tags_and_metrics(self) -> Tuple[dict, dict]:

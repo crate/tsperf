@@ -5,6 +5,7 @@ on:
     paths:
       - 'data_generator/**'
       - 'query_timer/**'
+      - 'tests/**'
 
 name: code_quality
 

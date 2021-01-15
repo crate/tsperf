@@ -1,13 +1,12 @@
 import json
-from typing import Tuple
-
 import urllib3
 import time
 import logging
 import tictrack
+from batch_size_automator import BatchSizeAutomator
 from queue import Queue, Empty
 from threading import Thread, current_thread
-from batch_size_automator import BatchSizeAutomator
+from typing import Tuple
 from data_generator.edge import Edge
 from data_generator.db_writer import DbWriter
 from data_generator.crate_db_writer import CrateDbWriter

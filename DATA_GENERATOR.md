@@ -1068,7 +1068,6 @@ To run this example follow the following steps:
 + Enter USERNAME and PASSWORD in the [docker-compose file](examples/SingleType/docker-compose_example_crate.yml)
     + If no user was created you can just delete both environment variables (crate will use a default user)
 + start the docker-compose file with `docker-compose -f examples/SingleType/docker-compose_example_crate.yml up`
-
 You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the metrics of the Data Generator.
 
 ### Multiple Types of Edges

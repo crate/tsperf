@@ -2,10 +2,9 @@
 
 # Data Generator
 
-The Data Generator has it is own in-depth [documentation](DATA_GENERATOR.md).
+The Data Generator has its own in-depth [documentation](DATA_GENERATOR.md).
 For the purpose of capacity testing it simulates the generation of timeseries
-data, without the need to setup a ingest chain (which in our case would be a
-Azure IoTHub, RabbitMQ, eg.)
+data, without the need to set up an ingestion chain (which could be Azure IoTHub, RabbitMQ, etc.)
 
 ## Maximizing Performance
 

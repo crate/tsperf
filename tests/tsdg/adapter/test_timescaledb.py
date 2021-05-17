@@ -1,6 +1,6 @@
 from datetime import datetime
+from unittest import mock
 
-import mock
 import psycopg2.extras
 from datetime_truncate import truncate
 

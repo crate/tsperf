@@ -1,7 +1,6 @@
 import os
 import os.path
-
-import mock
+from unittest import mock
 
 from tsqt.config import QueryTimerConfig
 

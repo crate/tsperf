@@ -1,4 +1,5 @@
-import mock
+from unittest import mock
+
 from crate import client
 
 from tests.tsdg.test_models import test_model, test_model2

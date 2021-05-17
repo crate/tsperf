@@ -1,4 +1,5 @@
-import mock
+from unittest import mock
+
 from dotmap import DotMap
 from influxdb_client import Bucket
 from influxdb_client.client.write_api import Point

@@ -1,6 +1,6 @@
 import statistics
+from unittest import mock
 
-import mock
 import pytest
 
 from tsdg.util import tictrack

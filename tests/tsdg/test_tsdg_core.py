@@ -1,7 +1,6 @@
 import time
 from queue import Empty
-
-import mock
+from unittest import mock
 
 import tsdg.core as dg
 

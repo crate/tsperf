@@ -1,3 +1,5 @@
+name: Release
+
 on:
   push:
     branches:
@@ -7,10 +9,9 @@ on:
       - '/query_timer/**'
       - 'Dockerfile'
 
-name: tag_build_and_push
-
 jobs:
-    build-and-deploy:
+    release:
+        if: false
         runs-on: ubuntu-latest
         steps:
         - uses: actions/checkout@master

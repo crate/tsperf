@@ -4,7 +4,7 @@ from data_generator.postgres_db_writer import PostgresDbWriter
 from tests.test_models import test_model, test_model2, test_model3
 
 
-@mock.patch.object(psycopg2, 'connect', autospec=True)
+@mock.patch.object(psycopg2, "connect", autospec=True)
 def test_close_connection(mock_connect):
     """
     This function tests if the .close() functions of the self.conn and self.cursor objects is called
@@ -24,15 +24,23 @@ def test_close_connection(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbWriter("localhost", 4200, "timescale", "password", "test", test_model)
-    mock_connect.assert_called_with(dbname="test", user="timescale", password="password", host="localhost", port=4200)
+    db_writer = PostgresDbWriter(
+        "localhost", 4200, "timescale", "password", "test", test_model
+    )
+    mock_connect.assert_called_with(
+        dbname="test",
+        user="timescale",
+        password="password",
+        host="localhost",
+        port=4200,
+    )
     # Test Case 1:
     db_writer.close_connection()
     conn.close.assert_called()
     cursor.close.assert_called()
 
 
-@mock.patch.object(psycopg2, 'connect', autospec=True)
+@mock.patch.object(psycopg2, "connect", autospec=True)
 def test_prepare_database1(mock_connect):
     """
     This function tests if the .prepare_database() function uses the correct statment to create the database table
@@ -53,8 +61,16 @@ def test_prepare_database1(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbWriter("localhost", 4200, "timescale", "password2", "test", test_model)
-    mock_connect.assert_called_with(dbname="test", user="timescale", password="password2", host="localhost", port=4200)
+    db_writer = PostgresDbWriter(
+        "localhost", 4200, "timescale", "password2", "test", test_model
+    )
+    mock_connect.assert_called_with(
+        dbname="test",
+        user="timescale",
+        password="password2",
+        host="localhost",
+        port=4200,
+    )
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
@@ -64,7 +80,7 @@ def test_prepare_database1(mock_connect):
     assert "ts_week" in stmt
 
 
-@mock.patch.object(psycopg2, 'connect', autospec=True)
+@mock.patch.object(psycopg2, "connect", autospec=True)
 def test_prepare_database2(mock_connect):
     """
     This function tests if the .prepare_database() function uses the correct statment to create the database table
@@ -85,8 +101,16 @@ def test_prepare_database2(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbWriter("localhost", 4200, "timescale3", "password3",
-                                 "test", test_model2, "table_name", "day")
+    db_writer = PostgresDbWriter(
+        "localhost",
+        4200,
+        "timescale3",
+        "password3",
+        "test",
+        test_model2,
+        "table_name",
+        "day",
+    )
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
@@ -97,7 +121,7 @@ def test_prepare_database2(mock_connect):
     conn.commit.assert_called()
 
 
-@mock.patch.object(psycopg2, 'connect', autospec=True)
+@mock.patch.object(psycopg2, "connect", autospec=True)
 def test_prepare_database3(mock_connect):
     """
     This function tests if the .prepare_database() function uses the correct statment to create the database table
@@ -117,8 +141,9 @@ def test_prepare_database3(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbWriter("localhost", 4200, "timescale3", "password3",
-                                 "test", test_model3)
+    db_writer = PostgresDbWriter(
+        "localhost", 4200, "timescale3", "password3", "test", test_model3
+    )
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
@@ -127,7 +152,7 @@ def test_prepare_database3(mock_connect):
     conn.commit.assert_called()
 
 
-@mock.patch.object(psycopg2, 'connect', autospec=True)
+@mock.patch.object(psycopg2, "connect", autospec=True)
 def test_insert_stmt(mock_connect):
     """
     This function tests if the .insert_stmt() function uses the correct statement to insert values
@@ -151,10 +176,14 @@ def test_insert_stmt(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbWriter("localhost", 4200, "timescale", "password", "test", test_model)
+    db_writer = PostgresDbWriter(
+        "localhost", 4200, "timescale", "password", "test", test_model
+    )
     # Test Case 1:
-    db_writer.insert_stmt([1586327807000],
-                          [{"plant": 1, "line": 1, "sensor_id": 1, "value": 6.7, "button_press": False}])
+    db_writer.insert_stmt(
+        [1586327807000],
+        [{"plant": 1, "line": 1, "sensor_id": 1, "value": 6.7, "button_press": False}],
+    )
     call_arguments = cursor.execute.call_args.args
     stmt = call_arguments[0]
     # all properties must be in statement
@@ -166,7 +195,7 @@ def test_insert_stmt(mock_connect):
     conn.commit.assert_called()
 
 
-@mock.patch.object(psycopg2, 'connect', autospec=True)
+@mock.patch.object(psycopg2, "connect", autospec=True)
 def test_execute_query(mock_connect):
     """
     This function tests if the .execute_query() function uses the given query
@@ -186,7 +215,9 @@ def test_execute_query(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbWriter("localhost", 4200, "timescale", "password", "test", test_model)
+    db_writer = PostgresDbWriter(
+        "localhost", 4200, "timescale", "password", "test", test_model
+    )
     db_writer.execute_query("SELECT * FROM temperature;")
     cursor.execute.assert_called_with("SELECT * FROM temperature;")
     cursor.fetchall.assert_called()

@@ -20,8 +20,8 @@ def test_config_constructor_no_env_set():
     assert config.stat_delta == 30
 
     assert config.host == "localhost"
-    assert config.username == None
-    assert config.password == None
+    assert config.username is None
+    assert config.password is None
     assert config.db_name == ""
     assert config.table_name == ""
     assert config.partition == "week"

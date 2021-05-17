@@ -1,8 +1,13 @@
 import pytest
 import numpy
 from data_generator.edge import Edge, BoolSensor
-from tests.test_models import metrics_model_float1_bool1, metrics_model_string, \
-    tag_model_plant100_line5_sensorId, bool_model, tag_model_list
+from tests.test_models import (
+    metrics_model_float1_bool1,
+    metrics_model_string,
+    tag_model_plant100_line5_sensorId,
+    bool_model,
+    tag_model_list,
+)
 
 
 def test_init_sensors():

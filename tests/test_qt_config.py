@@ -14,8 +14,8 @@ def test_config_constructor_no_env_set():
     assert config.query == ""
 
     assert config.host == "localhost"
-    assert config.username == None
-    assert config.password == None
+    assert config.username is None
+    assert config.password is None
     assert config.db_name == ""
 
     assert config.port == "5432"

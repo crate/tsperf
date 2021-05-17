@@ -9,7 +9,9 @@ import query_timer.__main__ as qt
 @mock.patch("query_timer.__main__.MsSQLDbWriter", autospec=True)
 @mock.patch("query_timer.__main__.PostgresDbWriter", autospec=True)
 @mock.patch("query_timer.__main__.TimeStreamWriter", autospec=True)
-def test_get_db_writer(mock_timestream, mock_postgres, mock_mssql, mock_influx, mock_timescale, mock_crate):
+def test_get_db_writer(
+    mock_timestream, mock_postgres, mock_mssql, mock_influx, mock_timescale, mock_crate
+):
     qt.config.database = 0
     qt.get_db_writer()
     mock_crate.assert_called_once()

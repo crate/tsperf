@@ -50,12 +50,16 @@ def test_insert_stmt(mock_client):
     db_writer = MongoDbWriter("srvhost", "mongo", "password", "db_name", test_model)
     mock_client.assert_called_with("mongodb+srv://mongo:password@srvhost")
     # Test Case 1:
-    db_writer.insert_stmt([1586327807000],
-                          [{"plant": 2, "line": 2, "sensor_id": 2, "value": 6.7, "button_press": False}])
-    document = {"measurement": "temperature",
-                "date": datetime.fromtimestamp(1586327807),
-                "tags": {"plant": 2, "line": 2, "sensor_id": 2},
-                "metrics": {"value": 6.7, "button_press": False}}
+    db_writer.insert_stmt(
+        [1586327807000],
+        [{"plant": 2, "line": 2, "sensor_id": 2, "value": 6.7, "button_press": False}],
+    )
+    document = {
+        "measurement": "temperature",
+        "date": datetime.fromtimestamp(1586327807),
+        "tags": {"plant": 2, "line": 2, "sensor_id": 2},
+        "metrics": {"value": 6.7, "button_press": False},
+    }
     # [2] because there have be 2 prior function calls on client (getting db and collection)
     args = client.mock_calls[2].args
     assert len(args) == 1

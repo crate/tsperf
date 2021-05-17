@@ -1,24 +1,13 @@
 test_model = {
     "description": "test",
     "temperature": {
-        "tags": {
-            "description": "test",
-            "plant": 100,
-            "line": 5,
-            "sensor_id": "id"
-        },
+        "tags": {"description": "test", "plant": 100, "line": 5, "sensor_id": "id"},
         "metrics": {
             "description": "test",
             "temperature": {
                 "description": "test",
-                "key": {
-                    "description": "test",
-                    "value": "value"
-                },
-                "type": {
-                    "description": "test",
-                    "value": "FLOAT"
-                },
+                "key": {"description": "test", "value": "value"},
+                "type": {"description": "test", "value": "FLOAT"},
                 "min": {
                     "description": "test",
                     "value": 6.0,
@@ -54,69 +43,37 @@ test_model = {
                 "error_length": {
                     "description": "test",
                     "value": 1.08,
-                }
+                },
             },
             "button": {
                 "description": "test",
-                "key": {
-                    "description": "test",
-                    "value": "button_press"
-                },
-                "type": {
-                    "description": "test",
-                    "value": "BOOL"
-                },
-                "true_ratio": {
-                    "description": "test",
-                    "value": 0.001
-                }
-            }
-        }
-    }
+                "key": {"description": "test", "value": "button_press"},
+                "type": {"description": "test", "value": "BOOL"},
+                "true_ratio": {"description": "test", "value": 0.001},
+            },
+        },
+    },
 }
 
 test_model2 = {
     "booleans": {
         "description": "test",
-        "tags": {
-            "description": "test",
-            "plant": 100,
-            "line": 5,
-            "sensor_id": "id"
-        },
+        "tags": {"description": "test", "plant": 100, "line": 5, "sensor_id": "id"},
         "metrics": {
             "description": "test",
             "switch": {
                 "description": "test",
-                "key": {
-                    "description": "test",
-                    "value": "switch_on"
-                },
-                "type": {
-                    "description": "test",
-                    "value": "BOOL"
-                },
-                "true_ratio": {
-                    "description": "test",
-                    "value": 0.9
-                }
+                "key": {"description": "test", "value": "switch_on"},
+                "type": {"description": "test", "value": "BOOL"},
+                "true_ratio": {"description": "test", "value": 0.9},
             },
             "button": {
                 "description": "test",
-                "key": {
-                    "description": "test",
-                    "value": "button_press"
-                },
-                "type": {
-                    "description": "test",
-                    "value": "BOOL"
-                },
-                "true_ratio": {
-                    "description": "test",
-                    "value": 0.001
-                }
-            }
-        }
+                "key": {"description": "test", "value": "button_press"},
+                "type": {"description": "test", "value": "BOOL"},
+                "true_ratio": {"description": "test", "value": 0.001},
+            },
+        },
     }
 }
 
@@ -127,52 +84,30 @@ test_model3 = {
             "description": "test",
             "plant": ["A", "B", "C", "D", "E"],
             "line": ["L1", "L2", "L3"],
-            "sensor_id": "id"
+            "sensor_id": "id",
         },
         "metrics": {
             "description": "test",
             "switch": {
                 "description": "test",
-                "key": {
-                    "description": "test",
-                    "value": "switch_on"
-                },
-                "type": {
-                    "description": "test",
-                    "value": "BOOL"
-                },
-                "true_ratio": {
-                    "description": "test",
-                    "value": 0.9
-                }
+                "key": {"description": "test", "value": "switch_on"},
+                "type": {"description": "test", "value": "BOOL"},
+                "true_ratio": {"description": "test", "value": 0.9},
             },
             "button": {
                 "description": "test",
-                "key": {
-                    "description": "test",
-                    "value": "button_press"
-                },
-                "type": {
-                    "description": "test",
-                    "value": "BOOL"
-                },
-                "true_ratio": {
-                    "description": "test",
-                    "value": 0.001
-                }
-            }
-        }
+                "key": {"description": "test", "value": "button_press"},
+                "type": {"description": "test", "value": "BOOL"},
+                "true_ratio": {"description": "test", "value": 0.001},
+            },
+        },
     }
 }
 
 metrics_model_float1_bool1 = {
     "temperature": {
-        "key": {
-            "value": "value"
-        },
-        "type": {
-            "value": "FLOAT"
-        },
+        "key": {"value": "value"},
+        "type": {"value": "FLOAT"},
         "min": {
             "value": 6.0,
         },
@@ -196,53 +131,31 @@ metrics_model_float1_bool1 = {
         },
         "error_length": {
             "value": 1.08,
-        }
+        },
     },
     "button": {
-        "key": {
-            "value": "button_press"
-        },
-        "type": {
-            "value": "BOOL"
-        },
-        "true_ratio": {
-            "value": 0.01
-        }
-    }
+        "key": {"value": "button_press"},
+        "type": {"value": "BOOL"},
+        "true_ratio": {"value": 0.01},
+    },
 }
 metrics_model_string = {
     "string": {
-        "key": {
-            "value": "not_implemented_sensor_type"
-        },
-        "type": {
-            "value": "STRING"
-        },
-        "true_ratio": {
-            "value": "not_implemented"
-        }
+        "key": {"value": "not_implemented_sensor_type"},
+        "type": {"value": "STRING"},
+        "true_ratio": {"value": "not_implemented"},
     }
 }
-tag_model_plant100_line5_sensorId = {
-    "plant": 100,
-    "line": 5,
-    "sensor_id": "id"
-}
+tag_model_plant100_line5_sensorId = {"plant": 100, "line": 5, "sensor_id": "id"}
 
 tag_model_list = {
     "plant": ["A", "B", "C", "D", "E"],
     "line": ["L1", "L2", "L3"],
-    "sensor_id": "id"
+    "sensor_id": "id",
 }
 
 bool_model = {
-    "key": {
-        "value": "button_press"
-    },
-    "type": {
-        "value": "BOOL"
-    },
-    "true_ratio": {
-        "value": 0.001
-    }
+    "key": {"value": "button_press"},
+    "type": {"value": "BOOL"},
+    "true_ratio": {"value": 0.001},
 }

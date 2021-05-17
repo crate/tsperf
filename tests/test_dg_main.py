@@ -11,7 +11,15 @@ from queue import Empty
 @mock.patch("data_generator.__main__.MsSQLDbWriter", autospec=True)
 @mock.patch("data_generator.__main__.PostgresDbWriter", autospec=True)
 @mock.patch("data_generator.__main__.TimeStreamWriter", autospec=True)
-def test_get_db_writer(mock_timestream, mock_postgres, mock_mssql, mock_mongo, mock_influx, mock_timescale, mock_crate):
+def test_get_db_writer(
+    mock_timestream,
+    mock_postgres,
+    mock_mssql,
+    mock_mongo,
+    mock_influx,
+    mock_timescale,
+    mock_crate,
+):
     dg.config.database = 0
     dg.get_db_writer()
     mock_crate.assert_called_once()
@@ -242,4 +250,3 @@ def test_stop_process():
     dg.stop_queue.put(1)
     assert dg.stop_process()
     dg.stop_queue.get()  # resetting the stop queue
-

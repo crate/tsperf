@@ -115,10 +115,16 @@ def test_insert_batch_time_normal():
         batch_size_automator.insert_batch_time(duration)
 
     assert batch_size_automator.batch_times["best"]["avg_time"] == duration
-    assert batch_size_automator.batch_times["best"]["batch_per_second"] == initial_batch_size / duration
+    assert (
+        batch_size_automator.batch_times["best"]["batch_per_second"]
+        == initial_batch_size / duration
+    )
     # because for the next iteration batch_size is increased by 500
     initial_step_size = 500
-    assert batch_size_automator.get_next_batch_size() == initial_batch_size + initial_step_size
+    assert (
+        batch_size_automator.get_next_batch_size()
+        == initial_batch_size + initial_step_size
+    )
 
     # Test Case 2:
     # five will be the first best time making 3000 the best batchsize
@@ -129,7 +135,10 @@ def test_insert_batch_time_normal():
     current_batch_per_second = current_batch_size / duration
 
     assert batch_size_automator.batch_times["best"]["avg_time"] == duration
-    assert batch_size_automator.batch_times["best"]["batch_per_second"] == current_batch_per_second
+    assert (
+        batch_size_automator.batch_times["best"]["batch_per_second"]
+        == current_batch_per_second
+    )
     batch_size = 3000 + batch_size_automator.step_size * batch_size_automator.alpha
     assert batch_size_automator.get_next_batch_size() == batch_size
 
@@ -140,9 +149,15 @@ def test_insert_batch_time_normal():
         batch_size_automator.insert_batch_time(duration)
 
     assert batch_size_automator.batch_times["best"]["avg_time"] == 5  # last duration
-    assert batch_size_automator.batch_times["best"]["batch_per_second"] == current_batch_per_second
+    assert (
+        batch_size_automator.batch_times["best"]["batch_per_second"]
+        == current_batch_per_second
+    )
     # batch_size is decreased this time because no better value was found and calculated based on best_size
-    batch_size = batch_size_automator.batch_times["best"]["size"] - batch_size_automator.step_size * batch_size_automator.alpha
+    batch_size = (
+        batch_size_automator.batch_times["best"]["size"]
+        - batch_size_automator.step_size * batch_size_automator.alpha
+    )
     assert batch_size_automator.get_next_batch_size() == batch_size
 
     # Test Case 4:
@@ -152,9 +167,14 @@ def test_insert_batch_time_normal():
         batch_size_automator.insert_batch_time(duration)
 
     assert batch_size_automator.batch_times["best"]["avg_time"] == duration
-    assert batch_size_automator.batch_times["best"]["batch_per_second"] == batch_size_automator.batch_times["best"]["size"] / duration
+    assert (
+        batch_size_automator.batch_times["best"]["batch_per_second"]
+        == batch_size_automator.batch_times["best"]["size"] / duration
+    )
     # batch_size is further decreased
-    batch_size = batch_size - batch_size_automator.step_size * batch_size_automator.alpha
+    batch_size = (
+        batch_size - batch_size_automator.step_size * batch_size_automator.alpha
+    )
     assert batch_size_automator.get_next_batch_size() == batch_size
 
     # Test Case 5:
@@ -169,7 +189,10 @@ def test_insert_batch_time_normal():
         batch_size_automator.insert_batch_time(duration)
 
     assert batch_size_automator.batch_times["best"]["avg_time"] == duration
-    assert batch_size_automator.batch_times["best"]["batch_per_second"] == batch_size_automator.batch_times["best"]["size"] / duration
+    assert (
+        batch_size_automator.batch_times["best"]["batch_per_second"]
+        == batch_size_automator.batch_times["best"]["size"] / duration
+    )
     assert batch_size_automator.surveillance_mode
 
     # Test Case 6:
@@ -210,11 +233,17 @@ def test_insert_batch_time_smallest_batch():
         batch_size_automator.insert_batch_time(worse_duration)
 
     # now we get better each time until we reach batch_size 1
-    duration = (batch_size_automator.batch_size / batch_size_automator.batch_times["best"]["batch_per_second"]) - 10
+    duration = (
+        batch_size_automator.batch_size
+        / batch_size_automator.batch_times["best"]["batch_per_second"]
+    ) - 10
     batch_size = batch_size_automator.batch_size
     while batch_size_automator.batch_size != 1:
         if batch_size != batch_size_automator.batch_size:
-            duration = (batch_size_automator.batch_size / batch_size_automator.batch_times["best"]["batch_per_second"]) - 10
+            duration = (
+                batch_size_automator.batch_size
+                / batch_size_automator.batch_times["best"]["batch_per_second"]
+            ) - 10
             batch_size = batch_size_automator.batch_size
         batch_size_automator.insert_batch_time(duration)
 
@@ -254,7 +283,9 @@ def test_step_size_is_default():
 def test_step_size_is_data_batch_size():
     default_step_size = 500
     data_batch_size = 1000
-    batch_size_automator = BatchSizeAutomator(0, data_batch_size=data_batch_size, step_size=default_step_size)
+    batch_size_automator = BatchSizeAutomator(
+        0, data_batch_size=data_batch_size, step_size=default_step_size
+    )
 
     assert batch_size_automator.step_size == data_batch_size
 
@@ -262,19 +293,25 @@ def test_step_size_is_data_batch_size():
 def test_batch_size_is_multitude_of_data_batch_size():
     data_batch_size = 500
     batch_size = 700
-    batch_size_automator = BatchSizeAutomator(batch_size, data_batch_size=data_batch_size)
+    batch_size_automator = BatchSizeAutomator(
+        batch_size, data_batch_size=data_batch_size
+    )
 
     assert batch_size_automator.batch_size == 500
 
     data_batch_size = 500
     batch_size = 800
-    batch_size_automator = BatchSizeAutomator(batch_size, data_batch_size=data_batch_size)
+    batch_size_automator = BatchSizeAutomator(
+        batch_size, data_batch_size=data_batch_size
+    )
 
     assert batch_size_automator.batch_size == 1000
 
     data_batch_size = 500
     batch_size = 400
-    batch_size_automator = BatchSizeAutomator(batch_size, data_batch_size=data_batch_size)
+    batch_size_automator = BatchSizeAutomator(
+        batch_size, data_batch_size=data_batch_size
+    )
 
     assert batch_size_automator.batch_size == 500
 
@@ -282,13 +319,19 @@ def test_batch_size_is_multitude_of_data_batch_size():
 def test_batch_size_change_is_at_least_data_batch_size():
     data_batch_size = 500
     test_size = 1
-    batch_size_automator = BatchSizeAutomator(0,
-                                              data_batch_size=data_batch_size,
-                                              test_size=test_size)
+    batch_size_automator = BatchSizeAutomator(
+        0, data_batch_size=data_batch_size, test_size=test_size
+    )
 
     # initial test cycle:
     batch_size_automator.insert_batch_time(1)
-    assert batch_size_automator.get_next_batch_size() == 3000  # initially bath_size will go up
+    assert (
+        batch_size_automator.get_next_batch_size() == 3000
+    )  # initially bath_size will go up
     # second test cycle:
-    batch_size_automator.insert_batch_time(2)  # worse batch performance reduces alpha and leads to smaller step_size
-    assert batch_size_automator.get_next_batch_size() == 2000  # batch_size is changed by at least data_batch_size
+    batch_size_automator.insert_batch_time(
+        2
+    )  # worse batch performance reduces alpha and leads to smaller step_size
+    assert (
+        batch_size_automator.get_next_batch_size() == 2000
+    )  # batch_size is changed by at least data_batch_size

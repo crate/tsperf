@@ -22,6 +22,7 @@ def test_decorator_default(mock_print):
     @tictrack.timed_function()
     def foo(a, b):
         return a + b
+
     return_value = foo(1, 2)
     assert return_value == 3
     assert "foo" in tictrack.tic_toc
@@ -68,6 +69,7 @@ def test_decorator_simple_kwargs():
     @tictrack.timed_function()
     def foo(a, b):
         return a / b
+
     return_value = foo(b=1, a=2)
     assert return_value == 2
 
@@ -76,6 +78,7 @@ def test_decorator_multi_args():
     @tictrack.timed_function()
     def foo(*args):
         return sum(args)
+
     return_value = foo(1, 2, 3, 4)
     assert return_value == 10
 
@@ -87,6 +90,7 @@ def test_decorator_args_kwargs():
     @tictrack.timed_function()
     def foo(*args, a, b):
         return (sum(args) * a) / b
+
     return_value = foo(1, 2, 3, 4, a=2, b=4)
     assert return_value == 5
 
@@ -98,6 +102,7 @@ def test_decorator_normal_args_kwargs():
     @tictrack.timed_function()
     def foo(x, y, *args, a, b):
         return (x * y + sum(args)) / (a / b)
+
     return_value = foo(1, 2, 3, 4, a=2, b=4)
     assert return_value == 18
 
@@ -106,6 +111,7 @@ def test_decorator_normal_args_kwargs():
 def test_wrapper_default(mock_print):
     def foo(a, b):
         return a + b
+
     return_value = tictrack.execute_timed_function(foo, 1, 2)
     assert return_value == 3
     assert "foo" in tictrack.tic_toc
@@ -138,7 +144,9 @@ def test_wrapper_print_not_save(mock_print):
     def foo(a, b):
         return a + b
 
-    return_value = tictrack.execute_timed_function(foo, 1, 2, do_print=True, save_result=False)
+    return_value = tictrack.execute_timed_function(
+        foo, 1, 2, do_print=True, save_result=False
+    )
     assert return_value == 3
     assert mock_print.call_count == 1
     assert "foo" not in tictrack.tic_toc
@@ -148,6 +156,7 @@ def test_wrapper_print_not_save(mock_print):
 def test_wrapper_simple_kwargs():
     def foo(a, b):
         return a / b
+
     return_value = tictrack.execute_timed_function(foo, b=1, a=2)
     assert return_value == 2
 
@@ -155,6 +164,7 @@ def test_wrapper_simple_kwargs():
 def test_wrapper_multi_args():
     def foo(*args):
         return sum(args)
+
     return_value = tictrack.execute_timed_function(foo, 1, 2, 3, 4)
     assert return_value == 10
 
@@ -165,6 +175,7 @@ def test_wrapper_multi_args():
 def test_wrapper_args_kwargs():
     def foo(*args, a, b):
         return (sum(args) * a) / b
+
     return_value = tictrack.execute_timed_function(foo, 1, 2, 3, 4, a=2, b=4)
     assert return_value == 5
 
@@ -175,6 +186,7 @@ def test_wrapper_args_kwargs():
 def test_wrapper_normal_args_kwargs():
     def foo(x, y, *args, a, b):
         return (x * y + sum(args)) / (a / b)
+
     return_value = tictrack.execute_timed_function(foo, 1, 2, 3, 4, a=2, b=4)
     assert return_value == 18
 
@@ -204,6 +216,7 @@ def test_stats_mean_delta():
 def test_stats_missing_arguments():
     def bar(a, b):
         return sum(a) + b
+
     tictrack.tic_toc["foo"] = [1, 2, 3, 4, 5, 6, 7]
     with pytest.raises(SyntaxError):
         tictrack.timed_function_statistics("foo", bar)
@@ -212,6 +225,7 @@ def test_stats_missing_arguments():
 def test_stats_missing_arguments_delta():
     def bar(a, b):
         return sum(a) + b
+
     tictrack.tic_toc_delta["foo"] = [1, 2, 3, 4, 5, 6, 7]
     with pytest.raises(SyntaxError):
         tictrack.timed_function_statistics("foo", bar, delta=True)
@@ -220,6 +234,7 @@ def test_stats_missing_arguments_delta():
 def test_stats_arguments():
     def bar(a, b):
         return sum(a) + b
+
     tictrack.tic_toc["foo"] = [1, 2, 3, 4, 5, 6, 7]
     return_value = tictrack.timed_function_statistics("foo", bar, 2)
     assert return_value == 30
@@ -228,6 +243,7 @@ def test_stats_arguments():
 def test_stats_arguments_delta():
     def bar(a, b):
         return sum(a) + b
+
     tictrack.tic_toc_delta["foo"] = [1, 2, 3, 4, 5, 6, 7]
     return_value = tictrack.timed_function_statistics("foo", bar, 2, delta=True)
     assert return_value == 30
@@ -236,6 +252,7 @@ def test_stats_arguments_delta():
 def test_stats_args_kwargs():
     def bar(a, b, c, d):
         return sum(a) + (c / b) - d
+
     tictrack.tic_toc["foo"] = [1, 2, 3, 4, 5, 6, 7]
     return_value = tictrack.timed_function_statistics("foo", bar, 2, d=4, c=2)
     assert return_value == 25
@@ -244,8 +261,11 @@ def test_stats_args_kwargs():
 def test_stats_args_kwargs_delta():
     def bar(a, b, c, d):
         return sum(a) + (c / b) - d
+
     tictrack.tic_toc_delta["foo"] = [1, 2, 3, 4, 5, 6, 7]
-    return_value = tictrack.timed_function_statistics("foo", bar, 2, delta=True, d=4, c=2)
+    return_value = tictrack.timed_function_statistics(
+        "foo", bar, 2, delta=True, d=4, c=2
+    )
     assert return_value == 25
 
 
@@ -274,6 +294,7 @@ def test_consolidate_mean_delta():
 def test_consolidate_missing_arguments():
     def bar(a, b):
         return sum(a) + b
+
     tictrack.tic_toc["foo"] = [1, 2, 3, 4, 5, 6, 7]
     with pytest.raises(SyntaxError):
         tictrack.consolidate("foo", bar)
@@ -282,6 +303,7 @@ def test_consolidate_missing_arguments():
 def test_consolidate_missing_arguments_delta():
     def bar(a, b):
         return sum(a) + b
+
     tictrack.tic_toc_delta["foo"] = [1, 2, 3, 4, 5, 6, 7]
     with pytest.raises(SyntaxError):
         tictrack.consolidate("foo", bar, delta=True)
@@ -290,6 +312,7 @@ def test_consolidate_missing_arguments_delta():
 def test_consolidate_arguments():
     def bar(a, b):
         return sum(a) + b
+
     tictrack.tic_toc["foo"] = [1, 2, 3, 4, 5, 6, 7]
     tictrack.consolidate("foo", bar, 2)
     assert tictrack.tic_toc["foo"] == [30]
@@ -298,6 +321,7 @@ def test_consolidate_arguments():
 def test_consolidate_arguments_delta():
     def bar(a, b):
         return sum(a) + b
+
     tictrack.tic_toc_delta["foo"] = [1, 2, 3, 4, 5, 6, 7]
     tictrack.consolidate("foo", bar, 2, delta=True)
     assert tictrack.tic_toc_delta["foo"] == [30]
@@ -306,6 +330,7 @@ def test_consolidate_arguments_delta():
 def test_consolidate_args_kwargs():
     def bar(a, b, c, d):
         return [sum(a) + (c / b) - d]
+
     tictrack.tic_toc["foo"] = [1, 2, 3, 4, 5, 6, 7]
     tictrack.consolidate("foo", bar, 2, d=4, c=2)
     assert tictrack.tic_toc["foo"] == [25]
@@ -314,6 +339,7 @@ def test_consolidate_args_kwargs():
 def test_consolidate_args_kwargs_delta():
     def bar(a, b, c, d):
         return [sum(a) + (c / b) - d]
+
     tictrack.tic_toc_delta["foo"] = [1, 2, 3, 4, 5, 6, 7]
     tictrack.consolidate("foo", bar, 2, delta=True, d=4, c=2)
     assert tictrack.tic_toc_delta["foo"] == [25]
@@ -322,6 +348,7 @@ def test_consolidate_args_kwargs_delta():
 def test_consolidate_invalid_return_type():
     def bar(a):
         return str(sum(a))
+
     tictrack.tic_toc["foo"] = [1, 2, 3]
     with pytest.raises(SyntaxError):
         tictrack.consolidate("foo", bar)
@@ -330,6 +357,7 @@ def test_consolidate_invalid_return_type():
 def test_consolidate_invalid_return_type_delta():
     def bar(a):
         return str(sum(a))
+
     tictrack.tic_toc_delta["foo"] = [1, 2, 3]
     with pytest.raises(SyntaxError):
         tictrack.consolidate("foo", bar, delta=True)
@@ -338,6 +366,7 @@ def test_consolidate_invalid_return_type_delta():
 def test_consolidate_invalid_return_list():
     def bar(a):
         return [sum(a), statistics.mean(a), str(sum(a))]
+
     tictrack.tic_toc["foo"] = [1, 2, 3]
     with pytest.raises(SyntaxError):
         tictrack.consolidate("foo", bar)
@@ -346,6 +375,7 @@ def test_consolidate_invalid_return_list():
 def test_consolidate_invalid_return_list_delta():
     def bar(a):
         return [sum(a), statistics.mean(a), str(sum(a))]
+
     tictrack.tic_toc_delta["foo"] = [1, 2, 3]
     with pytest.raises(SyntaxError):
         tictrack.consolidate("foo", bar, delta=True)
@@ -426,6 +456,7 @@ def test_decorator_disabled_tictoc():
     @tictrack.timed_function()
     def foo():
         return 2
+
     tictrack.enabled = False
     assert foo() == 2
     assert "foo" not in tictrack.tic_toc
@@ -437,6 +468,7 @@ def test_decorator_disabled_tictoc_delta():
     @tictrack.timed_function()
     def foo():
         return 2
+
     tictrack.delta_enabled = False
     assert foo() == 2
     assert "foo" in tictrack.tic_toc
@@ -448,9 +480,11 @@ def test_decorate_nested_functions():
     @tictrack.timed_function()
     def foo(a, b):
         return a + b
+
     @tictrack.timed_function()
     def bar(x):
         return foo(x, x)
+
     bar(1)
     assert "foo" in tictrack.tic_toc
     assert "bar" in tictrack.tic_toc

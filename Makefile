@@ -32,11 +32,12 @@ virtualenv-dev: setup-virtualenv
 lint: virtualenv-dev
 	$(flakehell) lint data_generator query_timer
 	$(flakehell) lint batch_size_automator float_simulator tictrack
-	#$(flakehell) lint tests
+	$(flakehell) lint tests
 
 format: virtualenv-dev
 	$(black) data_generator query_timer
 	$(black) batch_size_automator float_simulator tictrack
+	$(black) tests
 
 test: virtualenv-dev
 	$(pytest) -vvv tests

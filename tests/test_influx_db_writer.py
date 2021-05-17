@@ -56,7 +56,10 @@ def test_prepare_database_bucket_exists(mock_client):
     db_writer = InfluxDbWriter("localhost", "token1", "org1", test_model)
     mock_client.assert_called_with("localhost", token="token1")
     bucket_list = DotMap()
-    bucket_list.buckets = [Bucket(name="", retention_rules=[]), Bucket(name="temperature", retention_rules=[])]
+    bucket_list.buckets = [
+        Bucket(name="", retention_rules=[]),
+        Bucket(name="temperature", retention_rules=[]),
+    ]
     buckets_api.find_buckets.return_value = bucket_list
     # Test Case 1:
     db_writer.prepare_database()
@@ -88,7 +91,10 @@ def test_prepare_database_bucket_not_exists(mock_client):
     db_writer = InfluxDbWriter("localhost", "token2", "org2", test_model)
     mock_client.assert_called_with("localhost", token="token2")
     bucket_list = DotMap()
-    bucket_list.buckets = [Bucket(name="x", retention_rules=[]), Bucket(name="y", retention_rules=[])]
+    bucket_list.buckets = [
+        Bucket(name="x", retention_rules=[]),
+        Bucket(name="y", retention_rules=[]),
+    ]
     buckets_api.find_buckets.return_value = bucket_list
     # Test Case 1:
     db_writer.prepare_database()
@@ -120,8 +126,10 @@ def test_insert_stmt(mock_client):
     client.write_api.return_value = write_api
     db_writer = InfluxDbWriter("localhost", "token", "org", test_model)
     # Test Case 1:
-    db_writer.insert_stmt([1586327807000],
-                          [{"plant": 2, "line": 2, "sensor_id": 2, "value": 6.7, "button_press": False}])
+    db_writer.insert_stmt(
+        [1586327807000],
+        [{"plant": 2, "line": 2, "sensor_id": 2, "value": 6.7, "button_press": False}],
+    )
     call_arguments = write_api.write.call_args[1]
     org = call_arguments["org"]
     data = call_arguments["record"]

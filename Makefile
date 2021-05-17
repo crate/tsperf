@@ -42,4 +42,6 @@ test: virtualenv-dev
 	$(pytest) -vvv tests
 
 coverage: virtualenv-dev
-	$(pytest) --cov=./data_generator --cov=./query_timer --cov-fail-under=95 --cov-branch --cov-report=term tests
+	$(pytest) \
+	    --cov=data_generator --cov=query_timer --cov=batch_size_automator --cov=float_simulator --cov=tictrack \
+	    --cov-fail-under=95 --cov-branch --cov-report=term tests

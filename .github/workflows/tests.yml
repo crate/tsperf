@@ -18,7 +18,7 @@ jobs:
           uses: actions/setup-python@v2
           with:
             python-version: '3.x'
-        - name: Lint with flake8
+        - name: Run linter
           run: make lint
     tests:
       runs-on: ubuntu-latest
@@ -28,7 +28,7 @@ jobs:
           uses: actions/setup-python@v2
           with:
             python-version: '3.x'
-        - name: Test with pytest
+        - name: Run software tests
           run: make test
     coverage:
       runs-on: ubuntu-latest

@@ -1,7 +1,9 @@
 import time
-import mock
-import tsdg.core as dg
 from queue import Empty
+
+import mock
+
+import tsdg.core as dg
 
 
 @mock.patch("tsdg.core.CrateDbAdapter", autospec=True)
@@ -164,7 +166,7 @@ def test_insert_routine_auto_batch_mode(mock_get_database_adapter):
     mock_db_writer = mock.MagicMock()
     mock_get_database_adapter.return_value = mock_db_writer
     # populate current values
-    for i in range(0, 10000):
+    for _ in range(0, 10000):
         dg.current_values_queue.put({"timestamps": [1], "batch": [1]})
     dg.insert_routine()
     mock_db_writer.insert_stmt.assert_called()
@@ -191,7 +193,9 @@ def test_insert_routine_fixed_batch_mode(mock_get_database_adapter):
 
 @mock.patch("tsdg.core.get_database_adapter", autospec=True)
 @mock.patch("tsdg.core.current_values_queue", autospec=True)
-def test_insert_routine_empty_batch(mock_current_values_queue, mock_get_database_adapter):
+def test_insert_routine_empty_batch(
+    mock_current_values_queue, mock_get_database_adapter
+):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
     mock_current_values_queue.empty.side_effect = [False, True]
     mock_current_values_queue.get_nowait.side_effect = Empty()
@@ -209,7 +213,9 @@ def test_insert_routine_empty_batch(mock_current_values_queue, mock_get_database
 
 @mock.patch("tsdg.core.get_database_adapter", autospec=True)
 @mock.patch("tsdg.core.current_values_queue", autospec=True)
-def test_consecutive_insert_queue_empty(mock_current_values_queue, mock_get_database_adapter):
+def test_consecutive_insert_queue_empty(
+    mock_current_values_queue, mock_get_database_adapter
+):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
     mock_current_values_queue.empty.side_effect = [False, True]
     mock_current_values_queue.get_nowait.side_effect = Empty()

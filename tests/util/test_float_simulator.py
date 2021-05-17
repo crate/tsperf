@@ -1,7 +1,8 @@
-import pytest
 import statistics
-from tsdg.util.float_simulator import FloatSimulator
 
+import pytest
+
+from tsdg.util.float_simulator import FloatSimulator
 
 float_model = {
     "mean": 6.4,
@@ -36,7 +37,7 @@ def test_calculate_next_value_float_no_error():
     # we want to test if the values we create match the model we used to initialize the sensor
     results = []
     # Test Case 1:
-    for i in range(0, 100000):
+    for _ in range(0, 100000):
         results.append(float_sensor.calculate_next_value())
     mean = statistics.mean(results)
     stdev = statistics.stdev(results)
@@ -72,7 +73,7 @@ def test_calculate_next_value_float_with_error():
     # we want to test if the values we create match the model we used to initialize the sensor
     results = []
     # Test Case 1:
-    for i in range(0, 100000):
+    for _ in range(0, 100000):
         results.append(float_sensor.calculate_next_value())
     mean = statistics.mean(results)
     stdev = statistics.stdev(results)

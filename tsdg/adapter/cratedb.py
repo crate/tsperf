@@ -19,8 +19,9 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from tsdg.model.database import AbstractDatabaseAdapter
 from crate import client
+
+from tsdg.model.database import AbstractDatabaseAdapter
 from tsdg.util.tictrack import timed_function
 
 
@@ -57,12 +58,12 @@ class CrateDbAdapter(AbstractDatabaseAdapter):
  "payload" OBJECT(DYNAMIC))
  CLUSTERED INTO {self.shards} SHARDS
  PARTITIONED BY ("g_ts_{self.partition}")
- WITH (number_of_replicas = {self.replicas})"""
+ WITH (number_of_replicas = {self.replicas})"""  # noqa:S608
         self.cursor.execute(stmt)
 
     @timed_function()
     def insert_stmt(self, timestamps: list, batch: list):
-        stmt = f"""INSERT INTO {self.table_name} (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"""
+        stmt = f"""INSERT INTO {self.table_name} (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"""  # noqa:S608
         self.cursor.execute(stmt, (timestamps, batch))
 
     @timed_function()

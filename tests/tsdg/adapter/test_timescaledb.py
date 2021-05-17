@@ -1,9 +1,11 @@
+from datetime import datetime
+
 import mock
 import psycopg2.extras
-from datetime import datetime
 from datetime_truncate import truncate
-from tsdg.adapter.timescaledb import TimescaleDbAdapter
+
 from tests.tsdg.test_models import test_model, test_model2, test_model3
+from tsdg.adapter.timescaledb import TimescaleDbAdapter
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)

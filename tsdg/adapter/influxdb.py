@@ -19,13 +19,14 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+from datetime import datetime
 from typing import Tuple
 
-from tsdg.util.tictrack import timed_function
-from tsdg.model.database import AbstractDatabaseAdapter
-from influxdb_client import InfluxDBClient, Bucket
+from influxdb_client import Bucket, InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS, Point
-from datetime import datetime
+
+from tsdg.model.database import AbstractDatabaseAdapter
+from tsdg.util.tictrack import timed_function
 
 
 class InfluxDbAdapter(AbstractDatabaseAdapter):
@@ -88,7 +89,7 @@ class InfluxDbAdapter(AbstractDatabaseAdapter):
         metrics_ = self.model[key]["metrics"]
         tags = []
         metrics = []
-        for key, value in tags_.items():
+        for key in tags_.keys():
             if key != "description":
                 tags.append(key)
         for key, value in metrics_.items():

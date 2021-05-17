@@ -1,13 +1,14 @@
-import pytest
 import numpy
-from tsdg.model.edge import Edge, BoolSensor
+import pytest
+
 from tests.tsdg.test_models import (
+    bool_model,
     metrics_model_float1_bool1,
     metrics_model_string,
-    tag_model_plant100_line5_sensorId,
-    bool_model,
     tag_model_list,
+    tag_model_plant100_line5_sensorId,
 )
+from tsdg.model.edge import BoolSensor, Edge
 
 
 def test_init_sensors():
@@ -84,7 +85,7 @@ def test_calculate_next_value_edge():
 
     # Test Case 2:
     # because button_press has a probability of 1:100 to be True, we do a thousand operations to get True for sure
-    for i in range(0, 1000):
+    for _ in range(0, 1000):
         results.append(edge.calculate_next_value())
 
     button_press = []
@@ -109,7 +110,7 @@ def test_calculate_next_value_bool():
     bool_sensor = BoolSensor(bool_model)
     results = []
     # Test Case 1:
-    for i in range(0, 10000):
+    for _ in range(0, 10000):
         results.append(bool_sensor.calculate_next_value())
     sum_true = sum(results)
     true_ratio = sum_true / len(results)

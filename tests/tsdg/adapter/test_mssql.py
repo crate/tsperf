@@ -1,7 +1,8 @@
 import mock
 import pyodbc
-from tsdg.adapter.mssql import MsSQLDbAdapter
+
 from tests.tsdg.test_models import test_model, test_model2, test_model3
+from tsdg.adapter.mssql import MsSQLDbAdapter
 
 
 @mock.patch.object(pyodbc, "connect", autospec=True)

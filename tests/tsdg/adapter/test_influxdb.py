@@ -2,8 +2,9 @@ import mock
 from dotmap import DotMap
 from influxdb_client import Bucket
 from influxdb_client.client.write_api import Point
-from tsdg.adapter.influxdb import InfluxDbAdapter
+
 from tests.tsdg.test_models import test_model
+from tsdg.adapter.influxdb import InfluxDbAdapter
 
 
 @mock.patch("tsdg.adapter.influxdb.InfluxDBClient", autospec=True)

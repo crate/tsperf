@@ -22,6 +22,7 @@
 import argparse
 
 from tsdg.cli import TSDG_README_BASEURL
+
 from .config import QueryTimerConfig
 
 args_info = {

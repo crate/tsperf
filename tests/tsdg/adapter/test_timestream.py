@@ -1,6 +1,7 @@
 import mock
-from tsdg.adapter.timestream import TimeStreamAdapter
+
 from tests.tsdg.test_models import test_model
+from tsdg.adapter.timestream import TimeStreamAdapter
 
 
 @mock.patch("tsdg.adapter.timestream.boto3", autospec=True)

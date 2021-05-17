@@ -1,7 +1,8 @@
 import mock
 from crate import client
-from tsdg.adapter.cratedb import CrateDbAdapter
+
 from tests.tsdg.test_models import test_model, test_model2
+from tsdg.adapter.cratedb import CrateDbAdapter
 
 
 @mock.patch.object(client, "connect", autospec=True)

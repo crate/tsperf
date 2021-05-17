@@ -20,6 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import argparse
+
 from tsdg.config import DataGeneratorConfig
 
 TSDG_README_BASEURL = "https://github.com/crate/tsdg/blob/main/tsdg/README.md"

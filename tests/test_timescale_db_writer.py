@@ -2,7 +2,7 @@ import mock
 import psycopg2.extras
 from datetime import datetime
 from datetime_truncate import truncate
-from data_generator.timescale_db_writer import TimescaleDbWriter
+from tsdg.adapter.timescaledb import TimescaleDbWriter
 from tests.test_models import test_model, test_model2, test_model3
 
 
@@ -238,7 +238,7 @@ def test_insert_stmt(mock_connect):
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-@mock.patch("data_generator.timescale_db_writer.CopyManager", autospec=True)
+@mock.patch("tsdg.adapter.timescaledb.CopyManager", autospec=True)
 def test_insert_stmt_copy(mock_copy_manager, mock_connect):
     """
     This function tests if the the copy_manager is called correctly if timescale is used with

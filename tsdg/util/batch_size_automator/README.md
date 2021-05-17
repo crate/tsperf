@@ -9,10 +9,10 @@ What other libraries?
 
 ## Using batch_size_automator
 
-The most basic version on how to use the BSA. This will take care of your batch size and over time optimize it for maximum performance. 
+The most basic version on how to use the BSA. This will take care of your batch size and over time optimize it for maximum performance.
 
 ```python
-from batch_size_automator import BatchSizeAutomator
+from tsdg.util.batch_size_automator import BatchSizeAutomator
 import time
 
 bsa = BatchSizeAutomator()
@@ -34,7 +34,7 @@ This chapter gives an overview on the constructor arguments and how they influen
 When given a value higher than 0 will disable automatic batch size optimizing and always return this when calling `get_next_batch_size`.
 
 ```python
-from batch_size_automator import BatchSizeAutomator
+from tsdg.util.batch_size_automator import BatchSizeAutomator
 import time
 
 bsa = BatchSizeAutomator(batch_size=100)
@@ -52,7 +52,7 @@ while True:
 The minimum batch_size of the data that will be handled, e.g. if a data set always consists of 5 datapoints which will not be split in the next operation independent of returned batch_size `data_batch_size` should be set to `5` this ensures the returned batch_size will always be a multitude of 5.
 
 ```python
-from batch_size_automator import BatchSizeAutomator
+from tsdg.util.batch_size_automator import BatchSizeAutomator
 import time
 
 bsa = BatchSizeAutomator(data_batch_size=5)
@@ -70,7 +70,7 @@ while True:
 Boolean that if set to `False` will disable automatic batch_size optimizing. Can be used to switch of the BSA to reduce impact on runtime (it will get worse ;P) without other code changes.
 
 ```python
-from batch_size_automator import BatchSizeAutomator
+from tsdg.util.batch_size_automator import BatchSizeAutomator
 import time
 
 bsa = BatchSizeAutomator(active=False)
@@ -88,7 +88,7 @@ while True:
 Is used to decided after how many operations the current and best batch sizes will be compared and therefore a new batch_size will be calculated. Should not be lower than 20 (to decrease influence of outliers), setting it to a big value will increase the time it takes to find the optimal batch size.
 
 ```python
-from batch_size_automator import BatchSizeAutomator
+from tsdg.util.batch_size_automator import BatchSizeAutomator
 import time
 
 bsa = BatchSizeAutomator(test_size=40)
@@ -106,7 +106,7 @@ while True:
 Sets the initial step_size that is used to change the batch_size between operations. If it is smaller than `data_batch_size`, `data_batch_size` will be used as initial step_size
 
 ```python
-from batch_size_automator import BatchSizeAutomator
+from tsdg.util.batch_size_automator import BatchSizeAutomator
 import time
 
 bsa = BatchSizeAutomator(step_size=300)

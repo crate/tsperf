@@ -1,30 +1,47 @@
+# -*- coding: utf-8; -*-
+#
+# Licensed to Crate.io GmbH ("Crate") under one or more contributor
+# license agreements.  See the NOTICE file distributed with this work for
+# additional information regarding copyright ownership.  Crate licenses
+# this file to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.  You may
+# obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# However, if you have executed another commercial license agreement
+# with Crate these terms will supersede the license and you may use the
+# software solely pursuant to the terms of the relevant commercial agreement.
 import logging
-import numpy
-import urllib3
 import statistics
+
+import numpy
 import time
 import shutil
-from blessed import Terminal
 from queue import Queue
-from tictrack import tic_toc, timed_function
+
+import urllib3
+from blessed import Terminal
+
+from tsdg.query_timer.argument_parser import parse_arguments
+from tsdg.query_timer.config import QueryTimerConfig
+from tsdg.util.tictrack import tic_toc, timed_function
 from threading import Thread
-from data_generator.crate_db_writer import CrateDbWriter
-from data_generator.postgres_db_writer import PostgresDbWriter
-from data_generator.timescale_db_writer import TimescaleDbWriter
-from data_generator.influx_db_writer import InfluxDbWriter
+from tsdg.adapter.cratedb import CrateDbWriter
+from tsdg.adapter.postgresql import PostgresDbWriter
+from tsdg.adapter.timescaledb import TimescaleDbWriter
+from tsdg.adapter.influxdb import InfluxDbWriter
 
-# from data_generator.mongo_db_writer import MongoDbWriter
-from data_generator.mssql_db_writer import MsSQLDbWriter
-from data_generator.timestream_db_writer import TimeStreamWriter
-from data_generator.db_writer import DbWriter
-from query_timer.config import QueryTimerConfig
-from query_timer.argument_parser import parse_arguments
-
-terminal = Terminal()
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
+# from tsdg.mongo_db_writer import MongoDbWriter
+from tsdg.adapter.mssql import MsSQLDbWriter
+from tsdg.adapter.timestream import TimeStreamWriter
+from tsdg.model.database import DbWriter
 
 model = {"value": "none"}
 start_time = time.time()
@@ -33,6 +50,12 @@ failure = 0
 queries_done = Queue(1)
 
 config = QueryTimerConfig()
+
+terminal = Terminal()
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
 
 
 def get_db_writer() -> DbWriter:  # noqa

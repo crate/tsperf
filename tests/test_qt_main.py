@@ -1,14 +1,14 @@
 import mock
 import pytest
-import query_timer.__main__ as qt
+import tsdg.query_timer.core as qt
 
 
-@mock.patch("query_timer.__main__.CrateDbWriter", autospec=True)
-@mock.patch("query_timer.__main__.TimescaleDbWriter", autospec=True)
-@mock.patch("query_timer.__main__.InfluxDbWriter", autospec=True)
-@mock.patch("query_timer.__main__.MsSQLDbWriter", autospec=True)
-@mock.patch("query_timer.__main__.PostgresDbWriter", autospec=True)
-@mock.patch("query_timer.__main__.TimeStreamWriter", autospec=True)
+@mock.patch("tsdg.query_timer.core.CrateDbWriter", autospec=True)
+@mock.patch("tsdg.query_timer.core.TimescaleDbWriter", autospec=True)
+@mock.patch("tsdg.query_timer.core.InfluxDbWriter", autospec=True)
+@mock.patch("tsdg.query_timer.core.MsSQLDbWriter", autospec=True)
+@mock.patch("tsdg.query_timer.core.PostgresDbWriter", autospec=True)
+@mock.patch("tsdg.query_timer.core.TimeStreamWriter", autospec=True)
 def test_get_db_writer(
     mock_timestream, mock_postgres, mock_mssql, mock_influx, mock_timescale, mock_crate
 ):
@@ -53,7 +53,7 @@ def test_percentage_to_rgb():
     assert b == 0
 
 
-@mock.patch("query_timer.__main__.get_db_writer", autospec=True)
+@mock.patch("tsdg.query_timer.core.get_db_writer", autospec=True)
 def test_start_query_run(mock_get_db_writer):
     mock_db_writer = mock.MagicMock()
     mock_db_writer.execute_query.side_effect = [[1, 2, 3], Exception("mocked failure")]

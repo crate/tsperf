@@ -25,9 +25,9 @@ import boto3
 import logging
 import math
 import numpy
-from tictrack import timed_function
+from tsdg.util.tictrack import timed_function
 from botocore.config import Config
-from data_generator.db_writer import DbWriter
+from tsdg.model.database import DbWriter
 
 
 class TimeStreamWriter(DbWriter):

@@ -1,6 +1,6 @@
 import mock
 from crate import client
-from data_generator.crate_db_writer import CrateDbWriter
+from tsdg.adapter.cratedb import CrateDbWriter
 from tests.test_models import test_model, test_model2
 
 

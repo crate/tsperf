@@ -1,6 +1,6 @@
 import pytest
 import numpy
-from data_generator.edge import Edge, BoolSensor
+from tsdg.model.edge import Edge, BoolSensor
 from tests.test_models import (
     metrics_model_float1_bool1,
     metrics_model_string,

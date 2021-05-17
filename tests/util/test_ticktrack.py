@@ -1,7 +1,7 @@
 import mock
 import pytest
 import statistics
-import tictrack
+from tsdg.util import tictrack
 
 
 @pytest.fixture(scope="session", autouse=True)

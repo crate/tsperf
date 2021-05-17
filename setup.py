@@ -66,8 +66,8 @@ setuptools.setup(
     ],
     entry_points={
         "console_scripts": [
-            "tsdg = data_generator.__main__:main",
-            "tsqt = query_timer.__main__:main",
+            "tsdg = tsdg.__main__:main",
+            "tsqt = tsdg.query_timer.core:main",
         ]
     },
     install_requires=requires,

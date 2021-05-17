@@ -23,22 +23,22 @@ import json
 import urllib3
 import time
 import logging
-import tictrack
-from batch_size_automator import BatchSizeAutomator
+from tsdg.util import tictrack
+from tsdg.util.batch_size_automator import BatchSizeAutomator
 from queue import Queue, Empty
 from threading import Thread, current_thread
 from typing import Tuple
-from data_generator.edge import Edge
-from data_generator.db_writer import DbWriter
-from data_generator.crate_db_writer import CrateDbWriter
-from data_generator.timescale_db_writer import TimescaleDbWriter
-from data_generator.influx_db_writer import InfluxDbWriter
-from data_generator.mongo_db_writer import MongoDbWriter
-from data_generator.postgres_db_writer import PostgresDbWriter
-from data_generator.timestream_db_writer import TimeStreamWriter
-from data_generator.mssql_db_writer import MsSQLDbWriter
-from data_generator.config import DataGeneratorConfig
-from data_generator.argument_parser import parse_arguments
+from tsdg.model.edge import Edge
+from tsdg.model.database import DbWriter
+from tsdg.adapter.cratedb import CrateDbWriter
+from tsdg.adapter.timescaledb import TimescaleDbWriter
+from tsdg.adapter.influxdb import InfluxDbWriter
+from tsdg.adapter.mongodb import MongoDbWriter
+from tsdg.adapter.postgresql import PostgresDbWriter
+from tsdg.adapter.timestream import TimeStreamWriter
+from tsdg.adapter.mssql import MsSQLDbWriter
+from tsdg.config import DataGeneratorConfig
+from tsdg.argument_parser import parse_arguments
 from prometheus_client import start_http_server, Gauge, Counter
 
 
@@ -237,7 +237,7 @@ def do_insert(db_writer, timestamps, batch):
         c_inserts_performed_success.inc()
         inserted_values_queue.put_nowait(len(batch))
     except Exception as e:
-        # if an exception is thrown while inserting we don't want the whole data_generator to crash
+        # if an exception is thrown while inserting we don't want the whole tsdg to crash
         # as the values have not been inserted we remove them from our runtime_metrics
         # TODO: more sophistic error handling on db_writer level
         c_inserts_failed.inc()
@@ -339,7 +339,7 @@ def consecutive_insert():
                 batch = current_values_queue.get_nowait()
                 ts = time.time()
                 # we want the same timestamp for each value this timestamp should be the same
-                # even if the data_generator runs in multiple containers therefore we round the
+                # even if the tsdg runs in multiple containers therefore we round the
                 # timestamp to match ingest_delta this is done by multiplying
                 # by ingest_delta and then dividing the result by ingest_delta
                 ingest_ts_factor = 1 / config.ingest_delta
@@ -430,7 +430,7 @@ def main():  # pragma: no cover
     data_batch_size = config.id_end - config.id_start + 1
     last_ts = config.ingest_ts
 
-    # start the data_generator logic
+    # start the tsdg logic
     run_dg()
 
     # we analyze the runtime of the different function

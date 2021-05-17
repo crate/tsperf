@@ -1,16 +1,16 @@
 import time
 import mock
-import data_generator.__main__ as dg
+import tsdg.__main__ as dg
 from queue import Empty
 
 
-@mock.patch("data_generator.__main__.CrateDbWriter", autospec=True)
-@mock.patch("data_generator.__main__.TimescaleDbWriter", autospec=True)
-@mock.patch("data_generator.__main__.InfluxDbWriter", autospec=True)
-@mock.patch("data_generator.__main__.MongoDbWriter", autospec=True)
-@mock.patch("data_generator.__main__.MsSQLDbWriter", autospec=True)
-@mock.patch("data_generator.__main__.PostgresDbWriter", autospec=True)
-@mock.patch("data_generator.__main__.TimeStreamWriter", autospec=True)
+@mock.patch("tsdg.__main__.CrateDbWriter", autospec=True)
+@mock.patch("tsdg.__main__.TimescaleDbWriter", autospec=True)
+@mock.patch("tsdg.__main__.InfluxDbWriter", autospec=True)
+@mock.patch("tsdg.__main__.MongoDbWriter", autospec=True)
+@mock.patch("tsdg.__main__.MsSQLDbWriter", autospec=True)
+@mock.patch("tsdg.__main__.PostgresDbWriter", autospec=True)
+@mock.patch("tsdg.__main__.TimeStreamWriter", autospec=True)
 def test_get_db_writer(
     mock_timestream,
     mock_postgres,
@@ -46,7 +46,7 @@ def test_get_db_writer(
     assert db_writer is None
 
 
-@mock.patch("data_generator.__main__.Edge", autospec=True, return_value=mock.MagicMock)
+@mock.patch("tsdg.__main__.Edge", autospec=True, return_value=mock.MagicMock)
 def test_create_edges(mock_edge):
     dg.config.id_start = 0
     dg.config.id_end = 0
@@ -102,8 +102,8 @@ def test_get_next_value_continuous():
     assert len(values) == 1
 
 
-@mock.patch("data_generator.__main__.tictrack", autospec=True)
-@mock.patch("data_generator.__main__.logging", autospec=True)
+@mock.patch("tsdg.__main__.tictrack", autospec=True)
+@mock.patch("tsdg.__main__.logging", autospec=True)
 def test_log_stat_delta(mock_log, mock_tictrack):
     # delta not reached no output
     dg.config.stat_delta = 1
@@ -118,7 +118,7 @@ def test_log_stat_delta(mock_log, mock_tictrack):
     mock_log.info.assert_called()
 
 
-@mock.patch("data_generator.__main__.logging", autospec=True)
+@mock.patch("tsdg.__main__.logging", autospec=True)
 def test_do_insert(mock_log):
     db_writer = mock.MagicMock()
     dg.do_insert(db_writer, [1], [1])
@@ -154,7 +154,7 @@ def test_get_insert_values():
     assert dg.c_values_queue_was_empty._value.get() == 2
 
 
-@mock.patch("data_generator.__main__.get_db_writer", autospec=True)
+@mock.patch("tsdg.__main__.get_db_writer", autospec=True)
 def test_insert_routine_auto_batch_mode(mock_get_db_writer):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
     dg.config.batch_size = 0
@@ -172,7 +172,7 @@ def test_insert_routine_auto_batch_mode(mock_get_db_writer):
     dg.stop_queue.get()  # resetting the stop queue
 
 
-@mock.patch("data_generator.__main__.get_db_writer", autospec=True)
+@mock.patch("tsdg.__main__.get_db_writer", autospec=True)
 def test_insert_routine_fixed_batch_mode(mock_get_db_writer):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
     dg.config.batch_size = 5
@@ -189,8 +189,8 @@ def test_insert_routine_fixed_batch_mode(mock_get_db_writer):
     dg.stop_queue.get()  # resetting the stop queue
 
 
-@mock.patch("data_generator.__main__.get_db_writer", autospec=True)
-@mock.patch("data_generator.__main__.current_values_queue", autospec=True)
+@mock.patch("tsdg.__main__.get_db_writer", autospec=True)
+@mock.patch("tsdg.__main__.current_values_queue", autospec=True)
 def test_insert_routine_empty_batch(mock_current_values_queue, mock_get_db_writer):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
     mock_current_values_queue.empty.side_effect = [False, True]
@@ -207,8 +207,8 @@ def test_insert_routine_empty_batch(mock_current_values_queue, mock_get_db_write
     dg.stop_queue.get()  # resetting the stop queue
 
 
-@mock.patch("data_generator.__main__.get_db_writer", autospec=True)
-@mock.patch("data_generator.__main__.current_values_queue", autospec=True)
+@mock.patch("tsdg.__main__.get_db_writer", autospec=True)
+@mock.patch("tsdg.__main__.current_values_queue", autospec=True)
 def test_consecutive_insert_queue_empty(mock_current_values_queue, mock_get_db_writer):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
     mock_current_values_queue.empty.side_effect = [False, True]
@@ -225,7 +225,7 @@ def test_consecutive_insert_queue_empty(mock_current_values_queue, mock_get_db_w
     dg.insert_finished_queue.get()
 
 
-@mock.patch("data_generator.__main__.get_db_writer", autospec=True)
+@mock.patch("tsdg.__main__.get_db_writer", autospec=True)
 def test_consecutive_insert(mock_get_db_writer):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
     dg.config.ingest_mode = 0

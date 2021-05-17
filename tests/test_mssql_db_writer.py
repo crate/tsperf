@@ -1,6 +1,6 @@
 import mock
 import pyodbc
-from data_generator.mssql_db_writer import MsSQLDbWriter
+from tsdg.adapter.mssql import MsSQLDbWriter
 from tests.test_models import test_model, test_model2, test_model3
 
 

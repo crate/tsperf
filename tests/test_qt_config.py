@@ -1,7 +1,8 @@
 import os
 import mock
 import os.path
-from query_timer.config import QueryTimerConfig
+
+from tsdg.query_timer.config import QueryTimerConfig
 
 
 def test_config_constructor_no_env_set():

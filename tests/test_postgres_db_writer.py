@@ -1,6 +1,6 @@
 import mock
 import psycopg2.extras
-from data_generator.postgres_db_writer import PostgresDbWriter
+from tsdg.adapter.postgresql import PostgresDbWriter
 from tests.test_models import test_model, test_model2, test_model3
 
 

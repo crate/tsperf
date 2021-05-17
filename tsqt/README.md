@@ -12,7 +12,7 @@ The Query Timer is a tool to run queries against different databases and determi
 
 #### Pip install
 
-The Query Timer is part of the tsdb-data-generator package and can be installed using `pip install tsperf`.
+The *Time Series Query Timer* `tsqt` is part of the `tsperf` package and can be installed using `pip install tsperf`.
 
 By calling `tsqt -h` the possible configurations are listed. For further details see
 [Query Timer Configuration](#query-timer-configuration). All configurations can be done with either command line
@@ -143,7 +143,7 @@ To connect with AWS Timestream the following environment variables must be set:
 ##### Client Library
 
 For Microsoft SQL Server the [pyodcb](https://github.com/mkleehammer/pyodbc) library is used.
-If the Data Generator is run via `pip install` please ensure that pyodbc is properly installed on your system.
+If the Data Generator is run via `pip install` please ensure that `pyodbc` is properly installed on your system.
 
 To connect with Microsoft SQL Server the following environment variables must be set:
 

@@ -19,15 +19,10 @@ average (or other statistical value) execution time needs to be calculated time 
 
 ## Using tictrack
 
-First install this library:
+There are two ways to use `tictrack`, the optimal one depending on your specific use case.
 
-```bash
-pip install tictrack
-```
-
-There are two ways to use tictrack which one to chose depends on you usecase. If you want to track every execution of
-one or more function the decorator is the easiest solution. If you only want to track certain executions of one or more 
-functions the wrapper funciton is the better solution.
+- If you want to track every execution of one or more function, using the decorator is the easiest solution.
+- If you only want to track certain executions of one or more functions, the wrapper function is the better solution.
 
 ### Decorator
 

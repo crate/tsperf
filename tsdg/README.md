@@ -83,20 +83,13 @@ The Data Generator is a tool to generate timeseries data which adheres to a [sta
 both for [populating a database](#ingest_mode) as well as having a way to [continuously insert](#ingest_mode) timeseries
 data.
 
-### How To
+### Install
 
-#### Pip install
+#### PyPI package
 
-An easy way to use the Data Generator is to install it via `pip`:
+The *Time Series Data Generator* `tsdg` is part of the `tsperf` package and can be installed using `pip install tsperf`.
 
-+ Open a terminal and type `pip install tsperf`
-+ Look at the default configuration of the Data Generator by executing `tsdg -h` in a terminal
-+ Run the Data Generator with the desired configuration values by executing `tsdg` in a terminal
-
-To look at example configurations navigate to the [example folder](examples). Each environment variable can be
-overwritten by using the corresponding command line argument.
-
-#### Docker Image
+#### Docker image
 
 Another way to use the Data Generator is to build the Docker Image:
 
@@ -107,6 +100,14 @@ Another way to use the Data Generator is to build the Docker Image:
 
 For an explanation on how to set the environment variables see [Environment variables](#data-generator-configuration).
 For example use cases see [Example use cases](#example-use-cases)
+
+### Usage
+
++ Look at the default configuration of the Data Generator by executing `tsdg -h` in a terminal.
++ Run the Data Generator with the desired configuration values by executing `tsdg` in a terminal.
+
+To look at example configurations navigate to the [example folder](examples). Each environment variable can be
+overwritten by using the corresponding command line argument.
 
 ### Supported Databases
 
@@ -366,7 +367,7 @@ For example, having 600 sensors with each 2 metrics, and each should write a sin
 ##### Client Library
 
 For Microsoft SQL Server the [pyodcb](https://github.com/mkleehammer/pyodbc) library is used.
-If the Data Generator is run via `pip install` please ensure that pyodbc is properly installed on your system.
+If the Data Generator is run via `pip install` please ensure that `pyodbc` is properly installed on your system.
 
 To connect with Microsoft SQL Server the following environment variables must be set:
 

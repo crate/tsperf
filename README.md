@@ -1,4 +1,4 @@
-![Tests](https://github.com/crate/tsdg/workflows/Tests/badge.svg)
+![Tests](https://github.com/crate/tsperf/workflows/Tests/badge.svg)
 
 # Data Generator
 

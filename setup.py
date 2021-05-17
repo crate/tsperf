@@ -30,17 +30,22 @@ test_requires = [
     "flake8==3.8.4",
     "black==21.5b1",
     "flakehell==0.9.0",
+    "isort==5.7.0",
+    "flake8-black==0.2.1",
+    "flake8-bugbear==20.1.4",
+    "flake8-bandit==2.1.2",
+    "flake8-isort==4.0.0",
 ]
 
 setuptools.setup(
-    name="tsdg",
+    name="tsperf",
     version=__version__,
     author="Crate.io",
     author_email="office@crate.at",
     description="A tool to test performance of different timeseries databases",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/crate/tsdg",
+    url="https://github.com/crate/tsperf",
     packages=setuptools.find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -66,8 +71,8 @@ setuptools.setup(
     ],
     entry_points={
         "console_scripts": [
-            "tsdg = tsdg.__main__:main",
-            "tsqt = tsdg.query_timer.core:main",
+            "tsdg = tsdg.core:main",
+            "tsqt = tsqt.core:main",
         ]
     },
     install_requires=requires,

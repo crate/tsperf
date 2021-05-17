@@ -2,8 +2,8 @@ import mock
 import psycopg2.extras
 from datetime import datetime
 from datetime_truncate import truncate
-from tsdg.adapter.timescaledb import TimescaleDbWriter
-from tests.test_models import test_model, test_model2, test_model3
+from tsdg.adapter.timescaledb import TimescaleDbAdapter
+from tests.tsdg.test_models import test_model, test_model2, test_model3
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
@@ -13,11 +13,11 @@ def test_close_connection(mock_connect):
 
     Pre Condition: psycopg2.client.connect() returns a Mock Object conn which returns a Mock Object
         cursor when its .cursor() function is called.
-        TimescaleDbWriter is called.
-    -> mock_connect is called by TimescaleDbWriter with values given the constructor
+        TimescaleDbAdapter is called.
+    -> mock_connect is called by TimescaleDbAdapter with values given the constructor
 
     Test Case 1:
-    when calling TimescaleDbWriter.close_connection() conn.close() and cursor.close() are called
+    when calling TimescaleDbAdapter.close_connection() conn.close() and cursor.close() are called
 
     :param mock_connect: mocked function call from psycopg2.client.connect()
     """
@@ -26,7 +26,7 @@ def test_close_connection(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbWriter(
+    db_writer = TimescaleDbAdapter(
         "localhost", 4200, "timescale", "password", "test", test_model
     )
     mock_connect.assert_called_with(
@@ -49,10 +49,10 @@ def test_prepare_database1(mock_connect):
 
     Pre Condition: psycopg2.client.connect() returns a Mock Object conn which returns a Mock Object
         cursor when its .cursor() function is called.
-        TimescaleDbWriter is called.
-    -> mock_connect is called by TimescaleDbWriter with values given the constructor
+        TimescaleDbAdapter is called.
+    -> mock_connect is called by TimescaleDbAdapter with values given the constructor
 
-    Test Case 1: calling TimescaleDbWriter.prepare_database()
+    Test Case 1: calling TimescaleDbAdapter.prepare_database()
     -> "temperature" is in stmt (table name)
     -> "ts_week" is in stmt (partitioning of hyper_table)
 
@@ -63,7 +63,7 @@ def test_prepare_database1(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbWriter(
+    db_writer = TimescaleDbAdapter(
         "localhost", 4200, "timescale", "password2", "test", test_model
     )
     mock_connect.assert_called_with(
@@ -89,9 +89,9 @@ def test_prepare_database2(mock_connect):
 
     Pre Condition: psycopg2.client.connect() returns a Mock Object conn which returns a Mock Object
         cursor when its .cursor() function is called.
-        TimescaleDbWriter is called.
+        TimescaleDbAdapter is called.
 
-    Test Case 1: calling TimescaleDbWriter.prepare_database() with default values overwritten by constructor arguments
+    Test Case 1: calling TimescaleDbAdapter.prepare_database() with default values overwritten by constructor arguments
     -> "table_name" is in stmt (table name)
     -> "ts_day is in stmt (partitioning of hyper_table)
     -> conn.commit function has been called
@@ -103,7 +103,7 @@ def test_prepare_database2(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbWriter(
+    db_writer = TimescaleDbAdapter(
         "localhost",
         4200,
         "timescale3",
@@ -130,9 +130,9 @@ def test_prepare_database3(mock_connect):
 
     Pre Condition: psycopg2.client.connect() returns a Mock Object conn which returns a Mock Object
         cursor when its .cursor() function is called.
-        TimescaleDbWriter is called.
+        TimescaleDbAdapter is called.
 
-    Test Case 1: calling TimescaleDbWriter.prepare_database() with default values overwritten by constructor arguments
+    Test Case 1: calling TimescaleDbAdapter.prepare_database() with default values overwritten by constructor arguments
     -> "distributed" is in stmt (table name)
     -> conn.commit function has been called
 
@@ -143,7 +143,7 @@ def test_prepare_database3(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbWriter(
+    db_writer = TimescaleDbAdapter(
         "localhost",
         4200,
         "timescale3",
@@ -170,9 +170,9 @@ def test_prepare_database4(mock_connect):
 
     Pre Condition: psycopg2.client.connect() returns a Mock Object conn which returns a Mock Object
         cursor when its .cursor() function is called.
-        TimescaleDbWriter is called.
+        TimescaleDbAdapter is called.
 
-    Test Case 1: calling TimescaleDbWriter.prepare_database() with default values overwritten by constructor arguments
+    Test Case 1: calling TimescaleDbAdapter.prepare_database() with default values overwritten by constructor arguments
     -> tags are of type TEXT
     -> conn.commit function has been called
 
@@ -183,7 +183,7 @@ def test_prepare_database4(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbWriter(
+    db_writer = TimescaleDbAdapter(
         "localhost", 4200, "timescale3", "password3", "test", test_model3
     )
     # Test Case 1:
@@ -201,9 +201,9 @@ def test_insert_stmt(mock_connect):
 
     Pre Condition: psycopg2.client.connect() returns a Mock Object conn which returns a Mock Object
         cursor when its .cursor() function is called.
-        TimescaleDbWriter is called.
+        TimescaleDbAdapter is called.
 
-    Test Case 1: calling TimescaleDbWriter.insert_stmt()
+    Test Case 1: calling TimescaleDbAdapter.insert_stmt()
     -> "plant" is in stmt
     -> "line" is in stmt
     -> "sensor_id" is in stmt
@@ -218,7 +218,7 @@ def test_insert_stmt(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbWriter(
+    db_writer = TimescaleDbAdapter(
         "localhost", 4200, "timescale", "password", "test", test_model
     )
     # Test Case 1:
@@ -246,9 +246,9 @@ def test_insert_stmt_copy(mock_copy_manager, mock_connect):
 
     Pre Condition: psycopg2.client.connect() returns a Mock Object conn which returns a Mock Object
         cursor when its .cursor() function is called.
-        TimescaleDbWriter is called with copy=True.
+        TimescaleDbAdapter is called with copy=True.
 
-    Test Case 1: calling TimescaleDbWriter.insert_stmt()
+    Test Case 1: calling TimescaleDbAdapter.insert_stmt()
     -> "plant" is in stmt
     -> "line" is in stmt
     -> "sensor_id" is in stmt
@@ -263,7 +263,7 @@ def test_insert_stmt_copy(mock_copy_manager, mock_connect):
     cursor = mock.MagicMock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbWriter(
+    db_writer = TimescaleDbAdapter(
         "localhost", 4200, "timescale", "password", "test", test_model, copy=True
     )
 
@@ -301,9 +301,9 @@ def test_execute_query(mock_connect):
 
     Pre Condition: psycopg2.client.connect() returns a Mock Object conn which returns a Mock Object
         cursor when its .cursor() function is called.
-        TimescaleDbWriter is called.
+        TimescaleDbAdapter is called.
 
-    Test Case 1: calling TimescaleDbWriter.execute_query()
+    Test Case 1: calling TimescaleDbAdapter.execute_query()
     -> cursor.execute function is called with given argument
     -> cursor.fetchall function is called
 
@@ -314,7 +314,7 @@ def test_execute_query(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbWriter(
+    db_writer = TimescaleDbAdapter(
         "localhost", 4200, "timescale", "password", "test", test_model
     )
     db_writer.execute_query("SELECT * FROM temperature;")

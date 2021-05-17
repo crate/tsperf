@@ -1,5 +1,5 @@
-from tsdg.query_timer.argument_parser import args_info
-from tsdg.query_timer.config import QueryTimerConfig
+from tsqt.cli import args_info
+from tsqt.config import QueryTimerConfig
 
 
 def test_each_config_has_arg():

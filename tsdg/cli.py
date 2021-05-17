@@ -22,6 +22,8 @@
 import argparse
 from tsdg.config import DataGeneratorConfig
 
+TSDG_README_BASEURL = "https://github.com/crate/tsdg/blob/main/tsdg/README.md"
+
 args_info = {
     "database": {
         "help": "Value which defines what database will be used: 0-CrateDB, 1-TimescaleDB, 2-InfluxDB, 3-MongoDB, "
@@ -42,7 +44,7 @@ args_info = {
     "ingest_mode": {
         "help": "The ingest_mode argument turns on fast insert when set to True or switches to consecutive inserts "
         "when set to False. For more information, please refer to the documentation."
-        "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#ingest_mode)",
+        f"{TSDG_README_BASEURL}#ingest_mode)",
         "choices": [True, False],
         "type": bool,
     },
@@ -67,14 +69,13 @@ args_info = {
     "model_path": {
         "help": "A relative or absolute path to a model in the json format (see the data generator documentation for "
         "more details: "
-        "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#data-generator-models)",
+        f"{TSDG_README_BASEURL}#data-generator-models)",
         "choices": ["Absolute or relative file path"],
         "type": str,
     },
     "batch_size": {
         "help": "The batch size used when ingest_mode is set to True. A value smaller or equal to 0 in combination "
-        "with ingest_mode turns on auto batch mode using the batch-size-automator library: "
-        "https://pypi.org/project/batch-size-automator/",
+        "with ingest_mode turns on auto batch mode using the batch size automator library",
         "choices": ["Any integer number"],
         "type": int,
     },
@@ -95,7 +96,7 @@ args_info = {
     },
     "host": {
         "help": "hostname according to the database client requirements. See documentation for further details:"
-        "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#host",
+        f"{TSDG_README_BASEURL}#host",
         "choices": [],
         "type": str,
     },
@@ -114,7 +115,7 @@ args_info = {
     "db_name": {
         "help": "Name of the database where table will be created. Used with InfluxDB, TimescaleDB, MongoDB, "
         "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
-        "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#db-name",
+        f"{TSDG_README_BASEURL}#db-name",
         "choices": [],
         "type": str,
     },

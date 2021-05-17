@@ -89,7 +89,7 @@ data.
 
 An easy way to use the Data Generator is to install it via `pip`:
 
-+ Open a terminal and type `pip install tsdg`
++ Open a terminal and type `pip install tsperf`
 + Look at the default configuration of the Data Generator by executing `tsdg -h` in a terminal
 + Run the Data Generator with the desired configuration values by executing `tsdg` in a terminal
 

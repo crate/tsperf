@@ -29,19 +29,19 @@ from queue import Queue
 import urllib3
 from blessed import Terminal
 
-from tsdg.query_timer.argument_parser import parse_arguments
-from tsdg.query_timer.config import QueryTimerConfig
+from tsqt.cli import parse_arguments
+from tsqt.config import QueryTimerConfig
 from tsdg.util.tictrack import tic_toc, timed_function
 from threading import Thread
-from tsdg.adapter.cratedb import CrateDbWriter
-from tsdg.adapter.postgresql import PostgresDbWriter
-from tsdg.adapter.timescaledb import TimescaleDbWriter
-from tsdg.adapter.influxdb import InfluxDbWriter
+from tsdg.adapter.cratedb import CrateDbAdapter
+from tsdg.adapter.postgresql import PostgresDbAdapter
+from tsdg.adapter.timescaledb import TimescaleDbAdapter
+from tsdg.adapter.influxdb import InfluxDbAdapter
 
-# from tsdg.mongo_db_writer import MongoDbWriter
-from tsdg.adapter.mssql import MsSQLDbWriter
-from tsdg.adapter.timestream import TimeStreamWriter
-from tsdg.model.database import DbWriter
+# from tsdg.adapter.mongodb import MongoDbAdapter
+from tsdg.adapter.mssql import MsSQLDbAdapter
+from tsdg.adapter.timestream import TimeStreamAdapter
+from tsdg.model.database import AbstractDatabaseAdapter
 
 model = {"value": "none"}
 start_time = time.time()
@@ -58,11 +58,11 @@ logging.basicConfig(
 )
 
 
-def get_db_writer() -> DbWriter:  # noqa
-    if config.database == 0:  # crate
-        db_writer = CrateDbWriter(config.host, config.username, config.password, model)
-    elif config.database == 1:  # timescale
-        db_writer = TimescaleDbWriter(
+def get_database_adapter() -> AbstractDatabaseAdapter:  # noqa
+    if config.database == 0:
+        adapter = CrateDbAdapter(config.host, config.username, config.password, model)
+    elif config.database == 1:
+        adapter = TimescaleDbAdapter(
             config.host,
             config.port,
             config.username,
@@ -70,18 +70,18 @@ def get_db_writer() -> DbWriter:  # noqa
             config.db_name,
             model,
         )
-    elif config.database == 2:  # influx
-        db_writer = InfluxDbWriter(
+    elif config.database == 2:
+        adapter = InfluxDbAdapter(
             config.host, config.token, config.organization, model
         )
-    elif config.database == 3:  # mongo
+    elif config.database == 3:
         raise ValueError(
             "MongoDB queries are not supported (but can be manually added to the script - see "
-            "query_timer documentation)"
+            "tsqt documentation)"
         )
-        # db_writer = MongoDbWriter(config.host, config.username, config.password, config.db_name, model)
-    elif config.database == 4:  # postgres
-        db_writer = PostgresDbWriter(
+        # adapter = MongoDbAdapter(config.host, config.username, config.password, config.db_name, model)
+    elif config.database == 4:
+        adapter = PostgresDbAdapter(
             config.host,
             config.port,
             config.username,
@@ -89,16 +89,16 @@ def get_db_writer() -> DbWriter:  # noqa
             config.db_name,
             model,
         )
-    elif config.database == 5:  # timestream
-        db_writer = TimeStreamWriter(
+    elif config.database == 5:
+        adapter = TimeStreamAdapter(
             config.aws_access_key_id,
             config.aws_secret_access_key,
             config.aws_region_name,
             config.db_name,
             model,
         )
-    elif config.database == 6:  # ms_sql
-        db_writer = MsSQLDbWriter(
+    elif config.database == 6:
+        adapter = MsSQLDbAdapter(
             config.host,
             config.username,
             config.password,
@@ -107,8 +107,9 @@ def get_db_writer() -> DbWriter:  # noqa
             port=config.port,
         )
     else:
-        db_writer = None
-    return db_writer
+        raise ValueError("Unknown database adapter")
+
+    return adapter
 
 
 def percentage_to_rgb(percentage):
@@ -165,10 +166,10 @@ def print_progressbar(
 
 def start_query_run():
     global success, failure
-    db_writer = get_db_writer()
+    adapter = get_database_adapter()
     for x in range(0, config.iterations):
         try:
-            db_writer.execute_query(config.query)
+            adapter.execute_query(config.query)
             success += 1
         except Exception:
             failure += 1

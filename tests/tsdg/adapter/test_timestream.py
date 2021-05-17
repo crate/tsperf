@@ -1,22 +1,22 @@
 import mock
-from tsdg.adapter.timestream import TimeStreamWriter
-from tests.test_models import test_model
+from tsdg.adapter.timestream import TimeStreamAdapter
+from tests.tsdg.test_models import test_model
 
 
 @mock.patch("tsdg.adapter.timestream.boto3", autospec=True)
 def test_close_connection(mock_boto):
     """
-    Test if the .close_connection() function of TimeStreamWriter calls the close() function of self.client
+    Test if the .close_connection() function of TimeStreamAdapter calls the close() function of self.client
 
     Test Case 1:boto.session.Session() returns a Mock Object session
-        TimeStreamWriter is called.
-    -> Parameters of TimeStreamWriter match constructor parameters
+        TimeStreamAdapter is called.
+    -> Parameters of TimeStreamAdapter match constructor parameters
 
     :param mock_boto: mocked boto3 class
     """
     session = mock.MagicMock()
     mock_boto.session.Session.return_value = session
-    _ = TimeStreamWriter(
+    _ = TimeStreamAdapter(
         "aws_key_id", "aws_secrete", "aws_region", "db_name", test_model
     )
     mock_boto.session.Session.assert_called_with(
@@ -27,14 +27,14 @@ def test_close_connection(mock_boto):
 @mock.patch("tsdg.adapter.timestream.boto3", autospec=True)
 def test_insert_stmt(mock_boto):
     """
-    This function tests if the .insert_stmt() function of TimeStreamWriter creates the correct json object
+    This function tests if the .insert_stmt() function of TimeStreamAdapter creates the correct json object
 
     Pre Condition: boto.session.Session() returns a Mock Object session
-        TimeStreamWriter is called.
-    -> Parameters of TimeStreamWriter match constructor parameters
+        TimeStreamAdapter is called.
+    -> Parameters of TimeStreamAdapter match constructor parameters
 
     Test Case 1:
-    calling TimeStreamWriter.insert_stmt()
+    calling TimeStreamAdapter.insert_stmt()
     -> the function call has on argument
     -> the argument is the same as the record
 
@@ -44,7 +44,7 @@ def test_insert_stmt(mock_boto):
     mock_boto.session.Session.return_value = session
     write_client = mock.MagicMock()
     session.client.return_value = write_client
-    db_writer = TimeStreamWriter(
+    db_writer = TimeStreamAdapter(
         "aws_key_id", "aws_secrete", "aws_region", "db_name", test_model
     )
     # Test Case 1:
@@ -109,13 +109,13 @@ def test_insert_stmt(mock_boto):
 @mock.patch("tsdg.adapter.timestream.boto3", autospec=True)
 def test_execute_query(mock_boto):
     """
-    This function tests if the .execute_query() function of TimeStreamWriter uses the correct argument
+    This function tests if the .execute_query() function of TimeStreamAdapter uses the correct argument
 
     Pre Condition: boto.session.Session() returns a Mock Object session
-        TimeStreamWriter is called.
+        TimeStreamAdapter is called.
 
     Test Case 1:
-    calling TimeStreamWriter.execute_query()
+    calling TimeStreamAdapter.execute_query()
     -> the function call has on argument
     -> the argument is the same as execute_query argument
 
@@ -127,7 +127,7 @@ def test_execute_query(mock_boto):
     session.client.return_value = query_client
     paginator = mock.MagicMock()
     query_client.get_paginator.return_value = paginator
-    db_writer = TimeStreamWriter(
+    db_writer = TimeStreamAdapter(
         "aws_key_id", "aws_secrete", "aws_region", "db_name", test_model
     )
     # Test Case 1:
@@ -142,13 +142,13 @@ def test_execute_query(mock_boto):
 @mock.patch("tsdg.adapter.timestream.boto3", autospec=True)
 def test_prepare_database_not_existing_db_and_table(mock_boto):
     """
-    This function tests if the .execute_query() function of TimeStreamWriter uses the correct argument
+    This function tests if the .execute_query() function of TimeStreamAdapter uses the correct argument
 
     Pre Condition: boto.session.Session() returns a Mock Object session
-        TimeStreamWriter is called.
+        TimeStreamAdapter is called.
 
     Test Case 1:
-    calling TimeStreamWriter.prepare_database()
+    calling TimeStreamAdapter.prepare_database()
     -> write_client.create_database is called once
     -> write_client.create_table is called once
 
@@ -158,7 +158,7 @@ def test_prepare_database_not_existing_db_and_table(mock_boto):
     mock_boto.session.Session.return_value = session
     write_client = mock.MagicMock()
     session.client.return_value = write_client
-    db_writer = TimeStreamWriter(
+    db_writer = TimeStreamAdapter(
         "aws_key_id", "aws_secrete", "aws_region", "db_name", test_model
     )
     # Test Case 1:
@@ -170,13 +170,13 @@ def test_prepare_database_not_existing_db_and_table(mock_boto):
 @mock.patch("tsdg.adapter.timestream.boto3", autospec=True)
 def test_prepare_database_existing_db_and_table(mock_boto):
     """
-    This function tests if the .execute_query() function of TimeStreamWriter uses the correct argument
+    This function tests if the .execute_query() function of TimeStreamAdapter uses the correct argument
 
     Pre Condition: boto.session.Session() returns a Mock Object session
-        TimeStreamWriter is called.
+        TimeStreamAdapter is called.
 
     Test Case 1:
-    calling TimeStreamWriter.prepare_database()
+    calling TimeStreamAdapter.prepare_database()
     -> write_client.create_database is called once
     -> write_client.create_table is called once
 
@@ -186,7 +186,7 @@ def test_prepare_database_existing_db_and_table(mock_boto):
     mock_boto.session.Session.return_value = session
     write_client = mock.MagicMock()
     session.client.return_value = write_client
-    db_writer = TimeStreamWriter(
+    db_writer = TimeStreamAdapter(
         "aws_key_id", "aws_secrete", "aws_region", "db_name", test_model
     )
     # Test Case 1:

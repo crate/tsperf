@@ -18,24 +18,30 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+from abc import abstractmethod
 
 
-class DbWriter:
+class AbstractDatabaseAdapter:
+
+    @abstractmethod
     def __init__(self):
         pass
 
     def connect_to_database(self):  # pragma: no cover
         pass
 
-    def close_connection(self):  # pragma: no cover
-        pass
-
     def prepare_database(self):  # pragma: no cover
         pass
 
+    @abstractmethod
+    def close_connection(self):  # pragma: no cover
+        pass
+
+    @abstractmethod
     def insert_stmt(self, timestamps: list, batch: list):  # pragma: no cover
         pass
 
+    @abstractmethod
     def execute_query(self, query: str):  # pragma: no cover
         pass
 

@@ -19,12 +19,12 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from tsdg.model.database import DbWriter
+from tsdg.model.database import AbstractDatabaseAdapter
 from crate import client
 from tsdg.util.tictrack import timed_function
 
 
-class CrateDbWriter(DbWriter):
+class CrateDbAdapter(AbstractDatabaseAdapter):
     def __init__(
         self,
         host: str,

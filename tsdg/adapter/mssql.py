@@ -23,11 +23,11 @@ from typing import Tuple
 
 import pyodbc
 from tsdg.util.tictrack import timed_function
-from tsdg.model.database import DbWriter
+from tsdg.model.database import AbstractDatabaseAdapter
 from datetime import datetime
 
 
-class MsSQLDbWriter(DbWriter):
+class MsSQLDbAdapter(AbstractDatabaseAdapter):
     def __init__(
         self,
         host: str,
@@ -129,3 +129,6 @@ ts DATETIME NOT NULL,
         for key in self.model.keys():
             if key != "description":
                 return key
+
+    def close_connection(self):
+        self.conn.close()

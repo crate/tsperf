@@ -12,7 +12,7 @@ The Query Timer is a tool to run queries against different databases and determi
 
 #### Pip install
 
-The Query Timer is part of the tsdb-data-generator package and can be installed using `pip install tsdg`.
+The Query Timer is part of the tsdb-data-generator package and can be installed using `pip install tsperf`.
 
 By calling `tsqt -h` the possible configurations are listed. For further details see
 [Query Timer Configuration](#query-timer-configuration). All configurations can be done with either command line
@@ -154,17 +154,17 @@ To connect with Microsoft SQL Server the following environment variables must be
 
 ### Using MongoDB
 
-To use the Query Timer with MongoDB the code of the Query Timer needs to be changed. Therefore checkout this
-[repository](https://www.github.com/crate/tsdg). 
+To use the Query Timer with MongoDB the code of the Query Timer needs to be changed. Therefore checkout the
+[repository](https://www.github.com/crate/tsperf). 
 
-+ In [this](query_timer/__main__.py) file uncomment the import statement of the `MongoDBWriter` 
-+ Also uncomment the instantiation of the `db_writer` in the `get_db_writer` function 
++ In the file [tsqt/core.py](tsqt/core.py), uncomment the import statement of the `MongoDBAdapter` 
++ Also uncomment the instantiation of the `adapter` in the `get_database_adapter` function 
 + Comment the `ValueError` in the line above
 
 This should let you start the Query Timer using `DATABASE` set to MongoDB.
 
 To add the query you want to measure add a variable containing your query to the script and pass this variable to
-`db_writer.execute_query()` in the `start_query_run` function, instead of `config.query`.
+`adapter.execute_query()` in the `start_query_run` function, instead of `config.query`.
 
 Now the Query Timer is able to measure query execution times for MongoDB.
 
@@ -381,7 +381,7 @@ the Data Generator and is easy and fast to use.
 ### cr8
 
 [cr8](https://github.com/mfussenegger/cr8) is a highly sophisticated tool that offers the possibility to measure query
-execution times for CrateDB and other Databases using the postgres protocol.
+execution times for CrateDB and other databases using the PostgreSQL protocol.
 
 Pros:
 
@@ -391,7 +391,7 @@ Pros:
 
 Cons:
 
-+ No support for DBs not using postgres protocol
++ No support for databases not using PostgreSQL protocol
 
 ### JMeter
 

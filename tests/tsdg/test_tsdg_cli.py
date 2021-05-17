@@ -1,4 +1,4 @@
-from tsdg.argument_parser import args_info
+from tsdg.cli import args_info
 from tsdg.config import DataGeneratorConfig
 
 

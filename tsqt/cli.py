@@ -20,6 +20,8 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import argparse
+
+from tsdg.cli import TSDG_README_BASEURL
 from .config import QueryTimerConfig
 
 args_info = {
@@ -31,7 +33,7 @@ args_info = {
     },
     "host": {
         "help": "hostname according to the database client requirements. See documentation for further details:"
-        "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#host",
+        f"{TSDG_README_BASEURL}#host",
         "choices": [],
         "type": str,
     },
@@ -50,7 +52,7 @@ args_info = {
     "db_name": {
         "help": "Name of the database where query will be executed. Used with InfluxDB, TimescaleDB, MongoDB, "
         "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
-        "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#db-name",
+        f"{TSDG_README_BASEURL}#db_name",
         "choices": [],
         "type": str,
     },

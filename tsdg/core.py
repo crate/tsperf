@@ -29,16 +29,16 @@ from queue import Queue, Empty
 from threading import Thread, current_thread
 from typing import Tuple
 from tsdg.model.edge import Edge
-from tsdg.model.database import DbWriter
-from tsdg.adapter.cratedb import CrateDbWriter
-from tsdg.adapter.timescaledb import TimescaleDbWriter
-from tsdg.adapter.influxdb import InfluxDbWriter
-from tsdg.adapter.mongodb import MongoDbWriter
-from tsdg.adapter.postgresql import PostgresDbWriter
-from tsdg.adapter.timestream import TimeStreamWriter
-from tsdg.adapter.mssql import MsSQLDbWriter
+from tsdg.model.database import AbstractDatabaseAdapter
+from tsdg.adapter.cratedb import CrateDbAdapter
+from tsdg.adapter.timescaledb import TimescaleDbAdapter
+from tsdg.adapter.influxdb import InfluxDbAdapter
+from tsdg.adapter.mongodb import MongoDbAdapter
+from tsdg.adapter.postgresql import PostgresDbAdapter
+from tsdg.adapter.timestream import TimeStreamAdapter
+from tsdg.adapter.mssql import MsSQLDbAdapter
 from tsdg.config import DataGeneratorConfig
-from tsdg.argument_parser import parse_arguments
+from tsdg.cli import parse_arguments
 from prometheus_client import start_http_server, Gauge, Counter
 
 
@@ -104,9 +104,9 @@ g_best_batch_rps = Gauge(
 )
 
 
-def get_db_writer() -> DbWriter:  # noqa
+def get_database_adapter() -> AbstractDatabaseAdapter:  # noqa
     if config.database == 0:  # crate
-        db_writer = CrateDbWriter(
+        adapter = CrateDbAdapter(
             config.host,
             config.username,
             config.password,
@@ -117,7 +117,7 @@ def get_db_writer() -> DbWriter:  # noqa
             config.partition,
         )
     elif config.database == 1:  # timescale
-        db_writer = TimescaleDbWriter(
+        adapter = TimescaleDbAdapter(
             config.host,
             config.port,
             config.username,
@@ -130,15 +130,15 @@ def get_db_writer() -> DbWriter:  # noqa
             config.distributed,
         )
     elif config.database == 2:  # influx
-        db_writer = InfluxDbWriter(
+        adapter = InfluxDbAdapter(
             config.host, config.token, config.organization, model, config.db_name
         )
     elif config.database == 3:  # mongo
-        db_writer = MongoDbWriter(
+        adapter = MongoDbAdapter(
             config.host, config.username, config.password, config.db_name, model
         )
     elif config.database == 4:  # postgres
-        db_writer = PostgresDbWriter(
+        adapter = PostgresDbAdapter(
             config.host,
             config.port,
             config.username,
@@ -149,7 +149,7 @@ def get_db_writer() -> DbWriter:  # noqa
             config.partition,
         )
     elif config.database == 5:  # timestream
-        db_writer = TimeStreamWriter(
+        adapter = TimeStreamAdapter(
             config.aws_access_key_id,
             config.aws_secret_access_key,
             config.aws_region_name,
@@ -157,7 +157,7 @@ def get_db_writer() -> DbWriter:  # noqa
             model,
         )
     elif config.database == 6:  # ms_sql
-        db_writer = MsSQLDbWriter(
+        adapter = MsSQLDbAdapter(
             config.host,
             config.username,
             config.password,
@@ -167,8 +167,8 @@ def get_db_writer() -> DbWriter:  # noqa
             table_name=config.table_name,
         )
     else:
-        db_writer = None
-    return db_writer
+        adapter = None
+    return adapter
 
 
 @tictrack.timed_function()
@@ -231,15 +231,15 @@ def stat_delta_thread_function():  # pragma: no cover
             time.sleep(1)
 
 
-def do_insert(db_writer, timestamps, batch):
+def do_insert(adapter, timestamps, batch):
     try:
-        db_writer.insert_stmt(timestamps, batch)
+        adapter.insert_stmt(timestamps, batch)
         c_inserts_performed_success.inc()
         inserted_values_queue.put_nowait(len(batch))
     except Exception as e:
         # if an exception is thrown while inserting we don't want the whole tsdg to crash
         # as the values have not been inserted we remove them from our runtime_metrics
-        # TODO: more sophistic error handling on db_writer level
+        # TODO: more sophistic error handling on adapter level
         c_inserts_failed.inc()
         logging.error(e)
 
@@ -262,8 +262,8 @@ def get_insert_values(batch_size: int) -> Tuple[list, list]:
 
 def insert_routine():
     name = current_thread().name
-    db_writer = get_db_writer()
-    db_writer.prepare_database()
+    adapter = get_database_adapter()
+    adapter.prepare_database()
     data_batch_size = config.id_end - config.id_start + 1
     insert_bsa = BatchSizeAutomator(
         batch_size=config.batch_size,
@@ -280,7 +280,7 @@ def insert_routine():
 
         if len(batch) > 0:
             start = time.time()
-            do_insert(db_writer, timestamps, batch)
+            do_insert(adapter, timestamps, batch)
 
             if insert_bsa.auto_batch_mode and len(batch) == local_batch_size:
                 duration = time.time() - start
@@ -294,7 +294,7 @@ def insert_routine():
                 )
                 insert_bsa.insert_batch_time(duration)
 
-    db_writer.close_connection()
+    adapter.close_connection()
 
 
 def spawn_insert_threads():  # pragma: no cover
@@ -322,8 +322,8 @@ def fast_insert():  # pragma: no cover
 
 def consecutive_insert():
     global last_ts
-    db_writer = get_db_writer()
-    db_writer.prepare_database()
+    adapter = get_database_adapter()
+    adapter.prepare_database()
     last_insert = config.ingest_ts
     last_stat_ts_local = time.time()
     while not current_values_queue.empty() or not stop_process():
@@ -345,13 +345,13 @@ def consecutive_insert():
                 ingest_ts_factor = 1 / config.ingest_delta
                 last_insert = round(ts * ingest_ts_factor) / ingest_ts_factor
                 timestamps = [int(last_insert * 1000)] * len(batch)
-                do_insert(db_writer, timestamps, batch)
+                do_insert(adapter, timestamps, batch)
             except Empty:
                 c_values_queue_was_empty.inc()
 
         else:
             time.sleep(config.ingest_delta - insert_delta)
-    db_writer.close_connection()
+    adapter.close_connection()
     # signal the prometheus thread that insert is finished
     insert_finished_queue.put_nowait(True)
 
@@ -382,14 +382,14 @@ def prometheus_insert_percentage():  # pragma: no cover
 def run_dg():  # pragma: no cover
     # start the thread that writes to the db
     if config.ingest_mode == 0:
-        db_writer_thread = Thread(
+        adapter_thread = Thread(
             target=consecutive_insert, name="consecutive_insert_thread"
         )
     else:
-        db_writer_thread = Thread(target=fast_insert, name="fast_insert_thread")
-    db_writer_thread.start()
+        adapter_thread = Thread(target=fast_insert, name="fast_insert_thread")
+    adapter_thread.start()
 
-    # start the thread that collects the insert metrics from the db_writer threads
+    # start the thread that collects the insert metrics from the adapter threads
     prometheus_insert_percentage_thread = Thread(
         target=prometheus_insert_percentage, name="prometheus_insert_percentage_thread"
     )
@@ -409,7 +409,7 @@ def run_dg():  # pragma: no cover
     finally:
         # once value creation is finished we signal the other threads to stop and wait for them to join
         stop_queue.put(True)
-        db_writer_thread.join()
+        adapter_thread.join()
         prometheus_insert_percentage_thread.join()
 
 

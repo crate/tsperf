@@ -2,21 +2,21 @@ import mock
 from dotmap import DotMap
 from influxdb_client import Bucket
 from influxdb_client.client.write_api import Point
-from tsdg.adapter.influxdb import InfluxDbWriter
-from tests.test_models import test_model
+from tsdg.adapter.influxdb import InfluxDbAdapter
+from tests.tsdg.test_models import test_model
 
 
 @mock.patch("tsdg.adapter.influxdb.InfluxDBClient", autospec=True)
 def test_close_connection(mock_client):
     """
-    This function tests if the .close_connection() function of InfluxDbWriter calls the close() function of self.client
+    This function tests if the .close_connection() function of InfluxDbAdapter calls the close() function of self.client
 
     Pre Condition: InfluxDBClient() returns a Mock Object client
-        InfluxDbWriter is called.
-    -> Parameters of InfluxDbWriter match constructor parameters
+        InfluxDbAdapter is called.
+    -> Parameters of InfluxDbAdapter match constructor parameters
 
     Test Case 1:
-    when calling InfluxDbWriter.close_connection() self.client.close() is called
+    when calling InfluxDbAdapter.close_connection() self.client.close() is called
     -> client.close() is called
 
     :param mock_client: mocked InfluxDBClient class
@@ -24,7 +24,7 @@ def test_close_connection(mock_client):
     # Pre Condition:
     client = mock.Mock()
     mock_client.return_value = client
-    db_writer = InfluxDbWriter("localhost", "token", "org", test_model)
+    db_writer = InfluxDbAdapter("localhost", "token", "org", test_model)
     mock_client.assert_called_with("localhost", token="token")
     # Test Case 1
     db_writer.close_connection()
@@ -34,16 +34,16 @@ def test_close_connection(mock_client):
 @mock.patch("tsdg.adapter.influxdb.InfluxDBClient", autospec=True)
 def test_prepare_database_bucket_exists(mock_client):
     """
-    This function tests if the .prepare_database() function of InfluxDbWriter loads the correct bucket
+    This function tests if the .prepare_database() function of InfluxDbAdapter loads the correct bucket
 
     Pre Condition: InfluxDBClient() returns a Mock Object client
         client.buckets_api() returns a Mock Object buckets_api
         buckets_api.find_buckets() returns a DotMap Object where .buckets returns a list of influx Buckets
-        InfluxDbWriter is called.
-    -> Parameters of InfluxDbWriter match constructor parameters
+        InfluxDbAdapter is called.
+    -> Parameters of InfluxDbAdapter match constructor parameters
 
     Test Case 1:
-    calling InfluxDbWriter.prepare_database() with a already existing Bucket in the Influx DB
+    calling InfluxDbAdapter.prepare_database() with a already existing Bucket in the Influx DB
     -> buckets_api.create_bucket() is not called
 
     :param mock_client: mocked InfluxDBClient class
@@ -53,7 +53,7 @@ def test_prepare_database_bucket_exists(mock_client):
     buckets_api = mock.Mock()
     client.buckets_api.return_value = buckets_api
     mock_client.return_value = client
-    db_writer = InfluxDbWriter("localhost", "token1", "org1", test_model)
+    db_writer = InfluxDbAdapter("localhost", "token1", "org1", test_model)
     mock_client.assert_called_with("localhost", token="token1")
     bucket_list = DotMap()
     bucket_list.buckets = [
@@ -69,16 +69,16 @@ def test_prepare_database_bucket_exists(mock_client):
 @mock.patch("tsdg.adapter.influxdb.InfluxDBClient", autospec=True)
 def test_prepare_database_bucket_not_exists(mock_client):
     """
-    This function tests if the .prepare_database() function of InfluxDbWriter loads the correct bucket
+    This function tests if the .prepare_database() function of InfluxDbAdapter loads the correct bucket
 
     Pre Condition: InfluxDBClient() returns a Mock Object client
         client.buckets_api() returns a Mock Object buckets_api
         buckets_api.find_buckets() returns a DotMap Object where .buckets returns a list of influx Buckets
-        InfluxDbWriter is called.
-    -> Parameters of InfluxDbWriter match constructor parameters
+        InfluxDbAdapter is called.
+    -> Parameters of InfluxDbAdapter match constructor parameters
 
     Test Case 1:
-    calling InfluxDbWriter.prepare_database() with the matching Bucket not in bucket_list
+    calling InfluxDbAdapter.prepare_database() with the matching Bucket not in bucket_list
     -> buckets_api.create_bucket() is called
 
     :param mock_client: mocked InfluxDBClient class
@@ -88,7 +88,7 @@ def test_prepare_database_bucket_not_exists(mock_client):
     buckets_api = mock.Mock()
     client.buckets_api.return_value = buckets_api
     mock_client.return_value = client
-    db_writer = InfluxDbWriter("localhost", "token2", "org2", test_model)
+    db_writer = InfluxDbAdapter("localhost", "token2", "org2", test_model)
     mock_client.assert_called_with("localhost", token="token2")
     bucket_list = DotMap()
     bucket_list.buckets = [
@@ -104,14 +104,14 @@ def test_prepare_database_bucket_not_exists(mock_client):
 @mock.patch("tsdg.adapter.influxdb.InfluxDBClient", autospec=True)
 def test_insert_stmt(mock_client):
     """
-    This function tests if the .insert_stmt() function of InfluxDbWriter uses the correct arguments for write_api.write
+    This function tests if the .insert_stmt() function of InfluxDbAdapter uses the correct arguments for write_api.write
 
     Pre Condition: InfluxDBClient() returns a Mock Object client
         client.write_api() returns a Mock Object write_api
-        InfluxDbWriter is called.
+        InfluxDbAdapter is called.
 
     Test Case 1:
-    calling InfluxDbWriter.insert_stmt() with one timestamp and one batch and check write parameters
+    calling InfluxDbAdapter.insert_stmt() with one timestamp and one batch and check write parameters
     -> org is "org"
     -> data is of type list
     -> data is of length 1
@@ -124,7 +124,7 @@ def test_insert_stmt(mock_client):
     write_api = mock.Mock()
     mock_client.return_value = client
     client.write_api.return_value = write_api
-    db_writer = InfluxDbWriter("localhost", "token", "org", test_model)
+    db_writer = InfluxDbAdapter("localhost", "token", "org", test_model)
     # Test Case 1:
     db_writer.insert_stmt(
         [1586327807000],
@@ -142,14 +142,14 @@ def test_insert_stmt(mock_client):
 @mock.patch("tsdg.adapter.influxdb.InfluxDBClient", autospec=True)
 def test_execute_query(mock_client):
     """
-    This function tests if the .execute_query() function of InfluxDbWriter uses the correct arguments
+    This function tests if the .execute_query() function of InfluxDbAdapter uses the correct arguments
 
     Pre Condition: InfluxDBClient() returns a Mock Object client
         client.query_api() returns a Mock Object query_api
-        InfluxDbWriter is called.
+        InfluxDbAdapter is called.
 
     Test Case 1:
-    calling InfluxDbWriter.execute_query()
+    calling InfluxDbAdapter.execute_query()
     -> query_api.query is called with the same query given execute_query
 
     :param mock_client: mocked InfluxDBClient class
@@ -158,6 +158,6 @@ def test_execute_query(mock_client):
     query_api = mock.Mock()
     mock_client.return_value = client
     client.query_api.return_value = query_api
-    db_writer = InfluxDbWriter("localhost", "token", "org", test_model)
+    db_writer = InfluxDbAdapter("localhost", "token", "org", test_model)
     db_writer.execute_query("SELECT * FROM temperature;")
     query_api.query.assert_called_with("SELECT * FROM temperature;")

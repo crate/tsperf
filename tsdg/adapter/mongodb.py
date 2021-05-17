@@ -22,13 +22,13 @@
 from typing import Tuple
 
 from tsdg.util.tictrack import timed_function
-from tsdg.model.database import DbWriter
+from tsdg.model.database import AbstractDatabaseAdapter
 from pymongo import MongoClient
 from pymongo import CursorType
 from datetime import datetime
 
 
-class MongoDbWriter(DbWriter):
+class MongoDbAdapter(AbstractDatabaseAdapter):
     def __init__(
         self, host: str, username: str, password: str, database_name: str, model: dict
     ):

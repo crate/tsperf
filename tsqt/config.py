@@ -26,7 +26,7 @@ from argparse import Namespace
 
 class QueryTimerConfig:
     def __init__(self):
-        # environment variables describing how the query_timer behaves
+        # environment variables describing how the tsqt behaves
         self.database = int(os.getenv("DATABASE", 0))
         self.concurrency = int(os.getenv("CONCURRENCY", 10))
         self.iterations = int(os.getenv("ITERATIONS", 100))

@@ -1,41 +1,43 @@
 import mock
 import pytest
-import tsdg.query_timer.core as qt
+import tsqt.core as qt
 
 
-@mock.patch("tsdg.query_timer.core.CrateDbWriter", autospec=True)
-@mock.patch("tsdg.query_timer.core.TimescaleDbWriter", autospec=True)
-@mock.patch("tsdg.query_timer.core.InfluxDbWriter", autospec=True)
-@mock.patch("tsdg.query_timer.core.MsSQLDbWriter", autospec=True)
-@mock.patch("tsdg.query_timer.core.PostgresDbWriter", autospec=True)
-@mock.patch("tsdg.query_timer.core.TimeStreamWriter", autospec=True)
-def test_get_db_writer(
+@mock.patch("tsqt.core.CrateDbAdapter", autospec=True)
+@mock.patch("tsqt.core.TimescaleDbAdapter", autospec=True)
+@mock.patch("tsqt.core.InfluxDbAdapter", autospec=True)
+@mock.patch("tsqt.core.MsSQLDbAdapter", autospec=True)
+@mock.patch("tsqt.core.PostgresDbAdapter", autospec=True)
+@mock.patch("tsqt.core.TimeStreamAdapter", autospec=True)
+def test_get_database_adapter(
     mock_timestream, mock_postgres, mock_mssql, mock_influx, mock_timescale, mock_crate
 ):
     qt.config.database = 0
-    qt.get_db_writer()
+    qt.get_database_adapter()
     mock_crate.assert_called_once()
     qt.config.database = 1
-    qt.get_db_writer()
+    qt.get_database_adapter()
     mock_timescale.assert_called_once()
     qt.config.database = 2
-    qt.get_db_writer()
+    qt.get_database_adapter()
     mock_influx.assert_called_once()
     qt.config.database = 3
     with pytest.raises(ValueError):
-        qt.get_db_writer()
+        qt.get_database_adapter()
     qt.config.database = 4
-    qt.get_db_writer()
+    qt.get_database_adapter()
     mock_postgres.assert_called_once()
     qt.config.database = 5
-    qt.get_db_writer()
+    qt.get_database_adapter()
     mock_timestream.assert_called_once()
     qt.config.database = 6
-    qt.get_db_writer()
+    qt.get_database_adapter()
     mock_mssql.assert_called_once()
-    qt.config.database = 7
-    db_writer = qt.get_db_writer()
-    assert db_writer is None
+
+    with pytest.raises(ValueError):
+        qt.config.database = 7
+        db_writer = qt.get_database_adapter()
+        assert db_writer is None
 
 
 def test_percentage_to_rgb():
@@ -53,7 +55,7 @@ def test_percentage_to_rgb():
     assert b == 0
 
 
-@mock.patch("tsdg.query_timer.core.get_db_writer", autospec=True)
+@mock.patch("tsqt.core.get_database_adapter", autospec=True)
 def test_start_query_run(mock_get_db_writer):
     mock_db_writer = mock.MagicMock()
     mock_db_writer.execute_query.side_effect = [[1, 2, 3], Exception("mocked failure")]

@@ -22,13 +22,13 @@
 from typing import Tuple
 
 from tsdg.util.tictrack import timed_function
-from tsdg.model.database import DbWriter
+from tsdg.model.database import AbstractDatabaseAdapter
 from influxdb_client import InfluxDBClient, Bucket
 from influxdb_client.client.write_api import SYNCHRONOUS, Point
 from datetime import datetime
 
 
-class InfluxDbWriter(DbWriter):
+class InfluxDbAdapter(AbstractDatabaseAdapter):
     def __init__(
         self, host: str, token: str, org: str, model: dict, database_name: str = None
     ):

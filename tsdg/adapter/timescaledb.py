@@ -23,12 +23,12 @@ import psycopg2
 import psycopg2.extras
 from pgcopy import CopyManager
 from tsdg.util.tictrack import timed_function
-from tsdg.model.database import DbWriter
+from tsdg.model.database import AbstractDatabaseAdapter
 from datetime import datetime
 from datetime_truncate import truncate
 
 
-class TimescaleDbWriter(DbWriter):
+class TimescaleDbAdapter(AbstractDatabaseAdapter):
     def __init__(
         self,
         host: str,

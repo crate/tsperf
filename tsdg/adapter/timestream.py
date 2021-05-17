@@ -27,10 +27,10 @@ import math
 import numpy
 from tsdg.util.tictrack import timed_function
 from botocore.config import Config
-from tsdg.model.database import DbWriter
+from tsdg.model.database import AbstractDatabaseAdapter
 
 
-class TimeStreamWriter(DbWriter):
+class TimeStreamAdapter(AbstractDatabaseAdapter):
     def __init__(
         self,
         aws_access_key_id: str,
@@ -177,3 +177,6 @@ class TimeStreamWriter(DbWriter):
             print("Table [%s] successfully created." % self.table_name)
         except Exception as err:
             print("Create table failed:", err)
+
+    def close_connection(self):
+        pass

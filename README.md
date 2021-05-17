@@ -1,4 +1,4 @@
-![tag_build_and_push](https://github.com/crate/ts-data-generator/workflows/tag_build_and_push/badge.svg?branch=master) ![code_quality](https://github.com/crate/ts-data-generator/workflows/code_quality/badge.svg)
+![Tests](https://github.com/crate/tsdg/workflows/Tests/badge.svg)
 
 # Data Generator
 
@@ -9,3 +9,11 @@ data, without the need to set up an ingestion chain (which could be Azure IoTHub
 ## Maximizing Performance
 
 To maximize performance multiple instances of the Data Generator must be run in parallel. One way to achieve this is using kubernetes how to do this is documented [here](KUBERNETES.md).
+
+## Setup sandbox
+```shell
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --editable=.[testing]
+pytest -vvv tests
+```

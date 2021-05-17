@@ -12,11 +12,14 @@ The Query Timer is a tool to run queries against different databases and determi
 
 #### Pip install
 
-The Query Timer is part of the tsdb-data-generator package and can be installed using `pip install tsdb-data-generator`.
+The Query Timer is part of the tsdb-data-generator package and can be installed using `pip install tsdg`.
 
-By calling `tsqt -h` the possible configurations are listed. For further details see [Query Timer Configuration](#query-timer-configuration). All configurations can be done with either command line arguments or environment variables but when both are set then command line arguments will be used.
+By calling `tsqt -h` the possible configurations are listed. For further details see
+[Query Timer Configuration](#query-timer-configuration). All configurations can be done with either command line
+arguments or environment variables but when both are set then command line arguments will be used.
 
-When calling `tsqt` with the desired arguments the Query Timer outputs live updated statistics on the query execution. This includes:
+When calling `tsqt` with the desired arguments the Query Timer outputs live updated statistics on the query execution.
+This includes:
 
 + concurrency: how many threads are running, defined by [CONCURRENCY](#concurrency)
 + iterations: how many queries will be done in each thread, defined by [ITERATIONS](#iterations)
@@ -48,7 +51,8 @@ Currently 7 Databases are
 
 ##### Client Library
 
-For CrateDB the [crate](https://pypi.org/project/crate/) library is used. To connect to CrateDB the following environment variables must be set:
+For CrateDB the [crate](https://pypi.org/project/crate/) library is used. To connect to CrateDB the following
+environment variables must be set:
 
 + [HOST](#host): hostname including port e.g. `localhost:4200`
 + [USERNAME](#username): CrateDB username.
@@ -58,7 +62,8 @@ For CrateDB the [crate](https://pypi.org/project/crate/) library is used. To con
 
 ##### Client Library
 
-For InfluxDB the [influx-client](https://pypi.org/project/influxdb-client/) library is used as the Data Generator only supports InfluxDB V2. To connect to InfluxDB the following environment variables must be set:
+For InfluxDB the [influx-client](https://pypi.org/project/influxdb-client/) library is used as the Data Generator only
+supports InfluxDB V2. To connect to InfluxDB the following environment variables must be set:
 
 + [HOST](#host): hostname
 + [TOKEN](#token): InfluxDB Read/Write token
@@ -86,7 +91,8 @@ To connect with TimescaleDB the following environment variables must be set:
 
 ##### Client Library
 
-For MongoDB the [MongoClient](https://mongodb.github.io/node-mongodb-native/api-generated/mongoclient.html) library is used.
+For MongoDB the [MongoClient](https://mongodb.github.io/node-mongodb-native/api-generated/mongoclient.html) library is
+used.
 
 To connect with MongoDB the following environment variables must be set:
 
@@ -97,7 +103,8 @@ To connect with MongoDB the following environment variables must be set:
 
 ##### Specifics
 
-Because `pymongo` does not support queries as string, Support for MongoDB is turned of in the binary. To still use the Query Timer with Mongo DB have a look at the [Using MongoDB](#using-mongodb) section of this documentation. 
+Because `pymongo` does not support queries as string, Support for MongoDB is turned of in the binary. To still use the
+Query Timer with Mongo DB have a look at the [Using MongoDB](#using-mongodb) section of this documentation. 
 
 #### PostgreSQL
 
@@ -128,7 +135,8 @@ To connect with AWS Timestream the following environment variables must be set:
 
 ##### Specifics
 
-+ Tests have shown that queries often fail due to server errors. To accommodate this an automatic retry is implemented that tries to execute the query a second time. If it fails again the query is marked as failure.
++ Tests have shown that queries often fail due to server errors. To accommodate this an automatic retry is implemented
+  that tries to execute the query a second time. If it fails again the query is marked as failure.
   
 #### Microsoft SQL Server
 
@@ -146,7 +154,8 @@ To connect with Microsoft SQL Server the following environment variables must be
 
 ### Using MongoDB
 
-To use the Query Timer with MongoDB the code of the Query Timer needs to be changed. Therefore checkout this [repository](https://www.github.com/crate/ts-data-generator). 
+To use the Query Timer with MongoDB the code of the Query Timer needs to be changed. Therefore checkout this
+[repository](https://www.github.com/crate/tsdg). 
 
 + In [this](query_timer/__main__.py) file uncomment the import statement of the `MongoDBWriter` 
 + Also uncomment the instantiation of the `db_writer` in the `get_db_writer` function 
@@ -154,13 +163,15 @@ To use the Query Timer with MongoDB the code of the Query Timer needs to be chan
 
 This should let you start the Query Timer using `DATABASE` set to MongoDB.
 
-To add the query you want to measure add a variable containing your query to the script and pass this variable to `db_writer.execute_query()` in the `start_query_run` function, instead of `config.query`.
+To add the query you want to measure add a variable containing your query to the script and pass this variable to
+`db_writer.execute_query()` in the `start_query_run` function, instead of `config.query`.
 
 Now the Query Timer is able to measure query execution times for MongoDB.
 
 ## Query Timer Configuration
 
-The Query Timer is mostly configured by setting Environment Variables (or command line arguments start with `-h` for more information). This chapter lists all available Environment Variables and explains their use in the Query Time.
+The Query Timer is mostly configured by setting Environment Variables (or command line arguments start with `-h` for
+more information). This chapter lists all available Environment Variables and explains their use in the Query Time.
 
 ### Environment variables configuring the behaviour of the Query Time
 
@@ -288,7 +299,8 @@ Default: empty string
 used with TimescaleDB, MongoDB, AWS Timestream, Postgresql, MSSQL.
 
 **TimescaleDB, Postgresql, MSSQL:**
-The value of `DB_NAME` is used when connecting to TimescaleDB. This database must already exist in your TimescaleDB instance and must have already been initialized with `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;`.
+The value of `DB_NAME` is used when connecting to TimescaleDB. This database must already exist in your TimescaleDB
+instance and must have already been initialized with `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;`.
 
 **MongoDB:**
 The value of `DB_NAME` is used as the database parameter of MongoDB.
@@ -362,11 +374,14 @@ Default: empty string
 
 ## Alternative Query Timers
 
-As the Query Timer is just a by-product of the Data Generator there are other alternatives that offer more features and ways to time queries. The main advantage of the Query Timer is that it supports all Databases that are also supported by the Data Generator and is easy and fast to use.
+As the Query Timer is just a by-product of the Data Generator there are other alternatives that offer more features and
+ways to time queries. The main advantage of the Query Timer is that it supports all Databases that are also supported by
+the Data Generator and is easy and fast to use.
 
 ### cr8
 
-[cr8](https://github.com/mfussenegger/cr8) is a highly sophisticated tool that offers the possibility to measure query execution times for CrateDB and other Databases using the postgres protocol.
+[cr8](https://github.com/mfussenegger/cr8) is a highly sophisticated tool that offers the possibility to measure query
+execution times for CrateDB and other Databases using the postgres protocol.
 
 Pros:
 
@@ -380,7 +395,8 @@ Cons:
 
 ### JMeter
 
-[Jmeter](https://jmeter.apache.org/) is a well known and great tool that offers the possibility to measure query execution times for Databases using JDBC.
+[Jmeter](https://jmeter.apache.org/) is a well known and great tool that offers the possibility to measure query
+execution times for Databases using JDBC.
 
 Pros: 
 

@@ -1,11 +1,11 @@
 # tictrack
 
-`tictrack` is a python library to measure function execution times and apply statistical functions on the results.
+`tictrack` is a Python library to measure function execution times and apply statistical functions on the results.
 
 ## Why using tictrack instead of other libraries
 
 Other libraries that measure function execution times require the same repetitive code for each time you want to use it.
-This reduces readability and code needs to be changed when execution times no longer want to be tracked. Also if an
+This reduces readability and code needs to be changed when execution times no longer want to be tracked. Also, if an
 average (or other statistical value) execution time needs to be calculated time keeping needs to be implemented again.
 
 `tictrack` solves this with the following features:

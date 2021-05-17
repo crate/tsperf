@@ -1,6 +1,5 @@
 from datetime import datetime
-
-import mock
+from unittest import mock
 
 from tests.tsdg.test_models import test_model
 from tsdg.adapter.mongodb import MongoDbAdapter

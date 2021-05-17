@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from tests.tsdg.test_models import test_model
 from tsdg.adapter.timestream import TimeStreamAdapter

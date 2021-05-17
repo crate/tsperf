@@ -1,8 +1,8 @@
 import os
 import os.path
 import time
+from unittest import mock
 
-import mock
 import pytest
 
 from tsdg.config import DataGeneratorConfig

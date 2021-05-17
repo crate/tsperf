@@ -1,4 +1,5 @@
-import mock
+from unittest import mock
+
 import psycopg2.extras
 
 from tests.tsdg.test_models import test_model, test_model2, test_model3

@@ -20,27 +20,28 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import json
-import urllib3
-import time
 import logging
-from tsdg.util import tictrack
-from tsdg.util.batch_size_automator import BatchSizeAutomator
-from queue import Queue, Empty
+import time
+from queue import Empty, Queue
 from threading import Thread, current_thread
 from typing import Tuple
-from tsdg.model.edge import Edge
-from tsdg.model.database import AbstractDatabaseAdapter
+
+import urllib3
+from prometheus_client import Counter, Gauge, start_http_server
+
 from tsdg.adapter.cratedb import CrateDbAdapter
-from tsdg.adapter.timescaledb import TimescaleDbAdapter
 from tsdg.adapter.influxdb import InfluxDbAdapter
 from tsdg.adapter.mongodb import MongoDbAdapter
-from tsdg.adapter.postgresql import PostgresDbAdapter
-from tsdg.adapter.timestream import TimeStreamAdapter
 from tsdg.adapter.mssql import MsSQLDbAdapter
-from tsdg.config import DataGeneratorConfig
+from tsdg.adapter.postgresql import PostgresDbAdapter
+from tsdg.adapter.timescaledb import TimescaleDbAdapter
+from tsdg.adapter.timestream import TimeStreamAdapter
 from tsdg.cli import parse_arguments
-from prometheus_client import start_http_server, Gauge, Counter
-
+from tsdg.config import DataGeneratorConfig
+from tsdg.model.database import AbstractDatabaseAdapter
+from tsdg.model.edge import Edge
+from tsdg.util import tictrack
+from tsdg.util.batch_size_automator import BatchSizeAutomator
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logging.basicConfig(

@@ -20,8 +20,8 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import random
-from tsdg.util.float_simulator import FloatSimulator
 
+from tsdg.util.float_simulator import FloatSimulator
 
 factors = [-1, 1]
 
@@ -36,7 +36,7 @@ class Edge:
         self._init_sensors()
 
     def _init_sensors(self):
-        for key, value in self.edge_model.items():
+        for value in self.edge_model.values():
             sensor_type = value["type"]["value"].lower()
             if sensor_type == "float":
                 self.sensors.append(FloatSensor(value))
@@ -112,4 +112,4 @@ class BoolSensor(Sensor):
         self.true_ratio = self.model["true_ratio"]["value"]
 
     def calculate_next_value(self) -> bool:
-        return random.randint(0, (1 / self.true_ratio)) < 1
+        return random.randint(0, (1 / self.true_ratio)) < 1  # noqa:S311

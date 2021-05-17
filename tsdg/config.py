@@ -20,8 +20,8 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import os
-import time
 import os.path
+import time
 from argparse import Namespace
 from distutils.util import strtobool
 

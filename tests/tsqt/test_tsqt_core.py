@@ -1,5 +1,6 @@
 import mock
 import pytest
+
 import tsqt.core as qt
 
 

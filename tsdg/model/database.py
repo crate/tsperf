@@ -22,7 +22,6 @@ from abc import abstractmethod
 
 
 class AbstractDatabaseAdapter:
-
     @abstractmethod
     def __init__(self):
         pass

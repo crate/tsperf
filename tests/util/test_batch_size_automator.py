@@ -111,7 +111,7 @@ def test_insert_batch_time_normal():
     # Test Case 1:
     # ten will be the first best time
     duration = 10
-    for i in range(0, batch_size_automator.test_size):
+    for _ in range(0, batch_size_automator.test_size):
         batch_size_automator.insert_batch_time(duration)
 
     assert batch_size_automator.batch_times["best"]["avg_time"] == duration
@@ -129,7 +129,7 @@ def test_insert_batch_time_normal():
     # Test Case 2:
     # five will be the first best time making 3000 the best batchsize
     duration = 5
-    for i in range(0, batch_size_automator.test_size):
+    for _ in range(0, batch_size_automator.test_size):
         batch_size_automator.insert_batch_time(duration)
     current_batch_size = initial_batch_size + initial_step_size
     current_batch_per_second = current_batch_size / duration
@@ -145,7 +145,7 @@ def test_insert_batch_time_normal():
     # Test Case 3:
     # next is worse
     duration = 7
-    for i in range(0, batch_size_automator.test_size):
+    for _ in range(0, batch_size_automator.test_size):
         batch_size_automator.insert_batch_time(duration)
 
     assert batch_size_automator.batch_times["best"]["avg_time"] == 5  # last duration
@@ -163,7 +163,7 @@ def test_insert_batch_time_normal():
     # Test Case 4:
     # next is best
     duration = 4
-    for i in range(0, batch_size_automator.test_size):
+    for _ in range(0, batch_size_automator.test_size):
         batch_size_automator.insert_batch_time(duration)
 
     assert batch_size_automator.batch_times["best"]["avg_time"] == duration
@@ -185,7 +185,7 @@ def test_insert_batch_time_normal():
 
     # for the next surveillance period we have no change in best batch size
     duration = 3
-    for i in range(0, batch_size_automator.test_size):
+    for _ in range(0, batch_size_automator.test_size):
         batch_size_automator.insert_batch_time(duration)
 
     assert batch_size_automator.batch_times["best"]["avg_time"] == duration
@@ -198,7 +198,7 @@ def test_insert_batch_time_normal():
     # Test Case 6:
     # performance is worse so we switch out of surveillance mode and try to find best batch size again
     duration = 5
-    for i in range(0, batch_size_automator.test_size):
+    for _ in range(0, batch_size_automator.test_size):
         batch_size_automator.insert_batch_time(duration)
 
     assert not batch_size_automator.surveillance_mode
@@ -224,12 +224,12 @@ def test_insert_batch_time_smallest_batch():
     # batch size will allways get smaller until we are under 1
     # first we have a baseline
     long_duration = 10000
-    for i in range(0, batch_size_automator.test_size):
+    for _ in range(0, batch_size_automator.test_size):
         batch_size_automator.insert_batch_time(long_duration)
 
     # then we get worse so direction of optimization is reversed
     worse_duration = 100000
-    for i in range(0, batch_size_automator.test_size):
+    for _ in range(0, batch_size_automator.test_size):
         batch_size_automator.insert_batch_time(worse_duration)
 
     # now we get better each time until we reach batch_size 1

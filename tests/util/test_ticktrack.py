@@ -1,6 +1,8 @@
+import statistics
+
 import mock
 import pytest
-import statistics
+
 from tsdg.util import tictrack
 
 

@@ -19,29 +19,28 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 import logging
+import shutil
 import statistics
+import time
+from queue import Queue
+from threading import Thread
 
 import numpy
-import time
-import shutil
-from queue import Queue
-
 import urllib3
 from blessed import Terminal
 
-from tsqt.cli import parse_arguments
-from tsqt.config import QueryTimerConfig
-from tsdg.util.tictrack import tic_toc, timed_function
-from threading import Thread
 from tsdg.adapter.cratedb import CrateDbAdapter
-from tsdg.adapter.postgresql import PostgresDbAdapter
-from tsdg.adapter.timescaledb import TimescaleDbAdapter
 from tsdg.adapter.influxdb import InfluxDbAdapter
 
 # from tsdg.adapter.mongodb import MongoDbAdapter
 from tsdg.adapter.mssql import MsSQLDbAdapter
+from tsdg.adapter.postgresql import PostgresDbAdapter
+from tsdg.adapter.timescaledb import TimescaleDbAdapter
 from tsdg.adapter.timestream import TimeStreamAdapter
 from tsdg.model.database import AbstractDatabaseAdapter
+from tsdg.util.tictrack import tic_toc, timed_function
+from tsqt.cli import parse_arguments
+from tsqt.config import QueryTimerConfig
 
 model = {"value": "none"}
 start_time = time.time()
@@ -71,9 +70,7 @@ def get_database_adapter() -> AbstractDatabaseAdapter:  # noqa
             model,
         )
     elif config.database == 2:
-        adapter = InfluxDbAdapter(
-            config.host, config.token, config.organization, model
-        )
+        adapter = InfluxDbAdapter(config.host, config.token, config.organization, model)
     elif config.database == 3:
         raise ValueError(
             "MongoDB queries are not supported (but can be manually added to the script - see "
@@ -167,7 +164,7 @@ def print_progressbar(
 def start_query_run():
     global success, failure
     adapter = get_database_adapter()
-    for x in range(0, config.iterations):
+    for _ in range(0, config.iterations):
         try:
             adapter.execute_query(config.query)
             success += 1
@@ -195,7 +192,7 @@ def run_qt():  # pragma: no cover
     progress_thread = Thread(target=print_progress_thread)
     progress_thread.start()
     threads = []
-    for y in range(0, config.concurrency):
+    for _ in range(0, config.concurrency):
         thread = Thread(target=start_query_run)
         threads.append(thread)
     for thread in threads:

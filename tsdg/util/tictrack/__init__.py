@@ -20,11 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time
 import statistics
-
-from typing import Callable, Any
-
+import time
+from typing import Any, Callable
 
 tic_toc = {}
 tic_toc_delta = {}

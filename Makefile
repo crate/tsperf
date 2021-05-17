@@ -8,6 +8,7 @@ $(eval python       := $(venv)/bin/python)
 $(eval pytest       := $(venv)/bin/pytest)
 $(eval flakehell    := $(venv)/bin/flakehell)
 $(eval black        := $(venv)/bin/black)
+$(eval isort        := $(venv)/bin/isort)
 
 $(eval tsdg         := $(venv)/bin/tsdg)
 
@@ -34,6 +35,7 @@ lint: virtualenv-dev
 
 format: virtualenv-dev
 	$(black) tsdg tsqt tests
+	$(isort) tsdg tsqt tests
 
 test: virtualenv-dev
 	$(pytest) -vvv tests

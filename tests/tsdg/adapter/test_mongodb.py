@@ -1,7 +1,9 @@
-import mock
 from datetime import datetime
-from tsdg.adapter.mongodb import MongoDbAdapter
+
+import mock
+
 from tests.tsdg.test_models import test_model
+from tsdg.adapter.mongodb import MongoDbAdapter
 
 
 @mock.patch("tsdg.adapter.mongodb.MongoClient", autospec=True)

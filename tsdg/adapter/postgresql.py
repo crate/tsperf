@@ -19,12 +19,14 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+from datetime import datetime
+
 import psycopg2
 import psycopg2.extras
-from tsdg.util.tictrack import timed_function
-from tsdg.model.database import AbstractDatabaseAdapter
-from datetime import datetime
 from datetime_truncate import truncate
+
+from tsdg.model.database import AbstractDatabaseAdapter
+from tsdg.util.tictrack import timed_function
 
 
 class PostgresDbAdapter(AbstractDatabaseAdapter):

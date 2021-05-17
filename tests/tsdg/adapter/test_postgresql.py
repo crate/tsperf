@@ -1,7 +1,8 @@
 import mock
 import psycopg2.extras
-from tsdg.adapter.postgresql import PostgresDbAdapter
+
 from tests.tsdg.test_models import test_model, test_model2, test_model3
+from tsdg.adapter.postgresql import PostgresDbAdapter
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)

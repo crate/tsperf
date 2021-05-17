@@ -19,13 +19,13 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+from datetime import datetime
 from typing import Tuple
 
-from tsdg.util.tictrack import timed_function
+from pymongo import CursorType, MongoClient
+
 from tsdg.model.database import AbstractDatabaseAdapter
-from pymongo import MongoClient
-from pymongo import CursorType
-from datetime import datetime
+from tsdg.util.tictrack import timed_function
 
 
 class MongoDbAdapter(AbstractDatabaseAdapter):
@@ -81,7 +81,7 @@ class MongoDbAdapter(AbstractDatabaseAdapter):
         metrics_ = self.model[key]["metrics"]
         tags = []
         metrics = []
-        for key, value in tags_.items():
+        for key in tags_.keys():
             if key != "description":
                 tags.append(key)
         for key, value in metrics_.items():

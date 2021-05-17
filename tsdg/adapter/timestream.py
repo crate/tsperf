@@ -19,15 +19,16 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+import logging
+import math
 from typing import Tuple
 
 import boto3
-import logging
-import math
 import numpy
-from tsdg.util.tictrack import timed_function
 from botocore.config import Config
+
 from tsdg.model.database import AbstractDatabaseAdapter
+from tsdg.util.tictrack import timed_function
 
 
 class TimeStreamAdapter(AbstractDatabaseAdapter):
@@ -59,7 +60,7 @@ class TimeStreamAdapter(AbstractDatabaseAdapter):
     @timed_function()
     def insert_stmt(self, timestamps: list, batch: list):
         data = self._prepare_timestream_stmt(timestamps, batch)
-        for key, values in data.items():
+        for values in data.values():
             common_attributes = values["common_attributes"]
             records = numpy.array_split(
                 values["records"], math.ceil(len(values["records"]) / 100)
@@ -125,7 +126,7 @@ class TimeStreamAdapter(AbstractDatabaseAdapter):
         metrics_ = self.model[key]["metrics"]
         tags = []
         metrics = []
-        for key, value in tags_.items():
+        for key in tags_.keys():
             if key != "description":
                 tags.append(key)
         for key, value in metrics_.items():

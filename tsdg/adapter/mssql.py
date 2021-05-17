@@ -19,12 +19,13 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+from datetime import datetime
 from typing import Tuple
 
 import pyodbc
-from tsdg.util.tictrack import timed_function
+
 from tsdg.model.database import AbstractDatabaseAdapter
-from datetime import datetime
+from tsdg.util.tictrack import timed_function
 
 
 class MsSQLDbAdapter(AbstractDatabaseAdapter):
@@ -58,7 +59,7 @@ class MsSQLDbAdapter(AbstractDatabaseAdapter):
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE id = object_id(N'{self.table_name}')
 AND OBJECTPROPERTY(id, N'IsUserTable') = 1) CREATE TABLE {self.table_name} (
 ts DATETIME NOT NULL,
-"""
+"""  # noqa:S608
         for key, value in columns.items():
             stmt += f"""{key} {value},"""
 
@@ -87,7 +88,7 @@ ts DATETIME NOT NULL,
 
         stmt = stmt.rstrip(", ") + ") VALUES (?, "
 
-        for column in columns:
+        for _ in columns:
             stmt += "?, "
 
         stmt = stmt.rstrip(", ") + ")"

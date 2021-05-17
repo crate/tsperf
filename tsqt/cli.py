@@ -21,7 +21,7 @@
 
 import argparse
 
-from tsdg.cli import TSDG_README_BASEURL
+from tsdg.cli import TSDG_README_URL
 
 from .config import QueryTimerConfig
 
@@ -34,7 +34,7 @@ args_info = {
     },
     "host": {
         "help": "hostname according to the database client requirements. See documentation for further details:"
-        f"{TSDG_README_BASEURL}#host",
+        f"{TSDG_README_URL}#host",
         "choices": [],
         "type": str,
     },
@@ -53,7 +53,7 @@ args_info = {
     "db_name": {
         "help": "Name of the database where query will be executed. Used with InfluxDB, TimescaleDB, MongoDB, "
         "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
-        f"{TSDG_README_BASEURL}#db_name",
+        f"{TSDG_README_URL}#db_name",
         "choices": [],
         "type": str,
     },

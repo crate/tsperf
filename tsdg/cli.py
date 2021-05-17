@@ -23,7 +23,7 @@ import argparse
 
 from tsdg.config import DataGeneratorConfig
 
-TSDG_README_BASEURL = "https://github.com/crate/tsdg/blob/main/tsdg/README.md"
+TSDG_README_URL = "https://github.com/crate/tsdg/blob/main/tsdg/README.md"
 
 args_info = {
     "database": {
@@ -45,7 +45,7 @@ args_info = {
     "ingest_mode": {
         "help": "The ingest_mode argument turns on fast insert when set to True or switches to consecutive inserts "
         "when set to False. For more information, please refer to the documentation."
-        f"{TSDG_README_BASEURL}#ingest_mode)",
+        f"{TSDG_README_URL}#ingest_mode)",
         "choices": [True, False],
         "type": bool,
     },
@@ -70,7 +70,7 @@ args_info = {
     "model_path": {
         "help": "A relative or absolute path to a model in the json format (see the data generator documentation for "
         "more details: "
-        f"{TSDG_README_BASEURL}#data-generator-models)",
+        f"{TSDG_README_URL}#data-generator-models)",
         "choices": ["Absolute or relative file path"],
         "type": str,
     },
@@ -97,7 +97,7 @@ args_info = {
     },
     "host": {
         "help": "hostname according to the database client requirements. See documentation for further details:"
-        f"{TSDG_README_BASEURL}#host",
+        f"{TSDG_README_URL}#host",
         "choices": [],
         "type": str,
     },
@@ -116,7 +116,7 @@ args_info = {
     "db_name": {
         "help": "Name of the database where table will be created. Used with InfluxDB, TimescaleDB, MongoDB, "
         "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
-        f"{TSDG_README_BASEURL}#db-name",
+        f"{TSDG_README_URL}#db-name",
         "choices": [],
         "type": str,
     },

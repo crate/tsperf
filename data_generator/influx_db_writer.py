@@ -29,7 +29,9 @@ from datetime import datetime
 
 
 class InfluxDbWriter(DbWriter):
-    def __init__(self, host: str, token: str, org: str, model: dict, database_name: str = None):
+    def __init__(
+        self, host: str, token: str, org: str, model: dict, database_name: str = None
+    ):
         super().__init__()
         self.client = InfluxDBClient(url=host, token=token)
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
@@ -37,7 +39,9 @@ class InfluxDbWriter(DbWriter):
         self.org = org
         self.model = model
         self.bucket = None
-        self.database_name = (database_name, self._get_model_database_name())[database_name is None or database_name == ""]
+        self.database_name = (database_name, self._get_model_database_name())[
+            database_name is None or database_name == ""
+        ]
 
     def close_connection(self):
         self.client.close()
@@ -49,9 +53,9 @@ class InfluxDbWriter(DbWriter):
                 self.bucket = bucket
 
         if self.bucket is None:
-            bucket = Bucket(name=self.database_name,
-                            org_id=self.org,
-                            retention_rules=[])
+            bucket = Bucket(
+                name=self.database_name, org_id=self.org, retention_rules=[]
+            )
             self.bucket = self.client.buckets_api().create_bucket(bucket)
 
     @timed_function()

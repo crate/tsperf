@@ -33,19 +33,25 @@ class QueryTimerConfig:
 
     def validate_config(self) -> bool:  # noqa
         if self.database not in [0, 1, 2, 3, 4, 5, 6]:
-            self.invalid_configs.append(f"DATABASE: {self.database} not 0, 1, 2, 3, 4, 5 or 6")
+            self.invalid_configs.append(
+                f"DATABASE: {self.database} not 0, 1, 2, 3, 4, 5 or 6"
+            )
         if int(self.port) <= 0:
             self.invalid_configs.append(f"PORT: {self.port} <= 0")
         if self.concurrency * self.iterations < 100:
-            self.invalid_configs.append(f"CONCURRENCY: {self.concurrency}; ITERATIONS: {self.iterations}. At least "
-                                        f"100 queries must be run. The current configuration results "
-                                        f"in {self.concurrency * self.iterations} queries (concurrency * iterations)")
+            self.invalid_configs.append(
+                f"CONCURRENCY: {self.concurrency}; ITERATIONS: {self.iterations}. At least "
+                f"100 queries must be run. The current configuration results "
+                f"in {self.concurrency * self.iterations} queries (concurrency * iterations)"
+            )
         terminal_size = shutil.get_terminal_size()
         if len(self.quantiles) > terminal_size.lines - 12:
-            self.invalid_configs.append(f"QUANTILES: {self.quantiles}; TERMINAL_LINES: {terminal_size.lines}. "
-                                        f"QueryTimer needs a bigger terminal (at least {len(self.quantiles) + 12}) "
-                                        f"to display all results. Please increase "
-                                        f"terminal size or reduce number of quantiles.")
+            self.invalid_configs.append(
+                f"QUANTILES: {self.quantiles}; TERMINAL_LINES: {terminal_size.lines}. "
+                f"QueryTimer needs a bigger terminal (at least {len(self.quantiles) + 12}) "
+                f"to display all results. Please increase "
+                f"terminal size or reduce number of quantiles."
+            )
 
         return len(self.invalid_configs) == 0
 

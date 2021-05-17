@@ -25,13 +25,24 @@ from tictrack import timed_function
 
 
 class CrateDbWriter(DbWriter):
-    def __init__(self, host: str, username: str, password: str, model: dict, table_name: str = None, shards: int = None,
-                 replicas: int = None, partition: str = "week"):
+    def __init__(
+        self,
+        host: str,
+        username: str,
+        password: str,
+        model: dict,
+        table_name: str = None,
+        shards: int = None,
+        replicas: int = None,
+        partition: str = "week",
+    ):
         super().__init__()
         self.conn = client.connect(host, username=username, password=password)
         self.cursor = self.conn.cursor()
         self.model = model
-        self.table_name = (table_name, self._get_model_table_name())[table_name is None or table_name == ""]
+        self.table_name = (table_name, self._get_model_table_name())[
+            table_name is None or table_name == ""
+        ]
         self.shards = (shards, 21)[shards is None]
         self.replicas = (replicas, 1)[replicas is None]
         self.partition = partition

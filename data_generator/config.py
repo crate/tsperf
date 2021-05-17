@@ -78,7 +78,9 @@ class DataGeneratorConfig:
         if self.id_end < 0:
             self.invalid_configs.append(f"ID_END: {self.id_end} < 0")
         if self.id_end < self.id_start:
-            self.invalid_configs.append(f"ID_START: {self.id_start} > ID_END: {self.id_end}")
+            self.invalid_configs.append(
+                f"ID_START: {self.id_start} > ID_END: {self.id_end}"
+            )
         if self.ingest_mode not in [0, 1]:
             self.invalid_configs.append(f"INGEST_MODE: {self.ingest_mode} not 0 or 1")
         if self.ingest_size < 0:
@@ -90,12 +92,25 @@ class DataGeneratorConfig:
         if not os.path.isfile(self.model_path):
             self.invalid_configs.append(f"MODEL_PATH: {self.model_path} does not exist")
         if self.database not in [0, 1, 2, 3, 4, 5, 6]:
-            self.invalid_configs.append(f"DATABASE: {self.database} not 0, 1, 2, 3, 4, 5 or 6")
+            self.invalid_configs.append(
+                f"DATABASE: {self.database} not 0, 1, 2, 3, 4, 5 or 6"
+            )
         if self.stat_delta <= 0:
             self.invalid_configs.append(f"STAT_DELTA: {self.stat_delta} <= 0")
-        if self.partition.lower() not in ["second", "minute", "hour", "day", "week", "month", "quarter", "year"]:
-            self.invalid_configs.append(f"PARTITION: {self.partition} not one of second, minute, hour, day, week, "
-                                        f"month, quarter or year")
+        if self.partition.lower() not in [
+            "second",
+            "minute",
+            "hour",
+            "day",
+            "week",
+            "month",
+            "quarter",
+            "year",
+        ]:
+            self.invalid_configs.append(
+                f"PARTITION: {self.partition} not one of second, minute, hour, day, week, "
+                f"month, quarter or year"
+            )
         if self.shards <= 0:
             self.invalid_configs.append(f"SHARDS: {self.shards} <= 0")
         if self.replicas < 0:
@@ -103,7 +118,9 @@ class DataGeneratorConfig:
         if int(self.port) <= 0:
             self.invalid_configs.append(f"PORT: {self.port} <= 0")
         if self.prometheus_port < 1 or self.prometheus_port > 65535:
-            self.invalid_configs.append(f"PROMETHEUS_PORT: {self.prometheus_port} not in valid port range")
+            self.invalid_configs.append(
+                f"PROMETHEUS_PORT: {self.prometheus_port} not in valid port range"
+            )
 
         return len(self.invalid_configs) == 0
 

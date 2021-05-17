@@ -29,7 +29,9 @@ from datetime import datetime
 
 
 class MongoDbWriter(DbWriter):
-    def __init__(self, host: str, username: str, password: str, database_name: str, model: dict):
+    def __init__(
+        self, host: str, username: str, password: str, database_name: str, model: dict
+    ):
         super().__init__()
         self.model = model
         if host == "localhost":
@@ -55,10 +57,12 @@ class MongoDbWriter(DbWriter):
         tags, metrics = self._get_tags_and_metrics()
         for i in range(0, len(batch)):
             t = datetime.fromtimestamp(timestamps[i] / 1000)
-            document = {"measurement": self._get_model_collection_name(),
-                        "date": t,
-                        "tags": {},
-                        "metrics": {}}
+            document = {
+                "measurement": self._get_model_collection_name(),
+                "date": t,
+                "tags": {},
+                "metrics": {},
+            }
             for tag in tags:
                 document["tags"][tag] = batch[i][tag]
             for metric in metrics:

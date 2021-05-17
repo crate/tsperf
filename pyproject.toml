@@ -1,0 +1,28 @@
+# https://flakehell.readthedocs.io/config.html
+[tool.flakehell]
+
+# Inherit from baseline configuration
+base = [
+    "https://raw.githubusercontent.com/life4/flakehell/master/pyproject.toml",
+    #".flakehell.toml",
+]
+
+# Make output beautiful
+format='colored'
+
+# 80 chars limit isn't enough in 21 century
+max_line_length = 120
+
+# show line of source code in output
+show_source = false
+
+[tool.flakehell.plugins]
+pycodestyle = ["+*"]
+pyflakes = ["+*"]
+
+
+[tool.flakehell.exceptions."*"]
+pycodestyle = ["-W503", "-W504"]
+
+[tool.flakehell.exceptions."tictrack/README.md"]
+pyflakes = ["-F821"]

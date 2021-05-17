@@ -13,15 +13,12 @@ requires = [
     "prometheus_client==0.9.0",
     "urllib3==1.26.2",
     "datetime_truncate==1.1.1",
-    "psycopg2==2.8.6",
+    "psycopg2-binary==2.8.6",
     "influxdb_client==1.12.0",
     "pymongo==3.11.2",
     "numpy==1.19.4",
     "pgcopy==1.4.3",
-    "tictrack==1.0.0",
-    "float_simulator==1.0.1",
-    "batch_size_automator==1.0.0",
-    "pyodbc==4.0.30"
+    "pyodbc==4.0.30",
 ]
 
 test_requires = [
@@ -30,25 +27,42 @@ test_requires = [
     "numpy==1.19.4",
     "pytest==6.1.2",
     "pytest-cov==2.10.1",
-    "flake8==3.8.4"
+    "flake8==3.8.4",
+    "black==21.5b1",
+    "flakehell==0.9.0",
 ]
 
 setuptools.setup(
-    name="tsdb_data_generator",
+    name="tsdg",
     version=__version__,
     author="Crate.io",
     author_email="office@crate.at",
     description="A tool to test performance of different timeseries databases",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/crate/ts-data-generator",
+    url="https://github.com/crate/tsdg",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Programming Language :: Python :: 3",
+        "Development Status :: 4 - Beta",
+        "Environment :: Console",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Education",
+        "Intended Audience :: Information Technology",
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: System Administrators",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
+        "Programming Language :: Python :: 3",
+        "Topic :: Communications",
+        "Topic :: Database",
+        "Topic :: Scientific/Engineering :: Information Analysis",
+        "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Text Processing",
+        "Topic :: Utilities",
+        "Operating System :: POSIX",
+        "Operating System :: Unix",
+        "Operating System :: MacOS"
     ],
     entry_points={
         "console_scripts": [

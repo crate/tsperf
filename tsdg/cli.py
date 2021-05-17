@@ -23,7 +23,7 @@ import argparse
 
 from tsdg.config import DataGeneratorConfig
 
-TSDG_README_URL = "https://github.com/crate/tsdg/blob/main/tsdg/README.md"
+TSDG_README_URL = "https://github.com/crate/tsperf/blob/main/tsdg/README.md"
 
 args_info = {
     "database": {

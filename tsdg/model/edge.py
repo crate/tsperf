@@ -20,7 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import random
-from float_simulator import FloatSimulator
+from tsdg.util.float_simulator import FloatSimulator
 
 
 factors = [-1, 1]

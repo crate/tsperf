@@ -1,6 +1,6 @@
 import pytest
 import statistics
-from float_simulator import FloatSimulator
+from tsdg.util.float_simulator import FloatSimulator
 
 
 float_model = {

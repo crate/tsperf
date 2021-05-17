@@ -28,7 +28,7 @@ from distutils.util import strtobool
 
 class DataGeneratorConfig:
     def __init__(self):
-        # environment variables describing how the data_generator behaves
+        # environment variables describing how the tsdg behaves
         self.id_start = int(os.getenv("ID_START", 1))
         self.id_end = int(os.getenv("ID_END", 500))
         self.ingest_mode = strtobool(os.getenv("INGEST_MODE", "True"))

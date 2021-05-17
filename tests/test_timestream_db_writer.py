@@ -1,9 +1,9 @@
 import mock
-from data_generator.timestream_db_writer import TimeStreamWriter
+from tsdg.adapter.timestream import TimeStreamWriter
 from tests.test_models import test_model
 
 
-@mock.patch("data_generator.timestream_db_writer.boto3", autospec=True)
+@mock.patch("tsdg.adapter.timestream.boto3", autospec=True)
 def test_close_connection(mock_boto):
     """
     Test if the .close_connection() function of TimeStreamWriter calls the close() function of self.client
@@ -24,7 +24,7 @@ def test_close_connection(mock_boto):
     )
 
 
-@mock.patch("data_generator.timestream_db_writer.boto3", autospec=True)
+@mock.patch("tsdg.adapter.timestream.boto3", autospec=True)
 def test_insert_stmt(mock_boto):
     """
     This function tests if the .insert_stmt() function of TimeStreamWriter creates the correct json object
@@ -106,7 +106,7 @@ def test_insert_stmt(mock_boto):
     assert args["CommonAttributes"] == common_attr
 
 
-@mock.patch("data_generator.timestream_db_writer.boto3", autospec=True)
+@mock.patch("tsdg.adapter.timestream.boto3", autospec=True)
 def test_execute_query(mock_boto):
     """
     This function tests if the .execute_query() function of TimeStreamWriter uses the correct argument
@@ -139,7 +139,7 @@ def test_execute_query(mock_boto):
     assert args["QueryString"] == query
 
 
-@mock.patch("data_generator.timestream_db_writer.boto3", autospec=True)
+@mock.patch("tsdg.adapter.timestream.boto3", autospec=True)
 def test_prepare_database_not_existing_db_and_table(mock_boto):
     """
     This function tests if the .execute_query() function of TimeStreamWriter uses the correct argument
@@ -167,7 +167,7 @@ def test_prepare_database_not_existing_db_and_table(mock_boto):
     write_client.create_table.assert_called_once()
 
 
-@mock.patch("data_generator.timestream_db_writer.boto3", autospec=True)
+@mock.patch("tsdg.adapter.timestream.boto3", autospec=True)
 def test_prepare_database_existing_db_and_table(mock_boto):
     """
     This function tests if the .execute_query() function of TimeStreamWriter uses the correct argument

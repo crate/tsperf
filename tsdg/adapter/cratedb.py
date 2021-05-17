@@ -19,9 +19,9 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from data_generator.db_writer import DbWriter
+from tsdg.model.database import DbWriter
 from crate import client
-from tictrack import timed_function
+from tsdg.util.tictrack import timed_function
 
 
 class CrateDbWriter(DbWriter):

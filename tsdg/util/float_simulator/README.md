@@ -30,7 +30,7 @@ simulating those values with the `float_simulator` and `numpy`.
 Instantiate a `FloatSimulator` object and calculate a number of values for it:
 
 ```python
-from float_simulator import FloatSimulator
+from tsdg.util.float_simulator import FloatSimulator
 
 mean = 5
 min = 3

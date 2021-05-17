@@ -20,7 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import argparse
-from data_generator.config import DataGeneratorConfig
+from tsdg.config import DataGeneratorConfig
 
 args_info = {
     "database": {

@@ -21,8 +21,9 @@ pycodestyle = ["+*"]
 pyflakes = ["+*"]
 
 
-[tool.flakehell.exceptions."*"]
+[tool.flakehell.exceptions."**/*.py"]
 pycodestyle = ["-W503", "-W504"]
 
-[tool.flakehell.exceptions."tictrack/README.md"]
+[tool.flakehell.exceptions."tsdg/util/tictrack/README.md"]
+pycodestyle = ["-E111", "-E114"]
 pyflakes = ["-F821"]

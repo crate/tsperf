@@ -1,5 +1,5 @@
-from data_generator.argument_parser import args_info
-from data_generator.config import DataGeneratorConfig
+from tsdg.argument_parser import args_info
+from tsdg.config import DataGeneratorConfig
 
 
 def test_each_config_has_arg():

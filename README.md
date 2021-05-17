@@ -2,13 +2,14 @@
 
 # Data Generator
 
-The Data Generator has its own in-depth [documentation](tsdg/README.md).
-For the purpose of capacity testing it simulates the generation of timeseries
-data, without the need to set up an ingestion chain (which could be Azure IoTHub, RabbitMQ, etc.)
+The Data Generator has a dedicated [documentation page](tsdg/README.md).
+For the purpose of capacity testing it simulates the generation of time-series
+data, without the need to set up an ingestion chain (which could be Azure IoTHub, RabbitMQ, etc.).
 
 ## Maximizing Performance
 
-To maximize performance multiple instances of the Data Generator must be run in parallel. One way to achieve this is using kubernetes how to do this is documented [here](KUBERNETES.md).
+To maximize performance, multiple instances of the Data Generator must be run in parallel.
+How to achieve this using Kubernetes is documented within [KUBERNETES.md](KUBERNETES.md).
 
 ## Setup sandbox
 ```shell

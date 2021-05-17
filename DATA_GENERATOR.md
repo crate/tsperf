@@ -86,7 +86,7 @@ The Data Generator is a tool to generate timeseries data which adheres to a [sta
 
 An easy way to use the Data Generator is to install it via `pip`:
 
-+ Open a terminal and type `pip install tsdb-data-generator`
++ Open a terminal and type `pip install tsdg`
 + Look at the default configuration of the Data Generator by executing `tsdg -h` in a terminal
 + Run the Data Generator with the desired configuration values by executing `tsdg` in a terminal
 

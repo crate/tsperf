@@ -14,6 +14,6 @@ To maximize performance multiple instances of the Data Generator must be run in 
 ```shell
 python3 -m venv .venv
 source .venv/bin/activate
-pip install --editable=.[testing]
+pip install --editable=.[testing] --upgrade
 pytest -vvv tests
 ```

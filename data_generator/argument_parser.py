@@ -1,3 +1,24 @@
+# -*- coding: utf-8; -*-
+#
+# Licensed to Crate.io GmbH ("Crate") under one or more contributor
+# license agreements.  See the NOTICE file distributed with this work for
+# additional information regarding copyright ownership.  Crate licenses
+# this file to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.  You may
+# obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# However, if you have executed another commercial license agreement
+# with Crate these terms will supersede the license and you may use the
+# software solely pursuant to the terms of the relevant commercial agreement.
+
 import argparse
 from data_generator.config import DataGeneratorConfig
 
@@ -20,8 +41,8 @@ args_info = {
     },
     "ingest_mode": {
         "help": "The ingest_mode argument turns on fast insert when set to True or switches to consecutive inserts "
-                "when set to False. For more information read the documentation ("
-                "https://github.com/crate/ts-data-generator/blob/master/DATA_GENERATOR.md#ingest_mode)",
+                "when set to False. For more information, please refer to the documentation."
+                "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#ingest_mode)",
         "choices": [True, False],
         "type": bool
     },
@@ -46,7 +67,7 @@ args_info = {
     "model_path": {
         "help": "A relative or absolute path to a model in the json format (see the data generator documentation for "
                 "more details: "
-                "https://github.com/crate/ts-data-generator/blob/master/DATA_GENERATOR.md#data-generator-models)",
+                "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#data-generator-models)",
         "choices": ["Absolute or relative file path"],
         "type": str
     },
@@ -74,7 +95,7 @@ args_info = {
     },
     "host": {
         "help": "hostname according to the database client requirements. See documentation for further details:"
-                "https://github.com/crate/ts-data-generator/blob/master/DATA_GENERATOR.md#host",
+                "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#host",
         "choices": [],
         "type": str
     },
@@ -93,7 +114,7 @@ args_info = {
     "db_name": {
         "help": "Name of the database where table will be created. Used with InfluxDB, TimescaleDB, MongoDB, "
                 "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
-                "https://github.com/crate/ts-data-generator/blob/master/DATA_GENERATOR.md#db-name",
+                "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#db-name",
         "choices": [],
         "type": str
     },

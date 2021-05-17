@@ -10,7 +10,7 @@ args_info = {
     },
     "host": {
         "help": "hostname according to the database client requirements. See documentation for further details:"
-                "https://github.com/crate/ts-data-generator/blob/master/DATA_GENERATOR.md#host",
+                "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#host",
         "choices": [],
         "type": str
     },
@@ -29,7 +29,7 @@ args_info = {
     "db_name": {
         "help": "Name of the database where query will be executed. Used with InfluxDB, TimescaleDB, MongoDB, "
                 "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
-                "https://github.com/crate/ts-data-generator/blob/master/DATA_GENERATOR.md#db-name",
+                "https://github.com/crate/tsdg/blob/main/DATA_GENERATOR.md#db-name",
         "choices": [],
         "type": str
     },

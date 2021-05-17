@@ -29,14 +29,28 @@ from datetime_truncate import truncate
 
 
 class TimescaleDbWriter(DbWriter):
-    def __init__(self, host: str, port: int, username: str, password: str,
-                 ts_db_name: str, model: dict, table_name: str = None,
-                 partition: str = "week", copy: bool = False, distributed: bool = False):
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        username: str,
+        password: str,
+        ts_db_name: str,
+        model: dict,
+        table_name: str = None,
+        partition: str = "week",
+        copy: bool = False,
+        distributed: bool = False,
+    ):
         super().__init__()
-        self.conn = psycopg2.connect(dbname=ts_db_name, user=username, password=password, host=host, port=port)
+        self.conn = psycopg2.connect(
+            dbname=ts_db_name, user=username, password=password, host=host, port=port
+        )
         self.cursor = self.conn.cursor()
         self.model = model
-        self.table_name = (table_name, self._get_model_table_name())[table_name is None or table_name == ""]
+        self.table_name = (table_name, self._get_model_table_name())[
+            table_name is None or table_name == ""
+        ]
         self.partition = partition
         self.copy = copy
         self.distributed = distributed
@@ -61,8 +75,10 @@ ts_{self.partition} TIMESTAMP NOT NULL,
             tag = self._get_partition_tag()
             stmt = f"SELECT create_distributed_hypertable('{self.table_name}', 'ts', '{tag}', if_not_exists => true);"
         else:
-            stmt = f"SELECT create_hypertable('{self.table_name}', 'ts', 'ts_{self.partition}', 10, " \
-                   f"if_not_exists => true);"
+            stmt = (
+                f"SELECT create_hypertable('{self.table_name}', 'ts', 'ts_{self.partition}', 10, "
+                f"if_not_exists => true);"
+            )
         self.cursor.execute(stmt)
         self.conn.commit()
 

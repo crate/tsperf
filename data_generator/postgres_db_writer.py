@@ -28,13 +28,26 @@ from datetime_truncate import truncate
 
 
 class PostgresDbWriter(DbWriter):
-    def __init__(self, host: str, port: int, username: str, password: str, db_name: str, model: dict,
-                 table_name: str = None, partition: str = "week"):
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        username: str,
+        password: str,
+        db_name: str,
+        model: dict,
+        table_name: str = None,
+        partition: str = "week",
+    ):
         super().__init__()
-        self.conn = psycopg2.connect(dbname=db_name, user=username, password=password, host=host, port=port)
+        self.conn = psycopg2.connect(
+            dbname=db_name, user=username, password=password, host=host, port=port
+        )
         self.cursor = self.conn.cursor()
         self.model = model
-        self.table_name = (table_name, self._get_model_table_name())[table_name is None or table_name == ""]
+        self.table_name = (table_name, self._get_model_table_name())[
+            table_name is None or table_name == ""
+        ]
         self.partition = partition
 
     def close_connection(self):

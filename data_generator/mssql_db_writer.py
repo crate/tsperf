@@ -28,17 +28,29 @@ from datetime import datetime
 
 
 class MsSQLDbWriter(DbWriter):
-    def __init__(self, host: str, username: str, password: str, db_name: str, model: dict, port: int = 1433,
-                 table_name: str = None):
+    def __init__(
+        self,
+        host: str,
+        username: str,
+        password: str,
+        db_name: str,
+        model: dict,
+        port: int = 1433,
+        table_name: str = None,
+    ):
         super().__init__()
-        driver = '{ODBC Driver 17 for SQL Server}'
-        connection_string = f"DRIVER={driver};SERVER={host},{port};DATABASE={db_name};" \
-                            f"UID={username};PWD={password};CONNECTION TIMEOUT=170000;"
+        driver = "{ODBC Driver 17 for SQL Server}"
+        connection_string = (
+            f"DRIVER={driver};SERVER={host},{port};DATABASE={db_name};"
+            f"UID={username};PWD={password};CONNECTION TIMEOUT=170000;"
+        )
         self.conn = pyodbc.connect(connection_string)
         self.cursor = self.conn.cursor()
         self.cursor.fast_executemany = True
         self.model = model
-        self.table_name = (table_name, self._get_model_table_name())[table_name is None or table_name == ""]
+        self.table_name = (table_name, self._get_model_table_name())[
+            table_name is None or table_name == ""
+        ]
 
     def prepare_database(self):
         columns = self._get_tags_and_metrics()

@@ -43,7 +43,9 @@ from prometheus_client import start_http_server, Gauge, Counter
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
 
 # global variables shared accross threads
 config = DataGeneratorConfig()
@@ -55,46 +57,115 @@ stop_queue = Queue(1)
 insert_finished_queue = Queue(1)
 
 # prometheus metrics published to port config.prometheus_port
-c_values_queue_was_empty = Counter("data_gen_values_queue_empty", "How many times the values_queue was empty when "
-                                                                  "insert_routine needed more values")
-c_inserts_performed_success = Counter("data_gen_inserts_performed_success", "How many times the an insert into the "
-                                                                            "database was performed successfully")
-c_inserts_failed = Counter("data_gen_inserts_failed", "How many times an insert operation failed due to an error")
-c_generated_values = Counter("data_gen_generated_values", "How many values have been generated")
-c_inserted_values = Counter("data_gen_inserted_values", "How many values have been inserted")
-g_insert_percentage = Gauge("data_gen_insert_percentage", "Percentage of values that have been inserted")
-g_batch_size = Gauge("data_gen_batch_size", "The currently used batch size", labelnames=("thread",))
-g_insert_time = Gauge("data_gen_insert_time", "The average time it took to insert the current batch into the "
-                                              "database", labelnames=("thread",))
-g_rows_per_second = Gauge("data_gen_rows_per_second", "The average number of rows per second with the latest "
-                                                      "batch_size", labelnames=("thread",))
-g_best_batch_size = Gauge("data_gen_best_batch_size", "The up to now best batch size found by the "
-                                                      "batch_size_automator", labelnames=("thread",))
-g_best_batch_rps = Gauge("data_gen_best_batch_rps", "The rows per second for the up to now best batch size",
-                         labelnames=("thread",))
+c_values_queue_was_empty = Counter(
+    "data_gen_values_queue_empty",
+    "How many times the values_queue was empty when "
+    "insert_routine needed more values",
+)
+c_inserts_performed_success = Counter(
+    "data_gen_inserts_performed_success",
+    "How many times the an insert into the " "database was performed successfully",
+)
+c_inserts_failed = Counter(
+    "data_gen_inserts_failed",
+    "How many times an insert operation failed due to an error",
+)
+c_generated_values = Counter(
+    "data_gen_generated_values", "How many values have been generated"
+)
+c_inserted_values = Counter(
+    "data_gen_inserted_values", "How many values have been inserted"
+)
+g_insert_percentage = Gauge(
+    "data_gen_insert_percentage", "Percentage of values that have been inserted"
+)
+g_batch_size = Gauge(
+    "data_gen_batch_size", "The currently used batch size", labelnames=("thread",)
+)
+g_insert_time = Gauge(
+    "data_gen_insert_time",
+    "The average time it took to insert the current batch into the " "database",
+    labelnames=("thread",),
+)
+g_rows_per_second = Gauge(
+    "data_gen_rows_per_second",
+    "The average number of rows per second with the latest " "batch_size",
+    labelnames=("thread",),
+)
+g_best_batch_size = Gauge(
+    "data_gen_best_batch_size",
+    "The up to now best batch size found by the " "batch_size_automator",
+    labelnames=("thread",),
+)
+g_best_batch_rps = Gauge(
+    "data_gen_best_batch_rps",
+    "The rows per second for the up to now best batch size",
+    labelnames=("thread",),
+)
 
 
 def get_db_writer() -> DbWriter:  # noqa
     if config.database == 0:  # crate
-        db_writer = CrateDbWriter(config.host, config.username, config.password, model,
-                                  config.table_name, config.shards, config.replicas, config.partition)
+        db_writer = CrateDbWriter(
+            config.host,
+            config.username,
+            config.password,
+            model,
+            config.table_name,
+            config.shards,
+            config.replicas,
+            config.partition,
+        )
     elif config.database == 1:  # timescale
-        db_writer = TimescaleDbWriter(config.host, config.port, config.username, config.password,
-                                      config.db_name, model, config.table_name, config.partition, config.copy,
-                                      config.distributed)
+        db_writer = TimescaleDbWriter(
+            config.host,
+            config.port,
+            config.username,
+            config.password,
+            config.db_name,
+            model,
+            config.table_name,
+            config.partition,
+            config.copy,
+            config.distributed,
+        )
     elif config.database == 2:  # influx
-        db_writer = InfluxDbWriter(config.host, config.token, config.organization, model, config.db_name)
+        db_writer = InfluxDbWriter(
+            config.host, config.token, config.organization, model, config.db_name
+        )
     elif config.database == 3:  # mongo
-        db_writer = MongoDbWriter(config.host, config.username, config.password, config.db_name, model)
+        db_writer = MongoDbWriter(
+            config.host, config.username, config.password, config.db_name, model
+        )
     elif config.database == 4:  # postgres
-        db_writer = PostgresDbWriter(config.host, config.port, config.username, config.password,
-                                     config.db_name, model, config.table_name, config.partition)
+        db_writer = PostgresDbWriter(
+            config.host,
+            config.port,
+            config.username,
+            config.password,
+            config.db_name,
+            model,
+            config.table_name,
+            config.partition,
+        )
     elif config.database == 5:  # timestream
-        db_writer = TimeStreamWriter(config.aws_access_key_id, config.aws_secret_access_key,
-                                     config.aws_region_name, config.db_name, model)
+        db_writer = TimeStreamWriter(
+            config.aws_access_key_id,
+            config.aws_secret_access_key,
+            config.aws_region_name,
+            config.db_name,
+            model,
+        )
     elif config.database == 6:  # ms_sql
-        db_writer = MsSQLDbWriter(config.host, config.username, config.password,
-                                  config.db_name, model, port=config.port, table_name=config.table_name)
+        db_writer = MsSQLDbWriter(
+            config.host,
+            config.username,
+            config.password,
+            config.db_name,
+            model,
+            port=config.port,
+            table_name=config.table_name,
+        )
     else:
         db_writer = None
     return db_writer
@@ -193,10 +264,12 @@ def insert_routine():
     name = current_thread().name
     db_writer = get_db_writer()
     db_writer.prepare_database()
-    data_batch_size = (config.id_end - config.id_start + 1)
-    insert_bsa = BatchSizeAutomator(batch_size=config.batch_size,
-                                    active=bool(config.ingest_mode),
-                                    data_batch_size=data_batch_size)
+    data_batch_size = config.id_end - config.id_start + 1
+    insert_bsa = BatchSizeAutomator(
+        batch_size=config.batch_size,
+        active=bool(config.ingest_mode),
+        data_batch_size=data_batch_size,
+    )
 
     while not current_values_queue.empty() or not stop_process():
         local_batch_size = insert_bsa.get_next_batch_size()
@@ -212,9 +285,13 @@ def insert_routine():
             if insert_bsa.auto_batch_mode and len(batch) == local_batch_size:
                 duration = time.time() - start
                 g_insert_time.labels(thread=name).set(duration)
-                g_rows_per_second.labels(thread=name).set(len(batch)/duration)
-                g_best_batch_size.labels(thread=name).set(insert_bsa.batch_times["best"]["size"])
-                g_best_batch_rps.labels(thread=name).set(insert_bsa.batch_times["best"]["batch_per_second"])
+                g_rows_per_second.labels(thread=name).set(len(batch) / duration)
+                g_best_batch_size.labels(thread=name).set(
+                    insert_bsa.batch_times["best"]["size"]
+                )
+                g_best_batch_rps.labels(thread=name).set(
+                    insert_bsa.batch_times["best"]["batch_per_second"]
+                )
                 insert_bsa.insert_batch_time(duration)
 
     db_writer.close_connection()
@@ -233,8 +310,10 @@ def spawn_insert_threads():  # pragma: no cover
 
 
 def fast_insert():  # pragma: no cover
-    fast_insert_threads = [Thread(target=spawn_insert_threads, name="spawn_insert_threads"),
-                           Thread(target=stat_delta_thread_function, name="stat_delta_thread")]
+    fast_insert_threads = [
+        Thread(target=spawn_insert_threads, name="spawn_insert_threads"),
+        Thread(target=stat_delta_thread_function, name="stat_delta_thread"),
+    ]
     for thread in fast_insert_threads:
         thread.start()
     for thread in fast_insert_threads:
@@ -286,8 +365,13 @@ def prometheus_insert_percentage():  # pragma: no cover
         try:
             inserted_values = inserted_values_queue.get_nowait()
             c_inserted_values.inc(inserted_values)
-            g_insert_percentage.set((c_inserted_values._value.get() /
-                                     (config.ingest_size * (config.id_end - config.id_start + 1))) * 100)
+            g_insert_percentage.set(
+                (
+                    c_inserted_values._value.get()
+                    / (config.ingest_size * (config.id_end - config.id_start + 1))
+                )
+                * 100
+            )
         except Empty:
             # get_nowait throws Empty exception which might happen if the inserted_values_queue
             # is empty and the insert_finished_queue is as well
@@ -298,14 +382,17 @@ def prometheus_insert_percentage():  # pragma: no cover
 def run_dg():  # pragma: no cover
     # start the thread that writes to the db
     if config.ingest_mode == 0:
-        db_writer_thread = Thread(target=consecutive_insert, name="consecutive_insert_thread")
+        db_writer_thread = Thread(
+            target=consecutive_insert, name="consecutive_insert_thread"
+        )
     else:
         db_writer_thread = Thread(target=fast_insert, name="fast_insert_thread")
     db_writer_thread.start()
 
     # start the thread that collects the insert metrics from the db_writer threads
-    prometheus_insert_percentage_thread = Thread(target=prometheus_insert_percentage,
-                                                 name="prometheus_insert_percentage_thread")
+    prometheus_insert_percentage_thread = Thread(
+        target=prometheus_insert_percentage, name="prometheus_insert_percentage_thread"
+    )
     prometheus_insert_percentage_thread.start()
 
     try:
@@ -340,7 +427,7 @@ def main():  # pragma: no cover
     model = json.load(f)
 
     start_http_server(config.prometheus_port)
-    data_batch_size = (config.id_end - config.id_start + 1)
+    data_batch_size = config.id_end - config.id_start + 1
     last_ts = config.ingest_ts
 
     # start the data_generator logic
@@ -353,12 +440,15 @@ def main():  # pragma: no cover
             run = sum(v) / len(v)
         logging.info(f"average time for {k}: {(sum(v) / len(v))}")
 
-    logging.info(f"""rows per second:    {data_batch_size * config.ingest_size / run}""")
     logging.info(
-        f"""metrics per second: {data_batch_size * config.ingest_size * len(get_sub_element("metrics").keys()) / run}""")
+        f"""rows per second:    {data_batch_size * config.ingest_size / run}"""
+    )
+    logging.info(
+        f"""metrics per second: {data_batch_size * config.ingest_size * len(get_sub_element("metrics").keys()) / run}"""
+    )
 
     # finished
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     main()

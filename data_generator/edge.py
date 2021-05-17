@@ -43,7 +43,9 @@ class Edge:
             elif sensor_type == "bool":
                 self.sensors.append(BoolSensor(value))
             else:
-                raise NotImplementedError("only FLOAT and BOOL Type have been implemented")
+                raise NotImplementedError(
+                    "only FLOAT and BOOL Type have been implemented"
+                )
 
     def calculate_next_value(self) -> dict:
         if self.payload == {}:
@@ -72,7 +74,9 @@ class Edge:
                 if elements_identifier == 0:
                     self.payload[key] = identifiers[(self.id - 1) % len(identifiers)]
                 else:
-                    self.payload[key] = identifiers[int((self.id - 1) / elements_identifier) % len(identifiers)]
+                    self.payload[key] = identifiers[
+                        int((self.id - 1) / elements_identifier) % len(identifiers)
+                    ]
 
                 elements_identifier += len(identifiers)
 
@@ -88,13 +92,15 @@ class Sensor:
 class FloatSensor(Sensor):
     def __init__(self, model):
         super().__init__(model)
-        self.float_simulator = FloatSimulator(model["mean"]["value"],
-                                              model["min"]["value"],
-                                              model["max"]["value"],
-                                              model["stdev"]["value"],
-                                              model["variance"]["value"],
-                                              model["error_rate"]["value"],
-                                              model["error_length"]["value"])
+        self.float_simulator = FloatSimulator(
+            model["mean"]["value"],
+            model["min"]["value"],
+            model["max"]["value"],
+            model["stdev"]["value"],
+            model["variance"]["value"],
+            model["error_rate"]["value"],
+            model["error_length"]["value"],
+        )
 
     def calculate_next_value(self) -> float:
         return self.float_simulator.calculate_next_value()

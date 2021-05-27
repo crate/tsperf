@@ -140,7 +140,13 @@ def get_database_adapter() -> AbstractDatabaseAdapter:  # noqa
 
 @tictrack.timed_function()
 def create_edges() -> dict:
-    # this function creates metric objects in the given range [id_start, id_end]
+    """
+    Create metric objects in the given range [id_start, id_end]
+    """
+    id_start = config.id_start
+    id_end = config.id_end + 1
+    count = id_end - id_start
+    logger.info(f"Creating {count} objects [{id_start}, {id_end}]")
     edges = {}
     for i in tqdm(range(config.id_start, config.id_end + 1)):
         edges[i] = Edge(i, get_sub_element("tags"), get_sub_element("metrics"))

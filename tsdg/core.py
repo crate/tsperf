@@ -40,6 +40,19 @@ from tsdg.cli import parse_arguments
 from tsdg.config import DataGeneratorConfig
 from tsdg.model.database import AbstractDatabaseAdapter
 from tsdg.model.edge import Edge
+from tsdg.model.metrics import (
+    c_generated_values,
+    c_inserted_values,
+    c_inserts_failed,
+    c_inserts_performed_success,
+    c_values_queue_was_empty,
+    g_batch_size,
+    g_best_batch_rps,
+    g_best_batch_size,
+    g_insert_percentage,
+    g_insert_time,
+    g_rows_per_second,
+)
 from tsdg.util import tictrack
 from tsdg.util.batch_size_automator import BatchSizeAutomator
 
@@ -57,52 +70,6 @@ inserted_values_queue = Queue(10000)
 stop_queue = Queue(1)
 insert_finished_queue = Queue(1)
 
-# prometheus metrics published to port config.prometheus_port
-c_values_queue_was_empty = Counter(
-    "data_gen_values_queue_empty",
-    "How many times the values_queue was empty when "
-    "insert_routine needed more values",
-)
-c_inserts_performed_success = Counter(
-    "data_gen_inserts_performed_success",
-    "How many times the an insert into the " "database was performed successfully",
-)
-c_inserts_failed = Counter(
-    "data_gen_inserts_failed",
-    "How many times an insert operation failed due to an error",
-)
-c_generated_values = Counter(
-    "data_gen_generated_values", "How many values have been generated"
-)
-c_inserted_values = Counter(
-    "data_gen_inserted_values", "How many values have been inserted"
-)
-g_insert_percentage = Gauge(
-    "data_gen_insert_percentage", "Percentage of values that have been inserted"
-)
-g_batch_size = Gauge(
-    "data_gen_batch_size", "The currently used batch size", labelnames=("thread",)
-)
-g_insert_time = Gauge(
-    "data_gen_insert_time",
-    "The average time it took to insert the current batch into the " "database",
-    labelnames=("thread",),
-)
-g_rows_per_second = Gauge(
-    "data_gen_rows_per_second",
-    "The average number of rows per second with the latest " "batch_size",
-    labelnames=("thread",),
-)
-g_best_batch_size = Gauge(
-    "data_gen_best_batch_size",
-    "The up to now best batch size found by the " "batch_size_automator",
-    labelnames=("thread",),
-)
-g_best_batch_rps = Gauge(
-    "data_gen_best_batch_rps",
-    "The rows per second for the up to now best batch size",
-    labelnames=("thread",),
-)
 
 
 def get_database_adapter() -> AbstractDatabaseAdapter:  # noqa

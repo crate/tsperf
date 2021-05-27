@@ -3,6 +3,7 @@ from queue import Empty
 from unittest import mock
 
 import tsdg.core as dg
+import tsdg.model.metrics
 
 
 @mock.patch("tsdg.core.CrateDbAdapter", autospec=True)
@@ -123,13 +124,13 @@ def test_log_stat_delta(mock_log, mock_tictrack):
 def test_do_insert(mock_log):
     db_writer = mock.MagicMock()
     dg.do_insert(db_writer, [1], [1])
-    assert dg.c_inserts_performed_success._value.get() == 1
-    assert dg.c_inserts_failed._value.get() == 0
+    assert tsdg.model.metrics.c_inserts_performed_success._value.get() == 1
+    assert tsdg.model.metrics.c_inserts_failed._value.get() == 0
     mock_log.error.assert_not_called()
     db_writer.insert_stmt.side_effect = Exception("mocked exception")
     dg.do_insert(db_writer, [2], [2])
-    assert dg.c_inserts_performed_success._value.get() == 1
-    assert dg.c_inserts_failed._value.get() == 1
+    assert tsdg.model.metrics.c_inserts_performed_success._value.get() == 1
+    assert tsdg.model.metrics.c_inserts_failed._value.get() == 1
     mock_log.error.assert_called_once()
 
 
@@ -138,21 +139,21 @@ def test_get_insert_values():
     batch, timestamps = dg.get_insert_values(1)
     assert len(batch) == 0
     assert len(timestamps) == 0
-    assert dg.c_values_queue_was_empty._value.get() == 1
+    assert tsdg.model.metrics.c_values_queue_was_empty._value.get() == 1
 
     # current_values_queue has to few entries
     dg.current_values_queue.put({"timestamps": [1, 1, 1], "batch": [1, 2, 3]})
     batch, timestamps = dg.get_insert_values(4)
     assert len(batch) == 3
     assert len(timestamps) == 3
-    assert dg.c_values_queue_was_empty._value.get() == 2
+    assert tsdg.model.metrics.c_values_queue_was_empty._value.get() == 2
 
     # current_values_queue has to few entries
     dg.current_values_queue.put({"timestamps": [1, 1, 1], "batch": [1, 2, 3]})
     batch, timestamps = dg.get_insert_values(1)
     assert len(batch) == 3
     assert len(timestamps) == 3
-    assert dg.c_values_queue_was_empty._value.get() == 2
+    assert tsdg.model.metrics.c_values_queue_was_empty._value.get() == 2
 
 
 @mock.patch("tsdg.core.get_database_adapter", autospec=True)

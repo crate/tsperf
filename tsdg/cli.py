@@ -71,7 +71,6 @@ args_info = {
         "help": "A relative or absolute path to a model in the json format (see the data generator documentation for "
         "more details: "
         f"{TSDG_README_URL}#data-generator-models)",
-        "choices": ["Absolute or relative file path"],
         "type": str,
     },
     "batch_size": {
@@ -92,8 +91,7 @@ args_info = {
     },
     "prometheus_enabled": {
         "help": "Whether to start the Prometheus HTTP server for exposing metrics",
-        "choices": [True, False],
-        "type": bool,
+        "action": "store_true",
     },
     "prometheus_port": {
         "help": "The port that is used to publish prometheus metrics",
@@ -103,7 +101,6 @@ args_info = {
     "host": {
         "help": "hostname according to the database client requirements. See documentation for further details:"
         f"{TSDG_README_URL}#host",
-        "choices": [],
         "type": str,
     },
     "username": {
@@ -183,13 +180,21 @@ args_info = {
         "choices": [],
         "type": str,
     },
-    "aws_access_key_id": {"help": "AWS Access Key ID", "choices": [], "type": str},
+    "aws_access_key_id": {
+        "help": "AWS Access Key ID",
+        "choices": [],
+        "type": str,
+    },
     "aws_secret_access_key": {
         "help": "AWS Secret Access Key",
         "choices": [],
         "type": str,
     },
-    "aws_region_name": {"help": "AWS region name", "choices": [], "type": str},
+    "aws_region_name": {
+        "help": "AWS region name",
+        "choices": [],
+        "type": str,
+    },
 }
 
 
@@ -203,12 +208,21 @@ def parse_arguments(
 
     for element in vars(config):
         if element in args_info:
+            kwargs = {}
+
+            if "action" in args_info[element]:
+                kwargs["action"] = args_info[element]["action"]
+
+            if "choices" in args_info[element]:
+                kwargs["choices"] = args_info[element]["choices"]
+            if "type" in args_info[element]:
+                kwargs["type"] = args_info[element]["type"]
+
             parser.add_argument(
                 f"--{element}",
-                type=args_info[element]["type"],
                 default=getattr(config, element),
                 help=args_info[element]["help"],
-                choices=args_info[element]["choices"],
+                **kwargs,
             )
 
     arguments = parser.parse_args()

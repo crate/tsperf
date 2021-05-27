@@ -21,13 +21,13 @@
 
 import json
 import logging
+import sys
 import time
 from queue import Empty, Queue
 from threading import Thread, current_thread
-from typing import Tuple
+from typing import Optional, Tuple
 
-import urllib3
-from prometheus_client import Counter, Gauge, start_http_server
+from prometheus_client import start_http_server
 from tqdm import tqdm
 
 from tsdg.adapter.cratedb import CrateDbAdapter
@@ -66,6 +66,7 @@ current_values_queue = Queue(10000)
 inserted_values_queue = Queue(10000)
 stop_queue = Queue(1)
 insert_finished_queue = Queue(1)
+insert_exceptions = Queue()
 
 logger = logging.getLogger(__name__)
 
@@ -229,7 +230,12 @@ def get_insert_values(batch_size: int) -> Tuple[list, list]:
 def insert_routine():
     name = current_thread().name
     adapter = get_database_adapter()
-    adapter.prepare_database()
+    try:
+        adapter.prepare_database()
+    except Exception as ex:
+        logger.exception("Failed communicating with database")
+        insert_exceptions.put(sys.exc_info())
+        return
     data_batch_size = config.id_end - config.id_start + 1
     insert_bsa = BatchSizeAutomator(
         batch_size=config.batch_size,
@@ -382,9 +388,32 @@ def run_dg():  # pragma: no cover
         # Once value creation is finished, signal the worker threads to stop.
         logger.info("Shutting down")
         stop_queue.put(True)
-        adapter_thread.join()
-        prometheus_insert_percentage_thread.join()
         logger.info("Waiting for database writer thread")
+        wait_for_thread(adapter_thread, insert_exceptions)
+
+def wait_for_thread(thread: Thread, error_channel: Optional[Queue] = None):
+    """
+    Wait for thread to finish and, on failure, catch the thread's exception in
+    the caller thread.
+
+    - https://stackoverflow.com/a/2830127
+    """
+    while True:
+        if error_channel:
+            try:
+                exc = error_channel.get(block=False)
+            except Empty:
+                pass
+            else:
+                exc_type, exc_obj, exc_trace = exc
+                # Re-raise the exception.
+                raise exc_obj
+
+        thread.join(0.1)
+        if thread.is_alive():
+            continue
+        else:
+            break
 
 
 def main():  # pragma: no cover

@@ -40,6 +40,7 @@ class DataGeneratorConfig:
         self.database = int(os.getenv("DATABASE", 0))
         self.stat_delta = int(os.getenv("STAT_DELTA", 30))
         self.num_threads = int(os.getenv("NUM_THREADS", 1))
+        self.prometheus_enabled = strtobool(os.getenv("PROMETHEUS_ENABLED", "False"))
         self.prometheus_port = int(os.getenv("PROMETHEUS_PORT", 8000))
 
         # environment variables used by multiple database clients

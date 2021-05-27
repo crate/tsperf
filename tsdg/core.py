@@ -28,6 +28,7 @@ from typing import Tuple
 
 import urllib3
 from prometheus_client import Counter, Gauge, start_http_server
+from tqdm import tqdm
 
 from tsdg.adapter.cratedb import CrateDbAdapter
 from tsdg.adapter.influxdb import InfluxDbAdapter
@@ -140,7 +141,7 @@ def get_database_adapter() -> AbstractDatabaseAdapter:  # noqa
 def create_edges() -> dict:
     # this function creates metric objects in the given range [id_start, id_end]
     edges = {}
-    for i in range(config.id_start, config.id_end + 1):
+    for i in tqdm(range(config.id_start, config.id_end + 1)):
         edges[i] = Edge(i, get_sub_element("tags"), get_sub_element("metrics"))
     return edges
 
@@ -369,9 +370,12 @@ def run_dg():  # pragma: no cover
         # TODO: This should not have an endless loop. For now, stop with CTRL+C.
         logger.info("Starting insert operation")
         while_count = 0
+        progress = tqdm(total=config.ingest_size)
         while config.ingest_size == 0 or while_count < config.ingest_size:
             while_count += 1
             get_next_value(edges)
+            progress.update()
+        progress.close()
     except Exception as e:
         logger.exception(e)
     finally:

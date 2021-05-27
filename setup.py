@@ -19,6 +19,7 @@ requires = [
     "numpy==1.20.3",
     "pgcopy==1.5.0",
     "pyodbc==4.0.30",
+    "tqdm==4.61.0",
 ]
 
 test_requires = [

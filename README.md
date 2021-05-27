@@ -13,8 +13,24 @@ How to achieve this using Kubernetes is documented within [KUBERNETES.md](KUBERN
 
 ## Setup sandbox
 ```shell
+git clone https://github.com/crate/tsperf
+cd tsperf
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --editable=.[testing] --upgrade
 pytest -vvv tests
+```
+
+## Usage
+
+### Generate time series data and feed into database
+```shell
+# Run CrateDB
+docker run -it --rm --publish=4200:4200 --publish=5432:5432 crate/crate:4.5.1
+
+# Feed data into CrateDB
+tsdg --model_path=examples/temperature.json --database=0 --host=localhost:4200
+
+# Feed data and expose metrics in Prometheus format
+tsdg --model_path=examples/temperature.json --database=0 --host=localhost:4200 --prometheus_enabled
 ```

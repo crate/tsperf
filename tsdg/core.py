@@ -397,6 +397,11 @@ def run_dg():  # pragma: no cover
         logger.info("Waiting for database writer thread")
         wait_for_thread(adapter_thread, insert_exceptions)
 
+        if config.prometheus_enabled:
+            logger.info("Waiting for metrics collector thread")
+            prometheus_insert_percentage_thread.join()
+
+
 def wait_for_thread(thread: Thread, error_channel: Optional[Queue] = None):
     """
     Wait for thread to finish and, on failure, catch the thread's exception in
@@ -438,7 +443,10 @@ def main():  # pragma: no cover
     f = open(config.model_path, "r")
     model = json.load(f)
 
-    start_http_server(config.prometheus_port)
+    if config.prometheus_enabled:
+        logger.info("Starting Prometheus HTTP server")
+        start_http_server(config.prometheus_port)
+
     data_batch_size = config.id_end - config.id_start + 1
     last_ts = config.ingest_ts
 

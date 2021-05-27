@@ -90,6 +90,11 @@ args_info = {
         "choices": ["integer > 0 but 1-4 advised"],
         "type": int,
     },
+    "prometheus_enabled": {
+        "help": "Whether to start the Prometheus HTTP server for exposing metrics",
+        "choices": [True, False],
+        "type": bool,
+    },
     "prometheus_port": {
         "help": "The port that is used to publish prometheus metrics",
         "choices": ["1 to 65535"],

@@ -55,11 +55,7 @@ from tsdg.model.metrics import (
 )
 from tsdg.util import tictrack
 from tsdg.util.batch_size_automator import BatchSizeAutomator
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
+from tsdg.util.common import setup_logging
 
 # global variables shared accross threads
 config = DataGeneratorConfig()
@@ -70,6 +66,7 @@ inserted_values_queue = Queue(10000)
 stop_queue = Queue(1)
 insert_finished_queue = Queue(1)
 
+logger = logging.getLogger(__name__)
 
 
 def get_database_adapter() -> AbstractDatabaseAdapter:  # noqa
@@ -182,7 +179,7 @@ def get_next_value(edges: dict):
 def log_stat_delta(last_stat_ts_local: float) -> float:
     if time.time() - last_stat_ts_local >= config.stat_delta:
         for key, value in tictrack.tic_toc_delta.items():
-            logging.info(f"average time for {key}: {(sum(value) / len(value))}")
+            logger.info(f"Average time for {key}: {(sum(value) / len(value))}")
         tictrack.tic_toc_delta = {}
     return time.time()
 
@@ -209,7 +206,7 @@ def do_insert(adapter, timestamps, batch):
         # as the values have not been inserted we remove them from our runtime_metrics
         # TODO: more sophistic error handling on adapter level
         c_inserts_failed.inc()
-        logging.error(e)
+        logger.error(e)
 
 
 def get_insert_values(batch_size: int) -> Tuple[list, list]:
@@ -348,7 +345,9 @@ def prometheus_insert_percentage():  # pragma: no cover
 
 @tictrack.timed_function()
 def run_dg():  # pragma: no cover
-    # start the thread that writes to the db
+    logger.info("Starting data generator")
+
+    logger.info("Starting database writer thread")
     if config.ingest_mode == 0:
         adapter_thread = Thread(
             target=consecutive_insert, name="consecutive_insert_thread"
@@ -357,7 +356,7 @@ def run_dg():  # pragma: no cover
         adapter_thread = Thread(target=fast_insert, name="fast_insert_thread")
     adapter_thread.start()
 
-    # start the thread that collects the insert metrics from the adapter threads
+    logger.info("Starting metrics collector thread")
     prometheus_insert_percentage_thread = Thread(
         target=prometheus_insert_percentage, name="prometheus_insert_percentage_thread"
     )
@@ -366,31 +365,37 @@ def run_dg():  # pragma: no cover
     try:
         edges = create_edges()
 
-        # TODO: this should not have an endless loop for now stop with ctrl+C
-        # we are either in endless mode or have a certain amount of values to create
+        # We are either in endless mode or have a certain amount of values to create.
+        # TODO: This should not have an endless loop. For now, stop with CTRL+C.
+        logger.info("Starting insert operation")
         while_count = 0
         while config.ingest_size == 0 or while_count < config.ingest_size:
             while_count += 1
             get_next_value(edges)
     except Exception as e:
-        logging.exception(e)
+        logger.exception(e)
     finally:
-        # once value creation is finished we signal the other threads to stop and wait for them to join
+        # Once value creation is finished, signal the worker threads to stop.
+        logger.info("Shutting down")
         stop_queue.put(True)
         adapter_thread.join()
         prometheus_insert_percentage_thread.join()
+        logger.info("Waiting for database writer thread")
 
 
 def main():  # pragma: no cover
     global last_ts, model, config
 
+    setup_logging()
+
     # load configuration an set everything up
     config = parse_arguments(config)
     valid_config = config.validate_config()
     if not valid_config:
-        logging.error(f"invalid configuration: {config.invalid_configs}")
+        logger.error(f"Invalid configuration: {config.invalid_configs}")
         exit(-1)
 
+    logger.info(f"Loading model from {config.model_path}")
     f = open(config.model_path, "r")
     model = json.load(f)
 
@@ -406,16 +411,12 @@ def main():  # pragma: no cover
     for k, v in tictrack.tic_toc.items():
         if k == "run_dg":
             run = sum(v) / len(v)
-        logging.info(f"average time for {k}: {(sum(v) / len(v))}")
+        logger.info(f"Average time for {k}: {(sum(v) / len(v))}")
 
-    logging.info(
-        f"""rows per second:    {data_batch_size * config.ingest_size / run}"""
+    logger.info(f"Records per second: {data_batch_size * config.ingest_size / run}")
+    logger.info(
+        f"Metrics per second: {data_batch_size * config.ingest_size * len(get_sub_element('metrics').keys()) / run}"
     )
-    logging.info(
-        f"""metrics per second: {data_batch_size * config.ingest_size * len(get_sub_element("metrics").keys()) / run}"""
-    )
-
-    # finished
 
 
 if __name__ == "__main__":  # pragma: no cover

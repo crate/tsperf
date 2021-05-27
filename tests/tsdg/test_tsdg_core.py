@@ -105,7 +105,7 @@ def test_get_next_value_continuous():
 
 
 @mock.patch("tsdg.core.tictrack", autospec=True)
-@mock.patch("tsdg.core.logging", autospec=True)
+@mock.patch("tsdg.core.logger", autospec=True)
 def test_log_stat_delta(mock_log, mock_tictrack):
     # delta not reached no output
     dg.config.stat_delta = 1
@@ -120,7 +120,7 @@ def test_log_stat_delta(mock_log, mock_tictrack):
     mock_log.info.assert_called()
 
 
-@mock.patch("tsdg.core.logging", autospec=True)
+@mock.patch("tsdg.core.logger", autospec=True)
 def test_do_insert(mock_log):
     db_writer = mock.MagicMock()
     dg.do_insert(db_writer, [1], [1])

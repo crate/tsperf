@@ -132,6 +132,9 @@ def print_progressbar(
         length      - Optional  : character length of bar (Int)
         fill        - Optional  : bar fill character (Str)
     """
+
+    screen_position_y = 25
+
     duration = time.time() - start_time
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     r, g, b = percentage_to_rgb(float(percent))
@@ -144,7 +147,7 @@ def print_progressbar(
         f = io.StringIO()
         with redirect_stdout(f):
             print(
-                terminal.move_y(10)
+                terminal.move_y(screen_position_y)
                 + f"{prefix} |{terminal.color_rgb(r, g, b)}{bar}{terminal.normal}| {percent}% "
                 f"{suffix} {round(duration, 2)}s"
             )
@@ -153,7 +156,7 @@ def print_progressbar(
             )
             if len(values) > 1:
                 print(
-                    terminal.move_y(13)
+                    terminal.move_y(screen_position_y + 3)
                     + f"rate   : {round((1 / numpy.mean(values)) * config.concurrency, 3)}qps       "
                 )
                 print(f"mean   : {round(numpy.mean(values) * 1000, 3)}ms       ")
@@ -193,18 +196,18 @@ def print_progress_thread():  # pragma: no cover
 
 def run_qt():  # pragma: no cover
 
-    logger.info("Starting query timer")
+    logger.info(f"Starting query timer with {config} and model {model}")
     global start_time
     start_time = time.time()
 
     logger.info("Starting progress monitor thread")
-    progress_thread = Thread(target=print_progress_thread)
+    progress_thread = Thread(target=print_progress_thread, name="ProgressMonitor")
     progress_thread.start()
 
     logger.info("Starting worker threads")
     threads = []
-    for _ in range(0, config.concurrency):
-        thread = Thread(target=start_query_run)
+    for i in range(0, config.concurrency):
+        thread = Thread(target=start_query_run, name=f"WorkerThread-{i}")
         threads.append(thread)
     for thread in threads:
         thread.start()

@@ -50,6 +50,10 @@ def read_configuration(
                 kwargs["action"] = args_info[element]["action"]
             if "required" in args_info[element]:
                 kwargs["required"] = args_info[element]["required"]
+            if "default" in args_info[element]:
+                kwargs["default"] = args_info[element]["default"]
+            else:
+                kwargs["default"] = getattr(config, element)
 
             if "choices" in args_info[element]:
                 kwargs["choices"] = args_info[element]["choices"]
@@ -58,7 +62,6 @@ def read_configuration(
 
             parser.add_argument(
                 f"--{element}",
-                default=getattr(config, element),
                 help=args_info[element]["help"],
                 **kwargs,
             )

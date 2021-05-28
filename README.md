@@ -31,6 +31,9 @@ docker run -it --rm --publish=4200:4200 --publish=5432:5432 crate/crate:4.5.1
 # Feed data into CrateDB running on localhost
 tsdg --model_path=examples/temperature.json --database=0
 
+# Increase concurrency
+tsdg --model_path=examples/temperature.json --database=0 --num_threads=4
+
 # Feed data into CrateDB running on a remote host
 tsdg --model_path=examples/temperature.json --database=0 --host=cratedb.example.org:4200
 

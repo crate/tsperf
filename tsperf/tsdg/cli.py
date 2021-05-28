@@ -18,7 +18,6 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
 from tsperf.tsdg.config import DataGeneratorConfig
 from tsperf.util.common import read_configuration
 
@@ -33,37 +32,32 @@ args_info = {
     },
     "id_start": {
         "help": "The Data Generator will create `(id_end + 1) - id_start` edges. Must be smaller or equal to id_end.",
-        "choices": ["1, 2, 3, ..."],
         "type": int,
     },
     "id_end": {
         "help": "The Data Generator will create `(id_end + 1) - id_start` edges. Must be bigger or equal to id_start.",
-        "choices": ["1, 2, 3, ..."],
         "type": int,
     },
     "ingest_mode": {
         "help": "The ingest_mode argument turns on fast insert when set to True or switches to consecutive inserts "
         "when set to False. For more information, please refer to the documentation."
         f"{TSDG_README_URL}#ingest_mode)",
-        "choices": [True, False],
-        "type": bool,
+        "choices": [0, 1],
+        "type": int,
     },
     "ingest_size": {
-        "help": "This argument defines how many values per edge will be created. If set to 0 an endless amount of "
-        "values will be created.",
-        "choices": ["0, 1, 2, 3, ..."],
+        "help": "Number of values per edge to create (positive integer). "
+        "If set to 0, an infinite amount of values will be created.",
         "type": int,
     },
     "ingest_ts": {
-        "help": "The starting timestamp of the generated data. If not provided will be the timestamp when the Data "
-        "Generator has been started.",
-        "choices": ["A valid UNIX timestamp"],
+        "help": "The start UNIX timestamp of the generated data. If not provided will be the timestamp when the data "
+        "generator has been started.",
         "type": int,
     },
     "ingest_delta": {
-        "help": "This values defines the interval between timestamps of generated values. With `ingest_mode = False` "
-        "This is the actual time between inserts.",
-        "choices": ["Any positive number"],
+        "help": "A positive number to define the interval between timestamps of generated values. "
+        "With `ingest_mode = False`, this is the actual time between inserts.",
         "type": float,
     },
     "model_path": {
@@ -73,19 +67,16 @@ args_info = {
         "type": str,
     },
     "batch_size": {
-        "help": "The batch size used when ingest_mode is set to True. A value smaller or equal to 0 in combination "
-        "with ingest_mode turns on auto batch mode using the batch size automator library",
-        "choices": ["Any integer number"],
+        "help": "The batch size used when `ingest_mode = True` (positive integer). A value smaller or equal to 0 in "
+        "combination with `ingest_mode` turns on auto batch mode using the batch size automator library",
         "type": int,
     },
     "stat_delta": {
-        "help": "Time in seconds that is waited between statistic outputs to the log",
-        "choices": ["number > 0"],
+        "help": "Interval in seconds to emit statistic outputs to the log",
         "type": float,
     },
     "num_threads": {
-        "help": "The number of python-threads used for inserting values",
-        "choices": ["integer > 0 but 1-4 advised"],
+        "help": "The number of python-threads used for inserting values (positive integer). Recommendation: 1-4",
         "type": int,
     },
     "prometheus_enabled": {
@@ -93,37 +84,32 @@ args_info = {
         "action": "store_true",
     },
     "prometheus_port": {
-        "help": "The port that is used to publish prometheus metrics",
-        "choices": ["1 to 65535"],
+        "help": "Port for publishing Prometheus metrics (1 to 65535)",
         "type": int,
     },
     "host": {
-        "help": "hostname according to the database client requirements. See documentation for further details:"
+        "help": "Hostname according to the database client requirements. See documentation for further details:"
         f"{TSDG_README_URL}#host",
         "type": str,
     },
     "username": {
-        "help": "username of user used for authentication against the database. Used with CrateDB, TimescaleDB, "
+        "help": "User name of user used for authentication against the database. Used with CrateDB, TimescaleDB, "
         "MongoDB, Postgresql, MSSQL",
-        "choices": [],
         "type": str,
     },
     "password": {
-        "help": "password of user used for authentication against the database. used with CrateDB, TimescaleDB, "
+        "help": "Password of user used for authentication against the database. used with CrateDB, TimescaleDB, "
         "MongoDB, Postgresql, MSSQL.",
-        "choices": [],
         "type": str,
     },
     "db_name": {
         "help": "Name of the database where table will be created. Used with InfluxDB, TimescaleDB, MongoDB, "
         "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
         f"{TSDG_README_URL}#db-name",
-        "choices": [],
         "type": str,
     },
     "table_name": {
         "help": "Name of the table where values are stored. Used with CrateDB, Postgresql, MSSQL and TimescaleDB.",
-        "choices": [],
         "type": str,
     },
     "partition": {
@@ -141,20 +127,17 @@ args_info = {
         "type": str,
     },
     "shards": {
-        "help": "Is used to set the sharding of the CrateDB table: "
+        "help": "Set the sharding of the CrateDB table (positive integer). See also: "
         "https://crate.io/docs/crate/reference/en/latest/general/ddl/sharding.html",
-        "choices": ["x > 0"],
         "type": int,
     },
     "replicas": {
-        "help": "Is used to set the number of replicas for CrateDB: "
+        "help": "Set the number of replicas for CrateDB (positive integer). See also: "
         "https://crate.io/docs/crate/reference/en/latest/general/ddl/replication.html",
-        "choices": ["x >= 0"],
         "type": int,
     },
     "port": {
-        "help": "Defines the port number of the host where the DB is reachable.",
-        "choices": ["1 to 65535"],
+        "help": "Defines the port number of the host where the DB is reachable (1 to 65535)",
         "type": int,
     },
     "copy": {
@@ -170,28 +153,23 @@ args_info = {
         "type": bool,
     },
     "token": {
-        "help": "token gotten from InfluxDB V2: https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/",
-        "choices": [],
+        "help": "Authentication token for InfluxDB V2: https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/",
         "type": str,
     },
     "organization": {
-        "help": "org_id gotten from InfluxDB V2: https://v2.docs.influxdata.com/v2.0/organizations/",
-        "choices": [],
+        "help": "Organization ID for InfluxDB V2: https://v2.docs.influxdata.com/v2.0/organizations/",
         "type": str,
     },
     "aws_access_key_id": {
         "help": "AWS Access Key ID",
-        "choices": [],
         "type": str,
     },
     "aws_secret_access_key": {
         "help": "AWS Secret Access Key",
-        "choices": [],
         "type": str,
     },
     "aws_region_name": {
         "help": "AWS region name",
-        "choices": [],
         "type": str,
     },
 }

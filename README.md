@@ -28,9 +28,15 @@ pytest -vvv tests
 # Run CrateDB
 docker run -it --rm --publish=4200:4200 --publish=5432:5432 crate/crate:4.5.1
 
-# Feed data into CrateDB
-tsdg --model_path=examples/temperature.json --database=0 --host=localhost:4200
+# Feed data into CrateDB running on localhost
+tsdg --model_path=examples/temperature.json --database=0
+
+# Feed data into CrateDB running on a remote host
+tsdg --model_path=examples/temperature.json --database=0 --host=cratedb.example.org:4200
 
 # Feed data and expose metrics in Prometheus format
-tsdg --model_path=examples/temperature.json --database=0 --host=localhost:4200 --prometheus_enabled
+tsdg --model_path=examples/temperature.json --database=0 --prometheus_enabled
+
+# Probe responsiveness of database on the read path
+tsqt --database=0 --query="SELECT 1;"
 ```

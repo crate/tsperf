@@ -25,11 +25,11 @@ from typing import Tuple
 from influxdb_client import Bucket, InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS, Point
 
-from tsperf.tsdg.model.database import AbstractDatabaseAdapter
+from tsperf.model.interface import DatabaseInterfaceBase
 from tsperf.util.tictrack import timed_function
 
 
-class InfluxDbAdapter(AbstractDatabaseAdapter):
+class InfluxDbAdapter(DatabaseInterfaceBase):
     def __init__(
         self, host: str, token: str, org: str, model: dict, database_name: str = None
     ):

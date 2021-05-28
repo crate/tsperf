@@ -23,23 +23,20 @@ import os
 import shutil
 from argparse import Namespace
 
+from tsperf.model.configuration import DatabaseConnectionConfiguration
 
-class QueryTimerConfig:
+
+class QueryTimerConfig(DatabaseConnectionConfiguration):
     def __init__(self):
+
+        self.__post_init__()
+
         # environment variables describing how the tsqt behaves
-        self.database = int(os.getenv("DATABASE", 0))
         self.concurrency = int(os.getenv("CONCURRENCY", 10))
         self.iterations = int(os.getenv("ITERATIONS", 100))
         self.quantiles = os.getenv("QUANTILES", "50,60,75,90,99").split(",")
         self.refresh_rate = float(os.getenv("REFRESH_RATE", 0.1))
         self.query = os.getenv("QUERY", None)
-
-        # environment variables used by multiple database clients
-        self.host = os.getenv("HOST", "localhost")
-        self.port = os.getenv("PORT", None)
-        self.username = os.getenv("USERNAME", None)
-        self.password = os.getenv("PASSWORD", None)
-        self.db_name = os.getenv("DB_NAME", "")
 
         # environment variables to connect to influxdb
         self.token = os.getenv("TOKEN", "")
@@ -58,14 +55,14 @@ class QueryTimerConfig:
                 f"DATABASE: {self.database} not 0, 1, 2, 3, 4, 5 or 6"
             )
 
+        if self.query is None and adapter is not None:
+            self.query = adapter.default_select_query
+
         if "PYTEST_CURRENT_TEST" not in os.environ:
             if self.host is None or self.host.strip() == "":
                 self.invalid_configs.append(
                     f"--host parameter or HOST environment variable required"
                 )
-
-            if self.query is None and adapter is not None:
-                self.query = adapter.default_select_query
             if self.query is None or self.query.strip() == "":
                 self.invalid_configs.append(
                     f"--query parameter or QUERY environment variable required"

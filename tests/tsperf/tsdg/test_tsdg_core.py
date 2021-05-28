@@ -3,10 +3,12 @@ from queue import Empty
 from unittest import mock
 
 import tsperf
+from tsperf.model.interface import DatabaseInterfaceType
 from tsperf.tsdg import core as dg
+from tsperf.tsdg.config import DataGeneratorConfig
 
 
-@mock.patch("tsperf.tsdg.core.CrateDbAdapter", autospec=True)
+@mock.patch("tsperf.adapter.AdapterManager.create", autospec=True)
 @mock.patch("tsperf.tsdg.core.TimescaleDbAdapter", autospec=True)
 @mock.patch("tsperf.tsdg.core.InfluxDbAdapter", autospec=True)
 @mock.patch("tsperf.tsdg.core.MongoDbAdapter", autospec=True)
@@ -25,21 +27,43 @@ def test_get_database_adapter(
     dg.config.database = 0
     dg.get_database_adapter()
     mock_crate.assert_called_once()
+    mock_crate.assert_called_with(
+        interface=DatabaseInterfaceType.CrateDB,
+        config=DataGeneratorConfig(
+            database=0,
+            host="localhost",
+            port=None,
+            username=None,
+            password=None,
+            db_name="",
+            table_name="",
+            partition="week",
+            shards=4,
+            replicas=1,
+        ),
+        model={},
+    )
+
     dg.config.database = 1
     dg.get_database_adapter()
     mock_timescale.assert_called_once()
+
     dg.config.database = 2
     dg.get_database_adapter()
     mock_influx.assert_called_once()
+
     dg.config.database = 3
     dg.get_database_adapter()
     mock_mongo.assert_called_once()
+
     dg.config.database = 4
     dg.get_database_adapter()
     mock_postgres.assert_called_once()
+
     dg.config.database = 5
     dg.get_database_adapter()
     mock_timestream.assert_called_once()
+
     dg.config.database = 6
     dg.get_database_adapter()
     mock_mssql.assert_called_once()

@@ -24,11 +24,11 @@ from typing import Tuple
 
 from pymongo import CursorType, MongoClient
 
-from tsperf.tsdg.model.database import AbstractDatabaseAdapter
+from tsperf.model.interface import DatabaseInterfaceBase
 from tsperf.util.tictrack import timed_function
 
 
-class MongoDbAdapter(AbstractDatabaseAdapter):
+class MongoDbAdapter(DatabaseInterfaceBase):
     def __init__(
         self, host: str, username: str, password: str, database_name: str, model: dict
     ):

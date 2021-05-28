@@ -18,16 +18,22 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
+import dataclasses
 import os
 import os.path
 import time
 from argparse import Namespace
 from distutils.util import strtobool
 
+from tsperf.model.configuration import DatabaseConnectionConfiguration
 
-class DataGeneratorConfig:
-    def __init__(self):
+
+@dataclasses.dataclass
+class DataGeneratorConfig(DatabaseConnectionConfiguration):
+    def __post_init__(self):
+
+        super().__post_init__()
+
         # environment variables describing how the tsdg behaves
         self.id_start = int(os.getenv("ID_START", 1))
         self.id_end = int(os.getenv("ID_END", 500))
@@ -37,24 +43,10 @@ class DataGeneratorConfig:
         self.ingest_delta = float(os.getenv("INGEST_DELTA", 0.5))
         self.model_path = os.getenv("MODEL_PATH", "")
         self.batch_size = int(os.getenv("BATCH_SIZE", -1))
-        self.database = int(os.getenv("DATABASE", 0))
         self.stat_delta = int(os.getenv("STAT_DELTA", 30))
-        self.num_threads = int(os.getenv("NUM_THREADS", 1))
+        self.num_threads = int(os.getenv("NUM_THREADS", 4))
         self.prometheus_enabled = strtobool(os.getenv("PROMETHEUS_ENABLED", "False"))
         self.prometheus_port = int(os.getenv("PROMETHEUS_PORT", 8000))
-
-        # environment variables used by multiple database clients
-        self.host = os.getenv("HOST", "localhost")
-        self.port = os.getenv("PORT", None)
-        self.username = os.getenv("USERNAME", None)
-        self.password = os.getenv("PASSWORD", None)
-        self.db_name = os.getenv("DB_NAME", "")
-        self.table_name = os.getenv("TABLE_NAME", "")
-        self.partition = os.getenv("PARTITION", "week")
-
-        # environment variables to configure cratedb
-        self.shards = int(os.getenv("SHARDS", 4))
-        self.replicas = int(os.getenv("REPLICAS", 0))
 
         # environment variables to configure timescaledb
         self.copy = strtobool(os.getenv("TIMESCALE_COPY", "True"))

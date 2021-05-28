@@ -186,9 +186,16 @@ def test_load_args():
 
 
 @mock.patch("os.path.isfile")
+def test_config_default_select_query(mock_isfile):
+    mock_isfile.return_value = True
+    config = QueryTimerConfig()
+    assert config.validate_config(adapter=CrateDbAdapter)
+    assert config.query == "SELECT 1;"
+
+
+@mock.patch("os.path.isfile")
 def test_config_default_port_cratedb(mock_isfile):
     mock_isfile.return_value = True
     config = QueryTimerConfig()
     assert config.validate_config(adapter=CrateDbAdapter)
-
     assert config.port == 4200

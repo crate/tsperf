@@ -30,6 +30,7 @@ from typing import Optional, Tuple
 from prometheus_client import start_http_server
 from tqdm import tqdm
 
+from tsperf.adapter import AdapterManager
 from tsperf.adapter.cratedb import CrateDbAdapter
 from tsperf.adapter.influxdb import InfluxDbAdapter
 from tsperf.adapter.mongodb import MongoDbAdapter
@@ -37,9 +38,9 @@ from tsperf.adapter.mssql import MsSQLDbAdapter
 from tsperf.adapter.postgresql import PostgresDbAdapter
 from tsperf.adapter.timescaledb import TimescaleDbAdapter
 from tsperf.adapter.timestream import TimeStreamAdapter
+from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
 from tsperf.tsdg.cli import parse_arguments
 from tsperf.tsdg.config import DataGeneratorConfig
-from tsperf.tsdg.model.database import AbstractDatabaseAdapter
 from tsperf.tsdg.model.edge import Edge
 from tsperf.tsdg.model.metrics import (
     c_generated_values,
@@ -71,30 +72,24 @@ insert_exceptions = Queue()
 logger = logging.getLogger(__name__)
 
 
-def get_database_adapter_class(database: int) -> AbstractDatabaseAdapter:
+def get_database_adapter_class(database: int) -> DatabaseInterfaceBase:
     db_to_adapter_map = {
         0: CrateDbAdapter,
         1: TimescaleDbAdapter,
         2: InfluxDbAdapter,
         3: MongoDbAdapter,
         4: PostgresDbAdapter,
-        5: TimescaleDbAdapter,
+        5: TimeStreamAdapter,
         6: MsSQLDbAdapter,
     }
     return db_to_adapter_map.get(database)
 
 
-def get_database_adapter() -> AbstractDatabaseAdapter:  # noqa
+def get_database_adapter() -> DatabaseInterfaceBase:  # noqa
     if config.database == 0:  # crate
-        adapter = CrateDbAdapter(
-            config.host,
-            config.username,
-            config.password,
-            model,
-            config.table_name,
-            config.shards,
-            config.replicas,
-            config.partition,
+        # adapter = CrateDbAdapter(config=config, model=model)
+        adapter = AdapterManager.create(
+            interface=DatabaseInterfaceType.CrateDB, config=config, model=model
         )
     elif config.database == 1:  # timescale
         adapter = TimescaleDbAdapter(

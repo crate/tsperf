@@ -18,10 +18,12 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+import io
 import logging
 import shutil
 import statistics
 import time
+from contextlib import redirect_stdout
 from queue import Queue
 from threading import Thread
 
@@ -36,6 +38,7 @@ from tsdg.adapter.mssql import MsSQLDbAdapter
 from tsdg.adapter.postgresql import PostgresDbAdapter
 from tsdg.adapter.timescaledb import TimescaleDbAdapter
 from tsdg.adapter.timestream import TimeStreamAdapter
+from tsdg.core import get_database_adapter_class
 from tsdg.model.database import AbstractDatabaseAdapter
 from tsperf.util.common import setup_logging
 from tsperf.util.tictrack import tic_toc, timed_function
@@ -137,26 +140,30 @@ def print_progressbar(
 
     if "execute_query" in tic_toc:
         values = tic_toc["execute_query"]
-        print(
-            terminal.move_y(3)
-            + f"{prefix} |{terminal.color_rgb(r, g, b)}{bar}{terminal.normal}| {percent}% "
-            f"{suffix} {round(duration, 2)}s"
-        )
-        print(
-            f"time left: {round(((duration / float(percent)) * 100) - duration, 2)}s                                "
-        )
-        if len(values) > 1:
-            pass
+
+        f = io.StringIO()
+        with redirect_stdout(f):
             print(
-                terminal.move_y(6)
-                + f"rate   : {round((1 / numpy.mean(values)) * config.concurrency, 3)}qs/s       "
+                terminal.move_y(10)
+                + f"{prefix} |{terminal.color_rgb(r, g, b)}{bar}{terminal.normal}| {percent}% "
+                f"{suffix} {round(duration, 2)}s"
             )
-            print(f"mean   : {round(numpy.mean(values) * 1000, 3)}ms       ")
-            print(f"stdev  : {round(numpy.std(values) * 1000, 3)}ms      ")
-            print(f"min    : {round(min(values) * 1000, 3)}ms       ")
-            print(f"max    : {round(max(values) * 1000, 3)}ms       ")
-            print(f"success: {terminal.green}{success}{terminal.normal}      ")
-            print(f"failure: {terminal.red}{failure}{terminal.normal}        ")
+            print(
+                f"time left: {round(((duration / float(percent)) * 100) - duration, 2)}s                                "
+            )
+            if len(values) > 1:
+                print(
+                    terminal.move_y(13)
+                    + f"rate   : {round((1 / numpy.mean(values)) * config.concurrency, 3)}qps       "
+                )
+                print(f"mean   : {round(numpy.mean(values) * 1000, 3)}ms       ")
+                print(f"stdev  : {round(numpy.std(values) * 1000, 3)}ms      ")
+                print(f"min    : {round(min(values) * 1000, 3)}ms       ")
+                print(f"max    : {round(max(values) * 1000, 3)}ms       ")
+                print(f"success: {terminal.green}{success}{terminal.normal}      ")
+                print(f"failure: {terminal.red}{failure}{terminal.normal}        ")
+        report = f.getvalue()
+        logger.info(f"\n{report}")
 
 
 def start_query_run():
@@ -213,17 +220,28 @@ def run_qt():  # pragma: no cover
 
 def main():  # pragma: no cover
     global config
+
+    # Clear screen.
+    print(terminal.home + terminal.clear)
+
     setup_logging()
 
-    with terminal.hidden_cursor():
-        # load configuration an set everything up
-        config = parse_arguments(config)
-        valid_config = config.validate_config()
-        if not valid_config:
-            logging.error(f"invalid configuration: {config.invalid_configs}")
-            exit(-1)
+    # Load configuration an set everything up.
+    config = parse_arguments(config)
 
-        print(f"concurrency: {config.concurrency}\niterations : {config.iterations}")
+    database_adapter = get_database_adapter_class(database=config.database)
+    valid_config = config.validate_config(adapter=database_adapter)
+
+    if not valid_config:
+        logger.error(f"Invalid configuration: {config.invalid_configs}")
+        exit(-1)
+
+    logger.info(f"Invoking query »{config.query}«")
+    logger.info(
+        f"Running {config.iterations} iterations with concurrency {config.concurrency}"
+    )
+
+    with terminal.hidden_cursor():
         terminal_size = shutil.get_terminal_size()
         print_progressbar(
             0,
@@ -238,10 +256,14 @@ def main():  # pragma: no cover
         if "execute_query" in tic_toc:
             values = tic_toc["execute_query"]
             qus = statistics.quantiles(values, n=100, method="inclusive")
-            print("")
-            for i in range(0, len(qus)):
-                if str(i + 1) in config.quantiles:
-                    print(f"p{i+1}  : {round(qus[i]*1000, 3)}ms")
+            f = io.StringIO()
+            with redirect_stdout(f):
+                for i in range(0, len(qus)):
+                    if str(i + 1) in config.quantiles:
+                        print(f"p{i+1}  : {round(qus[i]*1000, 3)}ms")
+            report = f.getvalue()
+            logger.info("\n")
+            logger.info(f"Statistics:\n{report}")
 
 
 if __name__ == "__main__":  # pragma: no cover

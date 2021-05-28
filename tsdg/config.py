@@ -45,12 +45,12 @@ class DataGeneratorConfig:
 
         # environment variables used by multiple database clients
         self.host = os.getenv("HOST", "localhost")
+        self.port = os.getenv("PORT", None)
         self.username = os.getenv("USERNAME", None)
         self.password = os.getenv("PASSWORD", None)
         self.db_name = os.getenv("DB_NAME", "")
         self.table_name = os.getenv("TABLE_NAME", "")
         self.partition = os.getenv("PARTITION", "week")
-        self.port = os.getenv("PORT", "5432")
 
         # environment variables to configure cratedb
         self.shards = int(os.getenv("SHARDS", 4))
@@ -71,7 +71,7 @@ class DataGeneratorConfig:
 
         self.invalid_configs = []
 
-    def validate_config(self) -> bool:  # noqa
+    def validate_config(self, adapter=None) -> bool:  # noqa
         if self.num_threads < 1:
             self.invalid_configs.append(f"NUM_THREADS: {self.num_threads} < 1")
         if self.id_start < 0:
@@ -116,8 +116,12 @@ class DataGeneratorConfig:
             self.invalid_configs.append(f"SHARDS: {self.shards} <= 0")
         if self.replicas < 0:
             self.invalid_configs.append(f"REPLICAS: {self.replicas} < 0")
-        if int(self.port) <= 0:
+
+        if self.port is None and adapter is not None:
+            self.port = adapter.default_port
+        if self.port is not None and int(self.port) <= 0:
             self.invalid_configs.append(f"PORT: {self.port} <= 0")
+
         if self.prometheus_port < 1 or self.prometheus_port > 65535:
             self.invalid_configs.append(
                 f"PROMETHEUS_PORT: {self.prometheus_port} not in valid port range"

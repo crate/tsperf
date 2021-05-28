@@ -26,6 +26,10 @@ from tsperf.util.tictrack import timed_function
 
 
 class CrateDbAdapter(AbstractDatabaseAdapter):
+
+    default_port = 4200
+    default_select_query = "SELECT 1;"
+
     def __init__(
         self,
         host: str,
@@ -38,6 +42,8 @@ class CrateDbAdapter(AbstractDatabaseAdapter):
         partition: str = "week",
     ):
         super().__init__()
+        if ":" not in host:
+            host = f"{host}:{self.default_port}"
         self.conn = client.connect(host, username=username, password=password)
         self.cursor = self.conn.cursor()
         self.model = model

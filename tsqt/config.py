@@ -32,14 +32,14 @@ class QueryTimerConfig:
         self.iterations = int(os.getenv("ITERATIONS", 100))
         self.quantiles = os.getenv("QUANTILES", "50,60,75,90,99").split(",")
         self.refresh_rate = float(os.getenv("REFRESH_RATE", 0.1))
-        self.query = os.getenv("QUERY", "")
+        self.query = os.getenv("QUERY", None)
 
         # environment variables used by multiple database clients
         self.host = os.getenv("HOST", "localhost")
+        self.port = os.getenv("PORT", None)
         self.username = os.getenv("USERNAME", None)
         self.password = os.getenv("PASSWORD", None)
         self.db_name = os.getenv("DB_NAME", "")
-        self.port = os.getenv("PORT", "5432")
 
         # environment variables to connect to influxdb
         self.token = os.getenv("TOKEN", "")
@@ -52,13 +52,30 @@ class QueryTimerConfig:
 
         self.invalid_configs = []
 
-    def validate_config(self) -> bool:  # noqa
+    def validate_config(self, adapter=None) -> bool:  # noqa
         if self.database not in [0, 1, 2, 3, 4, 5, 6]:
             self.invalid_configs.append(
                 f"DATABASE: {self.database} not 0, 1, 2, 3, 4, 5 or 6"
             )
-        if int(self.port) <= 0:
+
+        if "PYTEST_CURRENT_TEST" not in os.environ:
+            if self.host is None or self.host.strip() == "":
+                self.invalid_configs.append(
+                    f"--host parameter or HOST environment variable required"
+                )
+
+            if self.query is None and adapter is not None:
+                self.query = adapter.default_select_query
+            if self.query is None or self.query.strip() == "":
+                self.invalid_configs.append(
+                    f"--query parameter or QUERY environment variable required"
+                )
+
+        if self.port is None and adapter is not None:
+            self.port = adapter.default_port
+        if self.port is not None and int(self.port) <= 0:
             self.invalid_configs.append(f"PORT: {self.port} <= 0")
+
         if self.concurrency * self.iterations < 100:
             self.invalid_configs.append(
                 f"CONCURRENCY: {self.concurrency}; ITERATIONS: {self.iterations}. At least "

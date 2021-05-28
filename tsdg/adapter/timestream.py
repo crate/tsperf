@@ -28,7 +28,7 @@ import numpy
 from botocore.config import Config
 
 from tsdg.model.database import AbstractDatabaseAdapter
-from tsdg.util.tictrack import timed_function
+from tsperf.util.tictrack import timed_function
 
 
 class TimeStreamAdapter(AbstractDatabaseAdapter):

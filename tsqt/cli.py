@@ -18,10 +18,8 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
-import argparse
-
 from tsdg.cli import TSDG_README_URL
+from tsperf.util.common import read_configuration
 
 from .config import QueryTimerConfig
 
@@ -35,8 +33,11 @@ args_info = {
     "host": {
         "help": "hostname according to the database client requirements. See documentation for further details:"
         f"{TSDG_README_URL}#host",
-        "choices": [],
         "type": str,
+    },
+    "port": {
+        "help": "Defines the port number of the host where the DB is reachable. Integer between 1 to 65535",
+        "type": int,
     },
     "username": {
         "help": "username of user used for authentication against the database. Used with CrateDB, TimescaleDB, "
@@ -57,11 +58,6 @@ args_info = {
         "choices": [],
         "type": str,
     },
-    "port": {
-        "help": "Defines the port number of the host where the DB is reachable.",
-        "choices": ["1 to 65535"],
-        "type": int,
-    },
     "token": {
         "help": "token gotten from InfluxDB V2: https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/",
         "choices": [],
@@ -72,13 +68,21 @@ args_info = {
         "choices": [],
         "type": str,
     },
-    "aws_access_key_id": {"help": "AWS Access Key ID", "choices": [], "type": str},
+    "aws_access_key_id": {
+        "help": "AWS Access Key ID",
+        "choices": [],
+        "type": str,
+    },
     "aws_secret_access_key": {
         "help": "AWS Secret Access Key",
         "choices": [],
         "type": str,
     },
-    "aws_region_name": {"help": "AWS region name", "choices": [], "type": str},
+    "aws_region_name": {
+        "help": "AWS region name",
+        "choices": [],
+        "type": str,
+    },
     "concurrency": {
         "help": "Defines how many threads run in parallel executing queries.",
         "choices": ["1, 2, 3,..."],
@@ -101,29 +105,16 @@ args_info = {
         "type": float,
     },
     "query": {
-        "help": "The query that will be timed.",
-        "choices": ["A valid query in string format for the chosen database"],
+        "help": "The query that will be timed. It must be a valid query in string format for the chosen database",
         "type": str,
+        # "required": True,
     },
 }
 
 
 def parse_arguments(config: QueryTimerConfig) -> QueryTimerConfig:  # pragma: no cover
-    parser = argparse.ArgumentParser(
+    return read_configuration(
+        config=config,
+        args_info=args_info,
         description="Timeseries Database Query Timer - A program to benchmark TSDBs.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
-    for element in vars(config):
-        if element in args_info:
-            parser.add_argument(
-                f"--{element}",
-                type=args_info[element]["type"],
-                default=getattr(config, element),
-                help=args_info[element]["help"],
-                choices=args_info[element]["choices"],
-            )
-
-    arguments = parser.parse_args()
-    config.load_args(vars(arguments))
-    return config

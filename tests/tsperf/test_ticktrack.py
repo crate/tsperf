@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from tsdg.util import tictrack
+from tsperf.util import tictrack
 
 
 @pytest.fixture(scope="session", autouse=True)

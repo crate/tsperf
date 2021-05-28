@@ -54,9 +54,9 @@ from tsdg.model.metrics import (
     g_insert_time,
     g_rows_per_second,
 )
-from tsdg.util import tictrack
 from tsdg.util.batch_size_automator import BatchSizeAutomator
-from tsdg.util.common import setup_logging
+from tsperf.util import tictrack
+from tsperf.util.common import setup_logging
 
 # global variables shared accross threads
 config = DataGeneratorConfig()

@@ -26,7 +26,6 @@ from queue import Queue
 from threading import Thread
 
 import numpy
-import urllib3
 from blessed import Terminal
 
 from tsdg.adapter.cratedb import CrateDbAdapter
@@ -38,7 +37,8 @@ from tsdg.adapter.postgresql import PostgresDbAdapter
 from tsdg.adapter.timescaledb import TimescaleDbAdapter
 from tsdg.adapter.timestream import TimeStreamAdapter
 from tsdg.model.database import AbstractDatabaseAdapter
-from tsdg.util.tictrack import tic_toc, timed_function
+from tsperf.util.common import setup_logging
+from tsperf.util.tictrack import tic_toc, timed_function
 from tsqt.cli import parse_arguments
 from tsqt.config import QueryTimerConfig
 
@@ -51,10 +51,8 @@ queries_done = Queue(1)
 config = QueryTimerConfig()
 
 terminal = Terminal()
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
+
+logger = logging.getLogger(__name__)
 
 
 def get_database_adapter() -> AbstractDatabaseAdapter:  # noqa
@@ -187,24 +185,36 @@ def print_progress_thread():  # pragma: no cover
 
 
 def run_qt():  # pragma: no cover
+
+    logger.info("Starting query timer")
     global start_time
     start_time = time.time()
+
+    logger.info("Starting progress monitor thread")
     progress_thread = Thread(target=print_progress_thread)
     progress_thread.start()
+
+    logger.info("Starting worker threads")
     threads = []
     for _ in range(0, config.concurrency):
         thread = Thread(target=start_query_run)
         threads.append(thread)
     for thread in threads:
         thread.start()
+
+    logger.info("Waiting for worker threads")
     for thread in threads:
         thread.join()
     queries_done.put_nowait(True)
+
+    logger.info("Waiting for progress monitor thread")
     progress_thread.join()
 
 
 def main():  # pragma: no cover
     global config
+    setup_logging()
+
     with terminal.hidden_cursor():
         # load configuration an set everything up
         config = parse_arguments(config)

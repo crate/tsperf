@@ -42,72 +42,59 @@ args_info = {
     "username": {
         "help": "username of user used for authentication against the database. Used with CrateDB, TimescaleDB, "
         "MongoDB, Postgresql, MSSQL",
-        "choices": [],
         "type": str,
     },
     "password": {
         "help": "password of user used for authentication against the database. used with CrateDB, TimescaleDB, "
         "MongoDB, Postgresql, MSSQL.",
-        "choices": [],
         "type": str,
     },
     "db_name": {
         "help": "Name of the database where query will be executed. Used with InfluxDB, TimescaleDB, MongoDB, "
         "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
         f"{TSDG_README_URL}#db_name",
-        "choices": [],
         "type": str,
     },
     "token": {
         "help": "token gotten from InfluxDB V2: https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/",
-        "choices": [],
         "type": str,
     },
     "organization": {
         "help": "org_id gotten from InfluxDB V2: https://v2.docs.influxdata.com/v2.0/organizations/",
-        "choices": [],
         "type": str,
     },
     "aws_access_key_id": {
         "help": "AWS Access Key ID",
-        "choices": [],
         "type": str,
     },
     "aws_secret_access_key": {
         "help": "AWS Secret Access Key",
-        "choices": [],
         "type": str,
     },
     "aws_region_name": {
         "help": "AWS region name",
-        "choices": [],
         "type": str,
     },
     "concurrency": {
         "help": "Defines how many threads run in parallel executing queries.",
-        "choices": ["1, 2, 3,..."],
         "type": int,
     },
     "iterations": {
         "help": "Defines how many times each thread executes the query.",
-        "choices": ["1, 2, 3,..."],
         "type": int,
     },
     "quantiles": {
-        "help": "A string which defines which quantiles will be outputted at the end of the run. Values "
+        "help": "Which quantiles should be displayed at the end of the run. Values "
         "are separated by ','",
-        "choices": ["string in the same format as the default value"],
         "type": str,
     },
     "refresh_rate": {
-        "help": "Defines how often the output is refreshed in seconds.",
-        "choices": ["x > 0"],
+        "help": "Output refresh interval in seconds.",
         "type": float,
     },
     "query": {
         "help": "The query that will be timed. It must be a valid query in string format for the chosen database",
         "type": str,
-        # "required": True,
     },
 }
 

@@ -201,6 +201,7 @@ def log_stat_delta(last_stat_ts_local: float) -> float:
 
 
 def stat_delta_thread_function():  # pragma: no cover
+    logger.info("Starting statistics delta computation thread")
     last_stat_ts_local = time.time()
     while not stop_process():
         if time.time() - last_stat_ts_local >= config.stat_delta:
@@ -284,21 +285,23 @@ def insert_routine():
 
 
 def spawn_insert_threads():  # pragma: no cover
+    logger.info(f"Starting {config.num_threads} database writer thread(s)")
     insert_threads = []
     for i in range(config.num_threads):
-        insert_threads.append(Thread(target=insert_routine, name=f"insert_thread_{i}"))
+        insert_threads.append(Thread(target=insert_routine, name=f"InsertThread-{i}"))
     for thread in insert_threads:
         thread.start()
     for thread in insert_threads:
         thread.join()
-    # signal the prometheus thread that insert is finished
+
+    # Signal the prometheus thread that insertion is finished.
     insert_finished_queue.put_nowait(True)
 
 
 def fast_insert():  # pragma: no cover
     fast_insert_threads = [
-        Thread(target=spawn_insert_threads, name="spawn_insert_threads"),
-        Thread(target=stat_delta_thread_function, name="stat_delta_thread"),
+        Thread(target=spawn_insert_threads, name="InsertThreadSpawner"),
+        Thread(target=stat_delta_thread_function, name="StatDeltaThread"),
     ]
     for thread in fast_insert_threads:
         thread.start()
@@ -308,6 +311,7 @@ def fast_insert():  # pragma: no cover
 
 def consecutive_insert():
     global last_ts
+    logger.info("Starting single database writer thread")
     adapter = get_database_adapter()
     adapter.prepare_database()
     last_insert = config.ingest_ts
@@ -366,15 +370,15 @@ def prometheus_insert_percentage():  # pragma: no cover
 
 @tictrack.timed_function()
 def run_dg():  # pragma: no cover
-    logger.info("Starting data generator")
+    logger.info(f"Starting data generator with {config} and model {model}")
 
-    logger.info("Starting database writer thread")
+    logger.info("Starting database writer subsystem")
     if config.ingest_mode == 0:
-        adapter_thread = Thread(
-            target=consecutive_insert, name="consecutive_insert_thread"
-        )
+        logger.info("Using consecutive insert mode")
+        adapter_thread = Thread(target=consecutive_insert, name="ConsecutiveInsert")
     else:
-        adapter_thread = Thread(target=fast_insert, name="fast_insert_thread")
+        logger.info("Using fast insert mode")
+        adapter_thread = Thread(target=fast_insert, name="ParallelInsert")
     adapter_thread.start()
 
     logger.info("Starting metrics collector thread")
@@ -388,7 +392,7 @@ def run_dg():  # pragma: no cover
 
         # We are either in endless mode or have a certain amount of values to create.
         # TODO: This should not have an endless loop. For now, stop with CTRL+C.
-        logger.info("Starting insert operation")
+        logger.info(f"Starting insert operation with ingest size {config.ingest_size}")
         while_count = 0
         progress = tqdm(total=config.ingest_size)
         while config.ingest_size == 0 or while_count < config.ingest_size:
@@ -402,7 +406,7 @@ def run_dg():  # pragma: no cover
         # Once value creation is finished, signal the worker threads to stop.
         logger.info("Shutting down")
         stop_queue.put(True)
-        logger.info("Waiting for database writer thread")
+        logger.info("Waiting for database writer thread(s)")
         wait_for_thread(adapter_thread, insert_exceptions)
 
         if config.prometheus_enabled:

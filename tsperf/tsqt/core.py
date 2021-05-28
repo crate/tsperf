@@ -178,6 +178,7 @@ def start_query_run():
             success += 1
         except Exception:
             failure += 1
+            logger.exception(f"Failure executing query '{config.query}'")
 
 
 def print_progress_thread():  # pragma: no cover

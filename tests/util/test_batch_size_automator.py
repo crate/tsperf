@@ -1,4 +1,4 @@
-from tsdg.util.batch_size_automator import BatchSizeAutomator
+from tsperf.util.batch_size_automator import BatchSizeAutomator
 
 
 def test_is_auto_batch_mode():

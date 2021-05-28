@@ -2,7 +2,7 @@ import statistics
 
 import pytest
 
-from tsdg.util.float_simulator import FloatSimulator
+from tsperf.util.float_simulator import FloatSimulator
 
 float_model = {
     "mean": 6.4,

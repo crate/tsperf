@@ -31,14 +31,14 @@ virtualenv-dev: setup-virtualenv
 # ====
 
 lint: virtualenv-dev
-	$(flakehell) lint tsdg tsqt tests
+	$(flakehell) lint tsperf tsdg tsqt tests
 
 format: virtualenv-dev
-	$(black) tsdg tsqt tests
-	$(isort) tsdg tsqt tests
+	$(black) tsperf tsdg tsqt tests
+	$(isort) tsperf tsdg tsqt tests
 
 test: virtualenv-dev
 	$(pytest) -vvv tests
 
 coverage: virtualenv-dev
-	$(pytest) --cov=tsdg --cov=tsqt --cov-fail-under=95 --cov-branch --cov-report=term tests
+	$(pytest) --cov=tsperf --cov=tsdg --cov=tsqt --cov-fail-under=95 --cov-branch --cov-report=term tests

@@ -25,7 +25,7 @@ from typing import Tuple
 from pymongo import CursorType, MongoClient
 
 from tsdg.model.database import AbstractDatabaseAdapter
-from tsdg.util.tictrack import timed_function
+from tsperf.util.tictrack import timed_function
 
 
 class MongoDbAdapter(AbstractDatabaseAdapter):

@@ -3,7 +3,7 @@ local_testing
 .idea
 __pycache__/
 /coverage/
-/.coverage
+.coverage*
 /coverage.xml
 venv
 .venv

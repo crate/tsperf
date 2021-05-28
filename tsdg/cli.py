@@ -18,10 +18,10 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
-import argparse
+from typing import Dict
 
 from tsdg.config import DataGeneratorConfig
+from tsperf.util.common import read_configuration
 
 TSDG_README_URL = "https://github.com/crate/tsperf/blob/main/tsdg/README.md"
 
@@ -201,30 +201,8 @@ args_info = {
 def parse_arguments(
     config: DataGeneratorConfig,
 ) -> DataGeneratorConfig:  # pragma: no cover
-    parser = argparse.ArgumentParser(
+    return read_configuration(
+        config=config,
+        args_info=args_info,
         description="Timeseries Database Data Generator - A program to benchmark TSDBs.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
-    for element in vars(config):
-        if element in args_info:
-            kwargs = {}
-
-            if "action" in args_info[element]:
-                kwargs["action"] = args_info[element]["action"]
-
-            if "choices" in args_info[element]:
-                kwargs["choices"] = args_info[element]["choices"]
-            if "type" in args_info[element]:
-                kwargs["type"] = args_info[element]["type"]
-
-            parser.add_argument(
-                f"--{element}",
-                default=getattr(config, element),
-                help=args_info[element]["help"],
-                **kwargs,
-            )
-
-    arguments = parser.parse_args()
-    config.load_args(vars(arguments))
-    return config

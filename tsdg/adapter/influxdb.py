@@ -26,7 +26,7 @@ from influxdb_client import Bucket, InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS, Point
 
 from tsdg.model.database import AbstractDatabaseAdapter
-from tsdg.util.tictrack import timed_function
+from tsperf.util.tictrack import timed_function
 
 
 class InfluxDbAdapter(AbstractDatabaseAdapter):

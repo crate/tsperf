@@ -27,7 +27,7 @@ from datetime_truncate import truncate
 from pgcopy import CopyManager
 
 from tsdg.model.database import AbstractDatabaseAdapter
-from tsdg.util.tictrack import timed_function
+from tsperf.util.tictrack import timed_function
 
 
 class TimescaleDbAdapter(AbstractDatabaseAdapter):

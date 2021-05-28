@@ -30,18 +30,18 @@ This is the easiest way to use `tictrack`:
 
 ```python
 
-from tsdg.util import tictrack
+from tsperf.util import tictrack
 
 
 @tictrack.timed_function()
 def foo(a, b):
-  return a + b
+    return a + b
 
 
 foo_results = []
 for i in range(0, 10):
-  for j in range(10, 20):
-    foo_results = foo(i, j)
+    for j in range(10, 20):
+        foo_results = foo(i, j)
 ```
 
 You can than calculate the average execution time like so:

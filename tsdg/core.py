@@ -71,6 +71,19 @@ insert_exceptions = Queue()
 logger = logging.getLogger(__name__)
 
 
+def get_database_adapter_class(database: int) -> AbstractDatabaseAdapter:
+    db_to_adapter_map = {
+        0: CrateDbAdapter,
+        1: TimescaleDbAdapter,
+        2: InfluxDbAdapter,
+        3: MongoDbAdapter,
+        4: PostgresDbAdapter,
+        5: TimescaleDbAdapter,
+        6: MsSQLDbAdapter,
+    }
+    return db_to_adapter_map.get(database)
+
+
 def get_database_adapter() -> AbstractDatabaseAdapter:  # noqa
     if config.database == 0:  # crate
         adapter = CrateDbAdapter(
@@ -432,9 +445,11 @@ def main():  # pragma: no cover
 
     setup_logging()
 
-    # load configuration an set everything up
+    # Load configuration an set everything up.
     config = parse_arguments(config)
-    valid_config = config.validate_config()
+
+    database_adapter = get_database_adapter_class(database=config.database)
+    valid_config = config.validate_config(adapter=database_adapter)
     if not valid_config:
         logger.error(f"Invalid configuration: {config.invalid_configs}")
         exit(-1)

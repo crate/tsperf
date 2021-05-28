@@ -2,6 +2,7 @@ import os
 import os.path
 from unittest import mock
 
+from tsdg.adapter.cratedb import CrateDbAdapter
 from tsqt.config import QueryTimerConfig
 
 
@@ -12,17 +13,16 @@ def test_config_constructor_no_env_set():
     assert config.iterations == 100
     assert config.quantiles == ["50", "60", "75", "90", "99"]
     assert config.refresh_rate == 0.1
-    assert config.query == ""
 
     assert config.host == "localhost"
     assert config.username is None
     assert config.password is None
     assert config.db_name == ""
 
-    assert config.port == "5432"
-
     assert config.token == ""
     assert config.organization == ""
+
+    assert config.query is None
 
 
 def test_config_constructor_env_database_set():
@@ -183,3 +183,12 @@ def test_load_args():
     args = {"concurrency": 4}
     config.load_args(args)
     assert config.concurrency == 4
+
+
+@mock.patch("os.path.isfile")
+def test_config_default_port_cratedb(mock_isfile):
+    mock_isfile.return_value = True
+    config = QueryTimerConfig()
+    assert config.validate_config(adapter=CrateDbAdapter)
+
+    assert config.port == 4200

@@ -22,6 +22,10 @@ from abc import abstractmethod
 
 
 class AbstractDatabaseAdapter:
+
+    default_port = None
+    default_select_query = None
+
     @abstractmethod
     def __init__(self):
         pass

@@ -24,11 +24,11 @@ from typing import Tuple
 
 import pyodbc
 
-from tsperf.tsdg.model.database import AbstractDatabaseAdapter
+from tsperf.model.interface import DatabaseInterfaceBase
 from tsperf.util.tictrack import timed_function
 
 
-class MsSQLDbAdapter(AbstractDatabaseAdapter):
+class MsSQLDbAdapter(DatabaseInterfaceBase):
     def __init__(
         self,
         host: str,

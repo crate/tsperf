@@ -30,7 +30,7 @@ def test_config_constructor_no_env_set():
     assert config.partition == "week"
 
     assert config.shards == 4
-    assert config.replicas == 0
+    assert config.replicas == 1
 
     assert config.token == ""
     assert config.organization == ""
@@ -378,7 +378,7 @@ def test_validate_config_prometheus_port_false(mock_isfile):
 
 
 @mock.patch("os.path.isfile")
-def test_validate_config_num_threads_false(mock_isfile):
+def test_validate_config_num_threads_invalid(mock_isfile):
     mock_isfile.return_value = True
     test_num_threads = 0
     config = DataGeneratorConfig()
@@ -400,9 +400,15 @@ def test_load_args(mock_isfile):
 
 
 @mock.patch("os.path.isfile")
+def test_config_default_num_threads(mock_isfile):
+    mock_isfile.return_value = True
+    config = DataGeneratorConfig()
+    assert config.num_threads == 4
+
+
+@mock.patch("os.path.isfile")
 def test_config_default_port_cratedb(mock_isfile):
     mock_isfile.return_value = True
     config = DataGeneratorConfig()
     assert config.validate_config(adapter=CrateDbAdapter)
-
     assert config.port == 4200

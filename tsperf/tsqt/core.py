@@ -38,8 +38,8 @@ from tsperf.adapter.mssql import MsSQLDbAdapter
 from tsperf.adapter.postgresql import PostgresDbAdapter
 from tsperf.adapter.timescaledb import TimescaleDbAdapter
 from tsperf.adapter.timestream import TimeStreamAdapter
+from tsperf.model.interface import DatabaseInterfaceBase
 from tsperf.tsdg.core import get_database_adapter_class
-from tsperf.tsdg.model.database import AbstractDatabaseAdapter
 from tsperf.tsqt.cli import parse_arguments
 from tsperf.tsqt.config import QueryTimerConfig
 from tsperf.util.common import setup_logging
@@ -58,9 +58,9 @@ terminal = Terminal()
 logger = logging.getLogger(__name__)
 
 
-def get_database_adapter() -> AbstractDatabaseAdapter:  # noqa
+def get_database_adapter() -> DatabaseInterfaceBase:  # noqa
     if config.database == 0:
-        adapter = CrateDbAdapter(config.host, config.username, config.password, model)
+        adapter = CrateDbAdapter(config=config, model=model)
     elif config.database == 1:
         adapter = TimescaleDbAdapter(
             config.host,

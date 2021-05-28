@@ -4,6 +4,7 @@ from crate import client
 
 from tests.tsperf.tsdg.test_models import test_model, test_model2
 from tsperf.adapter.cratedb import CrateDbAdapter
+from tsperf.model.configuration import DatabaseConnectionConfiguration
 
 
 @mock.patch.object(client, "connect", autospec=True)
@@ -26,7 +27,10 @@ def test_close_connection(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = CrateDbAdapter("localhost:4200", "crate", "password", test_model)
+    config = DatabaseConnectionConfiguration(
+        host="localhost:4200", username="crate", password="password"
+    )
+    db_writer = CrateDbAdapter(config=config, model=test_model)
     mock_connect.assert_called_with(
         "localhost:4200", username="crate", password="password"
     )
@@ -51,7 +55,7 @@ def test_prepare_database1(mock_connect):
     when calling CrateDbAdapter.prepare_database() the statement given to cursor.execute() contains the correct values:
     -> "temperature" is used in stmt as table name
     -> "g_ts_week" is used as partitioning column
-    -> "21 SHARDS" are configured for table
+    -> "4 SHARDS" are configured for table
     -> "number_of_replicas = 1" is set for table
 
     :param mock_connect: mocked function call from crate.client.connect()
@@ -61,7 +65,12 @@ def test_prepare_database1(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = CrateDbAdapter("localhost:4200", "crate2", "password2", test_model)
+
+    config = DatabaseConnectionConfiguration(
+        host="localhost:4200", username="crate2", password="password2"
+    )
+    db_writer = CrateDbAdapter(config=config, model=test_model)
+
     mock_connect.assert_called_with(
         "localhost:4200", username="crate2", password="password2"
     )
@@ -73,7 +82,7 @@ def test_prepare_database1(mock_connect):
     # partition is default
     assert "g_ts_week" in stmt
     # shards is default
-    assert "21 SHARDS" in stmt
+    assert "4 SHARDS" in stmt
     # replicas is default
     assert "number_of_replicas = 1" in stmt
 
@@ -103,9 +112,18 @@ def test_prepare_database2(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = CrateDbAdapter(
-        "localhost:4200", "crate3", "password3", test_model2, "table_name", 3, 0, "day"
+
+    config = DatabaseConnectionConfiguration(
+        host="localhost:4200",
+        username="crate3",
+        password="password3",
+        table_name="table_name",
+        shards=3,
+        replicas=0,
+        partition="day",
     )
+    db_writer = CrateDbAdapter(config=config, model=test_model2)
+
     db_writer.prepare_database()
     # Test Case 1:
     stmt = cursor.execute.call_args.args[0]
@@ -140,7 +158,12 @@ def test_insert_stmt(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = CrateDbAdapter("localhost:4200", "crate2", "password2", test_model)
+
+    config = DatabaseConnectionConfiguration(
+        host="localhost:4200", username="crate2", password="password2"
+    )
+    db_writer = CrateDbAdapter(config=config, model=test_model)
+
     # Test Case 1:
     db_writer.insert_stmt(
         [1586327807000],
@@ -180,7 +203,12 @@ def test_execute_query(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = CrateDbAdapter("localhost:4200", "crate2", "password2", test_model)
+
+    config = DatabaseConnectionConfiguration(
+        host="localhost:4200", username="crate2", password="password2"
+    )
+    db_writer = CrateDbAdapter(config=config, model=test_model)
+
     # Test Case 1:
     db_writer.execute_query("SELECT * FROM temperature;")
     cursor.execute.assert_called_with("SELECT * FROM temperature;")

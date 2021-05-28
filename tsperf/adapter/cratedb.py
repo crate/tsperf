@@ -18,41 +18,48 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+import logging
+from typing import Dict, Union
 
 from crate import client
 
-from tsperf.tsdg.model.database import AbstractDatabaseAdapter
+from tsperf.adapter import AdapterManager
+from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
+from tsperf.tsdg.config import DataGeneratorConfig
+from tsperf.tsqt.config import QueryTimerConfig
 from tsperf.util.tictrack import timed_function
 
+logger = logging.getLogger(__name__)
 
-class CrateDbAdapter(AbstractDatabaseAdapter):
+
+class CrateDbAdapter(DatabaseInterfaceBase):
 
     default_port = 4200
     default_select_query = "SELECT 1;"
 
     def __init__(
         self,
-        host: str,
-        username: str,
-        password: str,
-        model: dict,
-        table_name: str = None,
-        shards: int = None,
-        replicas: int = None,
-        partition: str = "week",
+        config: Union[DataGeneratorConfig, QueryTimerConfig],
+        model: Dict,
     ):
         super().__init__()
-        if ":" not in host:
-            host = f"{host}:{self.default_port}"
-        self.conn = client.connect(host, username=username, password=password)
+        if ":" not in config.host:
+            config.host = f"{config.host}:{self.default_port}"
+        self.conn = client.connect(
+            config.host, username=config.username, password=config.password
+        )
         self.cursor = self.conn.cursor()
         self.model = model
-        self.table_name = (table_name, self._get_model_table_name())[
-            table_name is None or table_name == ""
+        self.table_name = (config.table_name, self._get_model_table_name())[
+            config.table_name is None or config.table_name == ""
         ]
-        self.shards = (shards, 21)[shards is None]
-        self.replicas = (replicas, 1)[replicas is None]
-        self.partition = partition
+        self.partition = config.partition
+
+        logger.info(
+            f"Configuring CrateDB with {config.shards} shards and {config.replicas} replicas"
+        )
+        self.shards = config.shards
+        self.replicas = config.replicas
 
     def close_connection(self):
         self.cursor.close()
@@ -81,3 +88,6 @@ class CrateDbAdapter(AbstractDatabaseAdapter):
         for key in self.model.keys():
             if key != "description":
                 return key
+
+
+AdapterManager.register(interface=DatabaseInterfaceType.CrateDB, factory=CrateDbAdapter)

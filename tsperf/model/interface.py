@@ -19,9 +19,10 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 from abc import abstractmethod
+from enum import Enum
 
 
-class AbstractDatabaseAdapter:
+class DatabaseInterfaceBase:
 
     default_port = None
     default_select_query = None
@@ -63,3 +64,14 @@ class AbstractDatabaseAdapter:
             if key != "description":
                 columns[value["key"]["value"]] = value["type"]["value"]
         return columns
+
+
+class DatabaseInterfaceType(Enum):
+    CrateDB = "cratedb"
+    TimescaleDB = "timescaledb"
+    InfluxDB1 = "influxdb1"
+    InfluxDB2 = "influxdb2"
+    MongoDB = "mongodb"
+    PostgreSQL = "postgresql"
+    TimeStream = "timestream"
+    MsSQL = "mssql"

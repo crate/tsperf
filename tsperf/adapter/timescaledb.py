@@ -26,11 +26,11 @@ import psycopg2.extras
 from datetime_truncate import truncate
 from pgcopy import CopyManager
 
-from tsperf.tsdg.model.database import AbstractDatabaseAdapter
+from tsperf.model.interface import DatabaseInterfaceBase
 from tsperf.util.tictrack import timed_function
 
 
-class TimescaleDbAdapter(AbstractDatabaseAdapter):
+class TimescaleDbAdapter(DatabaseInterfaceBase):
     def __init__(
         self,
         host: str,

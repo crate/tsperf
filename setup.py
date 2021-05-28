@@ -76,5 +76,5 @@ setuptools.setup(
     },
     install_requires=requires,
     extras_require={"testing": test_requires},
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 )

@@ -70,8 +70,8 @@ setuptools.setup(
     ],
     entry_points={
         "console_scripts": [
-            "tsdg = tsdg.core:main",
-            "tsqt = tsqt.core:main",
+            "tsdg = tsperf.tsdg.core:main",
+            "tsqt = tsperf.tsqt.core:main",
         ]
     },
     install_requires=requires,

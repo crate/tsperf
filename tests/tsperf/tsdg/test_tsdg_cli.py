@@ -3,7 +3,7 @@ from click.testing import CliRunner
 
 import tsperf.cli
 from tsperf.model.interface import DatabaseInterfaceType
-from tsperf.tsdg.config import DataGeneratorConfig
+from tsperf.write.config import DataGeneratorConfig
 
 
 @pytest.mark.skip

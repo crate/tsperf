@@ -21,7 +21,6 @@
 
 import json
 import logging
-import sys
 import time
 from queue import Empty, Queue
 from threading import Thread, current_thread
@@ -39,10 +38,12 @@ from tsperf.adapter.postgresql import PostgresDbAdapter
 from tsperf.adapter.timescaledb import TimescaleDbAdapter
 from tsperf.adapter.timestream import TimeStreamAdapter
 from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
-from tsperf.tsdg.config import DataGeneratorConfig
-from tsperf.tsdg.model import IngestMode
-from tsperf.tsdg.model.edge import Edge
-from tsperf.tsdg.model.metrics import (
+from tsperf.util import tictrack
+from tsperf.util.batch_size_automator import BatchSizeAutomator
+from tsperf.write.config import DataGeneratorConfig
+from tsperf.write.model import IngestMode
+from tsperf.write.model.edge import Edge
+from tsperf.write.model.metrics import (
     c_generated_values,
     c_inserted_values,
     c_inserts_failed,
@@ -55,8 +56,6 @@ from tsperf.tsdg.model.metrics import (
     g_insert_time,
     g_rows_per_second,
 )
-from tsperf.util import tictrack
-from tsperf.util.batch_size_automator import BatchSizeAutomator
 
 # Global variables shared across threads
 config: DataGeneratorConfig = None
@@ -81,10 +80,10 @@ def get_database_adapter() -> DatabaseInterfaceBase:
 def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
 
     if config.database == 0:  # crate
-        # adapter = CrateDbAdapter(config=config, model=model)
-        adapter = AdapterManager.create(
-            interface=DatabaseInterfaceType.CrateDB, config=config, model=model
-        )
+        adapter = CrateDbAdapter(config=config, model=model)
+        # adapter = AdapterManager.create(
+        #    interface=DatabaseInterfaceType.CrateDB, config=config, model=model
+        # )
     elif config.database == 1:  # timescale
         adapter = TimescaleDbAdapter(
             config.host,
@@ -213,7 +212,7 @@ def do_insert(adapter, timestamps, batch):
         c_inserts_performed_success.inc()
         inserted_values_queue.put_nowait(len(batch))
     except Exception as e:
-        # if an exception is thrown while inserting we don't want the whole tsdg to crash
+        # if an exception is thrown while inserting we don't want the whole write to crash
         # as the values have not been inserted we remove them from our runtime_metrics
         # TODO: more sophistic error handling on adapter level
         c_inserts_failed.inc()
@@ -242,7 +241,7 @@ def probe_insert():
         adapter.prepare_database()
         return True
     except Exception:
-        logger.exception(f"Failure communicating with or preparing database")
+        logger.exception("Failure communicating with or preparing database")
         return False
 
 
@@ -329,7 +328,7 @@ def consecutive_insert():
                 batch = current_values_queue.get_nowait()
                 ts = time.time()
                 # we want the same timestamp for each value this timestamp should be the same
-                # even if the tsdg runs in multiple containers therefore we round the
+                # even if the write runs in multiple containers therefore we round the
                 # timestamp to match ingest_delta this is done by multiplying
                 # by ingest_delta and then dividing the result by ingest_delta
                 ingest_ts_factor = 1 / config.ingest_delta
@@ -457,7 +456,7 @@ def start(configuration: DataGeneratorConfig):
     f = open(config.model, "r")
     model = json.load(f)
 
-    logger.info(f"Probing insert")
+    logger.info("Probing insert")
     if not probe_insert():
         raise Exception("Failure communicating with or preparing database")
 
@@ -470,7 +469,7 @@ def start(configuration: DataGeneratorConfig):
     data_batch_size = config.id_end - config.id_start + 1
     last_ts = config.ingest_ts
 
-    # start the tsdg logic
+    # start the write logic
     run_dg()
 
     # we analyze the runtime of the different function

@@ -18,8 +18,8 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-from tsperf.tsdg.cli import TSDG_README_URL
 from tsperf.util.common import read_configuration
+from tsperf.write.cli import TSDG_README_URL
 
 from .config import QueryTimerConfig
 

@@ -25,8 +25,8 @@ import time
 from argparse import Namespace
 from distutils.util import strtobool
 
-from tsperf.model.configuration import DatabaseConnectionConfiguration, enrich_options
-from tsperf.tsdg.model import IngestMode
+from tsperf.model.configuration import DatabaseConnectionConfiguration
+from tsperf.write.model import IngestMode
 
 
 @dataclasses.dataclass
@@ -50,7 +50,7 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
 
         super().__post_init__()
 
-        # environment variables describing how the tsdg behaves
+        # environment variables describing how the write behaves
         self.ingest_ts = float(os.getenv("INGEST_TS", time.time()))
         self.ingest_delta = float(os.getenv("INGEST_DELTA", 0.5))
         # self.batch_size = int(os.getenv("BATCH_SIZE", -1))

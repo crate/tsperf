@@ -18,8 +18,8 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-from tsperf.tsdg.config import DataGeneratorConfig
 from tsperf.util.common import read_configuration
+from tsperf.write.config import DataGeneratorConfig
 
 TSDG_README_URL = "https://github.com/crate/tsperf/blob/main/tsdg/README.md"
 
@@ -85,11 +85,13 @@ args_info = {
         "type": bool,
     },
     "token": {
-        "help": "Authentication token for InfluxDB V2: https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/",
+        "help": "Authentication token for InfluxDB V2. See also:"
+        "https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/",
         "type": str,
     },
     "organization": {
-        "help": "Organization ID for InfluxDB V2: https://v2.docs.influxdata.com/v2.0/organizations/",
+        "help": "Organization ID for InfluxDB V2. See also:"
+        "https://v2.docs.influxdata.com/v2.0/organizations/",
         "type": str,
     },
     "aws_access_key_id": {

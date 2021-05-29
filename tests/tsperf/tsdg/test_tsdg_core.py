@@ -6,9 +6,9 @@ import pytest
 
 import tsperf
 from tsperf.model.interface import DatabaseInterfaceType
-from tsperf.tsdg import core as dg
-from tsperf.tsdg.config import DataGeneratorConfig
-from tsperf.tsdg.model import IngestMode
+from tsperf.write import core as dg
+from tsperf.write.config import DataGeneratorConfig
+from tsperf.write.model import IngestMode
 
 
 @pytest.fixture(scope="function")
@@ -57,7 +57,7 @@ def test_get_database_adapter(factory_mock, adapter, config):
     )
 
 
-@mock.patch("tsperf.tsdg.core.Edge", autospec=True, return_value=mock.MagicMock)
+@mock.patch("tsperf.write.core.Edge", autospec=True, return_value=mock.MagicMock)
 def test_create_edges(mock_edge, config):
     dg.config = config
     dg.config.id_start = 0
@@ -114,8 +114,8 @@ def test_get_next_value_continuous():
     assert len(values) == 1
 
 
-@mock.patch("tsperf.tsdg.core.tictrack", autospec=True)
-@mock.patch("tsperf.tsdg.core.logger", autospec=True)
+@mock.patch("tsperf.write.core.tictrack", autospec=True)
+@mock.patch("tsperf.write.core.logger", autospec=True)
 def test_log_stat_delta(mock_log, mock_tictrack):
     # delta not reached no output
     dg.config.stat_delta = 1
@@ -130,17 +130,17 @@ def test_log_stat_delta(mock_log, mock_tictrack):
     mock_log.info.assert_called()
 
 
-@mock.patch("tsperf.tsdg.core.logger", autospec=True)
+@mock.patch("tsperf.write.core.logger", autospec=True)
 def test_do_insert(mock_log):
     db_writer = mock.MagicMock()
     dg.do_insert(db_writer, [1], [1])
-    assert tsperf.tsdg.model.metrics.c_inserts_performed_success._value.get() == 1
-    assert tsperf.tsdg.model.metrics.c_inserts_failed._value.get() == 0
+    assert tsperf.write.model.metrics.c_inserts_performed_success._value.get() == 1
+    assert tsperf.write.model.metrics.c_inserts_failed._value.get() == 0
     mock_log.error.assert_not_called()
     db_writer.insert_stmt.side_effect = Exception("mocked exception")
     dg.do_insert(db_writer, [2], [2])
-    assert tsperf.tsdg.model.metrics.c_inserts_performed_success._value.get() == 1
-    assert tsperf.tsdg.model.metrics.c_inserts_failed._value.get() == 1
+    assert tsperf.write.model.metrics.c_inserts_performed_success._value.get() == 1
+    assert tsperf.write.model.metrics.c_inserts_failed._value.get() == 1
     mock_log.error.assert_called_once()
 
 
@@ -149,24 +149,24 @@ def test_get_insert_values():
     batch, timestamps = dg.get_insert_values(1)
     assert len(batch) == 0
     assert len(timestamps) == 0
-    assert tsperf.tsdg.model.metrics.c_values_queue_was_empty._value.get() == 1
+    assert tsperf.write.model.metrics.c_values_queue_was_empty._value.get() == 1
 
     # current_values_queue has to few entries
     dg.current_values_queue.put({"timestamps": [1, 1, 1], "batch": [1, 2, 3]})
     batch, timestamps = dg.get_insert_values(4)
     assert len(batch) == 3
     assert len(timestamps) == 3
-    assert tsperf.tsdg.model.metrics.c_values_queue_was_empty._value.get() == 2
+    assert tsperf.write.model.metrics.c_values_queue_was_empty._value.get() == 2
 
     # current_values_queue has to few entries
     dg.current_values_queue.put({"timestamps": [1, 1, 1], "batch": [1, 2, 3]})
     batch, timestamps = dg.get_insert_values(1)
     assert len(batch) == 3
     assert len(timestamps) == 3
-    assert tsperf.tsdg.model.metrics.c_values_queue_was_empty._value.get() == 2
+    assert tsperf.write.model.metrics.c_values_queue_was_empty._value.get() == 2
 
 
-@mock.patch("tsperf.tsdg.core.get_database_adapter", autospec=True)
+@mock.patch("tsperf.write.core.get_database_adapter", autospec=True)
 def test_insert_routine_auto_batch_mode(mock_get_database_adapter):
     # Immediately signal stop to not run indefinitely.
     dg.stop_queue.put(True)
@@ -188,7 +188,7 @@ def test_insert_routine_auto_batch_mode(mock_get_database_adapter):
     dg.stop_queue.get()  # resetting the stop queue
 
 
-@mock.patch("tsperf.tsdg.core.get_database_adapter", autospec=True)
+@mock.patch("tsperf.write.core.get_database_adapter", autospec=True)
 def test_insert_routine_fixed_batch_mode(mock_get_database_adapter, config):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
 
@@ -208,8 +208,8 @@ def test_insert_routine_fixed_batch_mode(mock_get_database_adapter, config):
     dg.stop_queue.get()  # resetting the stop queue
 
 
-@mock.patch("tsperf.tsdg.core.get_database_adapter", autospec=True)
-@mock.patch("tsperf.tsdg.core.current_values_queue", autospec=True)
+@mock.patch("tsperf.write.core.get_database_adapter", autospec=True)
+@mock.patch("tsperf.write.core.current_values_queue", autospec=True)
 def test_insert_routine_empty_batch(
     mock_current_values_queue, mock_get_database_adapter
 ):
@@ -228,8 +228,8 @@ def test_insert_routine_empty_batch(
     dg.stop_queue.get()  # resetting the stop queue
 
 
-@mock.patch("tsperf.tsdg.core.get_database_adapter", autospec=True)
-@mock.patch("tsperf.tsdg.core.current_values_queue", autospec=True)
+@mock.patch("tsperf.write.core.get_database_adapter", autospec=True)
+@mock.patch("tsperf.write.core.current_values_queue", autospec=True)
 def test_consecutive_insert_queue_empty(
     mock_current_values_queue, mock_get_database_adapter
 ):
@@ -248,7 +248,7 @@ def test_consecutive_insert_queue_empty(
     dg.insert_finished_queue.get()
 
 
-@mock.patch("tsperf.tsdg.core.get_database_adapter", autospec=True)
+@mock.patch("tsperf.write.core.get_database_adapter", autospec=True)
 def test_consecutive_insert(mock_get_database_adapter):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
     dg.config.ingest_mode = 0

@@ -2,7 +2,7 @@ import dataclasses
 import os
 
 from tsperf.model.interface import DatabaseInterfaceType
-from tsperf.tsdg.model import IngestMode
+from tsperf.write.model import IngestMode
 
 
 @dataclasses.dataclass

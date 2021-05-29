@@ -43,7 +43,7 @@ flake8-bugbear = ["-B007"]
 flake8-bandit = ["-S101", "-S105", "-S106"]
 
 
-[tool.flakehell.exceptions."tsdg/util/float_simulator/__init__.py"]
+[tool.flakehell.exceptions."tsperf/util/float_simulator/__init__.py"]
 flake8-bandit = ["-S311"]
 
 
@@ -52,6 +52,6 @@ show_missing = true
 fail_under = 0
 omit = [
     "tests/*",
-    "tsperf/tsdg/cli.py",
     "tsperf/tsqt/cli.py",
+    "tsperf/write/cli.py",
 ]

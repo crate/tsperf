@@ -8,7 +8,7 @@ from tests.tsperf.tsdg.test_models import (
     tag_model_list,
     tag_model_plant100_line5_sensorId,
 )
-from tsperf.tsdg.model.edge import BoolSensor, Edge
+from tsperf.write.model.edge import BoolSensor, Edge
 
 
 def test_init_sensors():

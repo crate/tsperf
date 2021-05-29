@@ -8,8 +8,8 @@ import pytest
 import tsperf.cli
 from tsperf.adapter.cratedb import CrateDbAdapter
 from tsperf.model.interface import DatabaseInterfaceType
-from tsperf.tsdg.config import DataGeneratorConfig
-from tsperf.tsdg.model import IngestMode
+from tsperf.write.config import DataGeneratorConfig
+from tsperf.write.model import IngestMode
 
 
 def test_config_default():

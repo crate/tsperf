@@ -20,19 +20,18 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 import logging
 import sys
-from enum import Enum
 
 import click
 import cloup
 from blessed import Terminal
 
-import tsperf.tsdg.core
 import tsperf.tsqt.core
+import tsperf.write.core
 from tsperf.model.interface import DatabaseInterfaceType
-from tsperf.tsdg.config import DataGeneratorConfig
-from tsperf.tsdg.model import IngestMode
 from tsperf.tsqt.config import QueryTimerConfig
 from tsperf.util.common import setup_logging
+from tsperf.write.config import DataGeneratorConfig
+from tsperf.write.model import IngestMode
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +198,7 @@ def write(**kwargs):
     adapter = kwargs["adapter"]
     logger.info(f"Invoking write workload on time-series database »{adapter}«")
     config = DataGeneratorConfig.create(**kwargs)
-    tsperf.tsdg.core.start(config)
+    tsperf.write.core.start(config)
 
 
 @main.command("read")

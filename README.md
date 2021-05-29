@@ -2,7 +2,7 @@
 
 # Data Generator
 
-The Data Generator has a dedicated [documentation page](tsperf/tsdg/README.md).
+The Data Generator has a dedicated [documentation page](tsperf/write/README.md).
 For the purpose of capacity testing it simulates the generation of time-series
 data, without the need to set up an ingestion chain (which could be Azure IoTHub, RabbitMQ, etc.).
 

@@ -2,7 +2,7 @@ test_schema1 = {
     "description": "test",
     "temperature": {
         "tags": {"description": "test", "plant": 100, "line": 5, "sensor_id": "id"},
-        "metrics": {
+        "fields": {
             "description": "test",
             "temperature": {
                 "description": "test",
@@ -59,7 +59,7 @@ test_schema2 = {
     "booleans": {
         "description": "test",
         "tags": {"description": "test", "plant": 100, "line": 5, "sensor_id": "id"},
-        "metrics": {
+        "fields": {
             "description": "test",
             "switch": {
                 "description": "test",
@@ -86,7 +86,7 @@ test_schema3 = {
             "line": ["L1", "L2", "L3"],
             "sensor_id": "id",
         },
-        "metrics": {
+        "fields": {
             "description": "test",
             "switch": {
                 "description": "test",
@@ -104,7 +104,7 @@ test_schema3 = {
     }
 }
 
-metrics_schema_float1_bool1 = {
+channel_schema_float1_bool1 = {
     "temperature": {
         "key": {"value": "value"},
         "type": {"value": "FLOAT"},
@@ -139,7 +139,7 @@ metrics_schema_float1_bool1 = {
         "true_ratio": {"value": 0.01},
     },
 }
-metrics_schema_string = {
+channel_schema_string = {
     "string": {
         "key": {"value": "not_implemented_sensor_type"},
         "type": {"value": "STRING"},

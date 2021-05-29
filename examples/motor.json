@@ -7,8 +7,8 @@
             "line": 5,
             "drive_id": "id"
         },
-        "metrics": {
-            "description": "metrics contain all measured values associated with a tag",
+        "fields": {
+            "description": "fields contain all measured values associated with a tag",
             "temperature": {
                 "description": "the temperature of a drive",
                 "key": {

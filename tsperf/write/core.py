@@ -150,7 +150,7 @@ def create_edges() -> dict:
     logger.info(f"Creating {count} objects [{id_start}, {id_end}]")
     edges = {}
     for i in tqdm(range(config.id_start, config.id_end + 1)):
-        edges[i] = Edge(i, get_sub_element("tags"), get_sub_element("metrics"))
+        edges[i] = Edge(i, get_sub_element("tags"), get_sub_element("fields"))
     return edges
 
 
@@ -213,7 +213,7 @@ def do_insert(adapter, timestamps, batch):
         inserted_values_queue.put_nowait(len(batch))
     except Exception as e:
         # if an exception is thrown while inserting we don't want the whole write to crash
-        # as the values have not been inserted we remove them from our runtime_metrics
+        # as the values have not been inserted we remove them from our runtime metrics
         # TODO: more sophistic error handling on adapter level
         c_inserts_failed.inc()
         logger.error(e)
@@ -481,5 +481,5 @@ def start(configuration: DataGeneratorConfig):
 
     logger.info(f"Records per second: {data_batch_size * config.ingest_size / run}")
     logger.info(
-        f"Metrics per second: {data_batch_size * config.ingest_size * len(get_sub_element('metrics').keys()) / run}"
+        f"Fields per second: {data_batch_size * config.ingest_size * len(get_sub_element('fields').keys()) / run}"
     )

@@ -57,7 +57,7 @@ class PostgresDbAdapter(DatabaseInterfaceBase):
         self.conn.close()
 
     def prepare_database(self):
-        columns = self._get_tags_and_metrics()
+        columns = self._get_tags_and_fields()
         stmt = f"""CREATE TABLE IF NOT EXISTS {self.table_name} (
 ts TIMESTAMP NOT NULL,
 ts_{self.partition} TIMESTAMP NOT NULL,
@@ -77,7 +77,7 @@ ts_{self.partition} TIMESTAMP NOT NULL,
 
     @timed_function()
     def _prepare_postgres_stmt(self, timestamps: list, batch: list) -> str:
-        columns = self._get_tags_and_metrics().keys()
+        columns = self._get_tags_and_fields().keys()
         stmt = f"""INSERT INTO {self.table_name} (ts, ts_{self.partition},"""
         for column in columns:
             stmt += f"""{column}, """

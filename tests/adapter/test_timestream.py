@@ -1,6 +1,6 @@
 from unittest import mock
 
-from tests.tsperf.tsdg.test_models import test_model
+from tests.write.test_models import test_model
 from tsperf.adapter.timestream import TimeStreamAdapter
 
 

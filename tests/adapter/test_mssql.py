@@ -2,7 +2,7 @@ from unittest import mock
 
 import pyodbc
 
-from tests.tsperf.tsdg.test_models import test_model, test_model2, test_model3
+from tests.write.test_models import test_model, test_model2, test_model3
 from tsperf.adapter.mssql import MsSQLDbAdapter
 
 

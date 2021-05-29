@@ -43,7 +43,8 @@ class DatabaseConnectionConfiguration:
 
     def validate(self):
         if self.adapter is not None:
-            assert DatabaseInterfaceType(self.adapter)
+            if not DatabaseInterfaceType(self.adapter):
+                raise Exception(f"Invalid database interface: {self.adapter}")
 
 
 def enrich_options(kwargs):

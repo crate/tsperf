@@ -68,11 +68,11 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
         if "PYTEST_CURRENT_TEST" not in os.environ:
             if self.host is None or self.host.strip() == "":
                 self.invalid_configs.append(
-                    f"--host parameter or HOST environment variable required"
+                    "--host parameter or HOST environment variable required"
                 )
             if self.query is None or self.query.strip() == "":
                 self.invalid_configs.append(
-                    f"--query parameter or QUERY environment variable required"
+                    "--query parameter or QUERY environment variable required"
                 )
 
         if self.port is None and adapter is not None:

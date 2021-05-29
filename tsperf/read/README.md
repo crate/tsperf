@@ -161,7 +161,7 @@ To use the Query Timer with MongoDB the code of the Query Timer needs to be chan
 + Also uncomment the instantiation of the `adapter` in the `get_database_adapter` function 
 + Comment the `ValueError` in the line above
 
-This should let you start the Query Timer using `DATABASE` set to MongoDB.
+This should let you start the Query Timer using `ADAPTER` set to MongoDB.
 
 To add the query you want to measure add a variable containing your query to the script and pass this variable to
 `adapter.execute_query()` in the `start_query_run` function, instead of `config.query`.
@@ -177,22 +177,20 @@ more information). This chapter lists all available Environment Variables and ex
 
 The environment variables in this chapter are used to configure the behaviour of the Query Timer
 
-#### DATABASE
+#### ADAPTER
 
-Type: Integer
+Type: String
 
-Values: 0..6
+Values: cratedb|timescaledb|influxdb1|influxdb2|mongodb|postgresql|timestream|mssql
 
-Default: 0
-
-The value will define which database is used:
-+ 0: CrateDB
-+ 1: TimescaleDB
-+ 2: InfluxDB
-+ 3: MongoDB
-+ 4: PostgreSQL
-+ 5: Timestream
-+ 6: Microsoft SQL Server
+The value will define which database adapter to use:
++ CrateDB
++ TimescaleDB
++ InfluxDB
++ MongoDB
++ PostgreSQL
++ Timestream
++ Microsoft SQL Server
 
 #### CONCURRENCY
 

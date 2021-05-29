@@ -21,7 +21,7 @@ Data Generator can be setup and the functionality as well as explain different e
       - [Microsoft SQL Server](#microsoft-sql-server)
   * [Data Generator Configuration](#data-generator-configuration)
     + [Environment variables configuring the behaviour of the Data Generator](#environment-variables-configuring-the-behaviour-of-the-data-generator)
-      - [NUM_THREADS](#num_threads)
+      - [CONCURRENCY](#concurrency)
       - [ID_START](#id_start)
       - [ID_END](#id_end)
       - [INGEST_MODE](#ingest_mode)
@@ -32,7 +32,7 @@ Data Generator can be setup and the functionality as well as explain different e
       - [INGEST_DELTA](#ingest_delta)
       - [SCHEMA](#schema)
       - [BATCH_SIZE](#batch_size)
-      - [DATABASE](#database)
+      - [ADAPTER](#adapter)
       - [STAT_DELTA](#stat_delta)
       - [PROMETHEUS_PORT](#prometheus_port)
     + [Environment variables used to configure different databases](#environment-variables-used-to-configure-different-databases)
@@ -404,7 +404,7 @@ more information). This chapter lists all available Environment Variables and ex
 
 The environment variables in this chapter are used to configure the behaviour of the data generator.
 
-#### NUM_THREADS
+#### CONCURRENCY
 
 Type: Integer
 
@@ -543,22 +543,20 @@ defines how many rows will be inserted with one insert statement. If the value i
 [Batch Size Automator](#batch-size-automator) will take control over the batch size and dynamically adjusts the batch
 size to get the best insert performance.
 
-#### DATABASE
+#### ADAPTER
 
-Type: Integer
+Type: String
 
-Values: 0..6
+Values: cratedb|timescaledb|influxdb1|influxdb2|mongodb|postgresql|timestream|mssql
 
-Default: 0
-
-The value will define which database is used:
-+ 0: CrateDB
-+ 1: TimescaleDB
-+ 2: InfluxDB
-+ 3: MongoDB
-+ 4: PostgreSQL
-+ 5: Timestream
-+ 6: Microsoft SQL Server
+The value will define which database adapter to use:
++ CrateDB
++ TimescaleDB
++ InfluxDB
++ MongoDB
++ PostgreSQL
++ Timestream
++ Microsoft SQL Server
 
 #### STAT_DELTA
 
@@ -802,8 +800,9 @@ Default: empty string
 
 ## Data Generator Schemas
 
-The Data Generator uses schemas to determine what kind of values to generate. These schemas are described in JSON-files.
-This chapter explains how to write schemas based on examples.
+The Data Generator uses schemas to determine what kind of values to generate.
+These schemas are described in JSON files. This chapter explains how to write
+schemas based on examples.
 
 ### Structure
 
@@ -1087,7 +1086,7 @@ set the following environment variables:
 + ID_END: 100
 
 As we want to use CrateDB running on localhost we set the following environment variables:
-+ DATABASE: 0
++ ADAPTER: cratedb
 + HOST: "host.docker.internal:4200" (this is the host when trying to access localhost from inside a docker container)
 + USERNAME: "aValidUsername"
 + PASSWORD: "PasswordForTheValidUsername"

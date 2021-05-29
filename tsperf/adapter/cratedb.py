@@ -25,7 +25,7 @@ from crate import client
 
 from tsperf.adapter import AdapterManager
 from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
-from tsperf.tsqt.config import QueryTimerConfig
+from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import timed_function
 from tsperf.write.config import DataGeneratorConfig
 

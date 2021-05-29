@@ -2,9 +2,9 @@ from unittest import mock
 
 import pytest
 
-import tsperf.tsqt.core as qt
+import tsperf.read.core as qt
 from tsperf.model.interface import DatabaseInterfaceType
-from tsperf.tsqt.config import QueryTimerConfig
+from tsperf.read.config import QueryTimerConfig
 
 
 @pytest.fixture(scope="function")
@@ -45,7 +45,7 @@ def test_percentage_to_rgb():
     assert b == 0
 
 
-@mock.patch("tsperf.tsqt.core.get_database_adapter", autospec=True)
+@mock.patch("tsperf.read.core.get_database_adapter", autospec=True)
 def test_start_query_run(mock_get_db_writer):
     mock_db_writer = mock.MagicMock()
     mock_db_writer.execute_query.side_effect = [[1, 2, 3], Exception("mocked failure")]

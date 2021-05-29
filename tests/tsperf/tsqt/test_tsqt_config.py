@@ -7,7 +7,7 @@ import pytest
 import tsperf
 from tsperf.adapter.cratedb import CrateDbAdapter
 from tsperf.model.interface import DatabaseInterfaceType
-from tsperf.tsqt.config import QueryTimerConfig
+from tsperf.read.config import QueryTimerConfig
 
 
 def test_config_vanilla():

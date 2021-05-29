@@ -3,7 +3,7 @@ from click.testing import CliRunner
 
 import tsperf
 from tsperf.model.interface import DatabaseInterfaceType
-from tsperf.tsqt.config import QueryTimerConfig
+from tsperf.read.config import QueryTimerConfig
 
 
 @pytest.mark.skip

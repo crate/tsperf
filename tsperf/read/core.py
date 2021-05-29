@@ -40,7 +40,7 @@ from tsperf.adapter.postgresql import PostgresDbAdapter
 from tsperf.adapter.timescaledb import TimescaleDbAdapter
 from tsperf.adapter.timestream import TimeStreamAdapter
 from tsperf.model.interface import DatabaseInterfaceBase
-from tsperf.tsqt.config import QueryTimerConfig
+from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import tic_toc, timed_function
 
 model = {"value": "none"}
@@ -80,7 +80,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
     elif config.database == 3:
         raise ValueError(
             "MongoDB queries are not supported (but can be manually added to the script - see "
-            "tsqt documentation)"
+            "read documentation)"
         )
         # adapter = MongoDbAdapter(config.host, config.username, config.password, config.db_name, model)
     elif config.database == 4:

@@ -32,7 +32,7 @@ from tsperf.write.model import IngestMode
 @dataclasses.dataclass
 class DataGeneratorConfig(DatabaseConnectionConfiguration):
 
-    # Describing how the TSDG behaves
+    # Describing how the Timeseries Datagenerator (TSDG) behaves
     model: str = None
     id_start: int = 1
     id_end: int = 500

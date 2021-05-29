@@ -10,7 +10,7 @@ $(eval flakehell    := $(venv)/bin/flakehell)
 $(eval black        := $(venv)/bin/black)
 $(eval isort        := $(venv)/bin/isort)
 
-$(eval tsdg         := $(venv)/bin/tsdg)
+$(eval tsperf       := $(venv)/bin/tsperf)
 
 
 # =====
@@ -23,7 +23,7 @@ setup-virtualenv:
 
 # Install requirements for development.
 virtualenv-dev: setup-virtualenv
-	@test -e $(tsdg) || $(pip) install --editable=.[testing]
+	@test -e $(tsperf) || $(pip) install --editable=.[testing]
 
 
 # ====

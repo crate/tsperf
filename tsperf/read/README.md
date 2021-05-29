@@ -157,7 +157,7 @@ To connect with Microsoft SQL Server the following environment variables must be
 To use the Query Timer with MongoDB the code of the Query Timer needs to be changed. Therefore checkout the
 [repository](https://www.github.com/crate/tsperf). 
 
-+ In the file [tsqt/core.py](tsqt/core.py), uncomment the import statement of the `MongoDBAdapter` 
++ In the file [core.py](core.py), uncomment the import statement of the `MongoDBAdapter` 
 + Also uncomment the instantiation of the `adapter` in the `get_database_adapter` function 
 + Comment the `ValueError` in the line above
 

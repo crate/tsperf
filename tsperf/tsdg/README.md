@@ -1041,18 +1041,18 @@ or equal `0`. When activated everything else is done automatically.
 
 This chapter gives an overview over the available prometheus metrics and what they represent
 
-+ data_gen_generated_values: how many values have been generated
-+ data_gen_inserted_values: how many values have been inserted
-+ data_gen_insert_percentage: [INGEST_SIZE](#ingest_size) times number of IDs divided by inserted_values
-+ data_gen_batch_size: The currently used batch size (only available with [BSA](#batch-size-automator))
-+ data_gen_insert_time: The average time it took to insert the current batch into the database (only available with [BSA](#batch-size-automator))
-+ data_gen_rows_per_second: The average number of rows per second with the latest batch_size (only available with [BSA](#batch-size-automator))
-+ data_gen_best_batch_size: The up to now best batch size found by the batch_size_automator (only available with [BSA](#batch-size-automator))
-+ data_gen_best_batch_rps: The rows per second for the up to now best batch size (only available with [BSA](#batch-size-automator))
-+ data_gen_values_queue_was_empty: How many times the internal queue was empty when the insert threads requested values
++ tsperf_generated_values: how many values have been generated
++ tsperf_inserted_values: how many values have been inserted
++ tsperf_insert_percentage: [INGEST_SIZE](#ingest_size) times number of IDs divided by inserted_values
++ tsperf_batch_size: The currently used batch size (only available with [BSA](#batch-size-automator))
++ tsperf_insert_time: The average time it took to insert the current batch into the database (only available with [BSA](#batch-size-automator))
++ tsperf_rows_per_second: The average number of rows per second with the latest batch_size (only available with [BSA](#batch-size-automator))
++ tsperf_best_batch_size: The up to now best batch size found by the batch_size_automator (only available with [BSA](#batch-size-automator))
++ tsperf_best_batch_rps: The rows per second for the up to now best batch size (only available with [BSA](#batch-size-automator))
++ tsperf_values_queue_was_empty: How many times the internal queue was empty when the insert threads requested values
                                    (indicates data generation lacks behind data insertion)
-+ data_gen_inserts_failed: How many times the insert operation has failed
-+ data_gen_inserts_performed_success: How many time the insert operation was performed successfully.
++ tsperf_inserts_failed: How many times the insert operation has failed
++ tsperf_inserts_performed_success: How many time the insert operation was performed successfully.
                                       For Databases where a single insert operation has to be split in to multiple
                                       (AWS Timestream) still only one is counted.
 

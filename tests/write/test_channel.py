@@ -32,7 +32,9 @@ def test_init_sensors():
     -> Constructor raises NotImplementedError
     """
     # Test Case 1:
-    channel = Channel(1, tag_schema_plant100_line5_sensorId, channel_schema_float1_bool1)
+    channel = Channel(
+        1, tag_schema_plant100_line5_sensorId, channel_schema_float1_bool1
+    )
     sensor_types = []
     for sensor in channel.sensors:
         sensor_types.append(sensor.__class__.__name__)
@@ -68,7 +70,9 @@ def test_calculate_next_value_channel():
     -> length of unique values in values array is bigger than 1
     """
     # Pre Condition
-    channel = Channel(1, tag_schema_plant100_line5_sensorId, channel_schema_float1_bool1)
+    channel = Channel(
+        1, tag_schema_plant100_line5_sensorId, channel_schema_float1_bool1
+    )
     results = []
     # Test Case 1.
     batch = channel.calculate_next_value()

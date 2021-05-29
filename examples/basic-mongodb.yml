@@ -4,6 +4,7 @@
 # Username and Password have to be inserted before running
 version: "2.3"
 services:
+
   datagen1:
     image: data_gen
     ports:
@@ -17,10 +18,9 @@ services:
       DB_NAME: "temperature"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
-      MODEL_PATH: "/temperature.json"
-      DATABASE: 3
-    volumes:
-      - ./temperature.json:/temperature.json
+      SCHEMA: "tsperf.schema.basic:environment.json"
+      ADAPTER: mongodb
+
   datagen2:
     image: data_gen
     ports:
@@ -34,7 +34,5 @@ services:
       DB_NAME: "temperature"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
-      MODEL_PATH: "/temperature.json"
-      DATABASE: 3
-    volumes:
-      - ./temperature.json:/temperature.json
+      SCHEMA: "tsperf.schema.basic:environment.json"
+      ADAPTER: mongodb

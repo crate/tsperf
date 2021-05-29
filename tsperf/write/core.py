@@ -22,10 +22,12 @@
 import json
 import logging
 import time
+from pathlib import Path
 from queue import Empty, Queue
 from threading import Thread, current_thread
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
+import pkg_resources
 from prometheus_client import start_http_server
 from tqdm import tqdm
 
@@ -181,7 +183,9 @@ def get_next_value(channels: dict):
             ingest_ts_factor = 1 / config.ingest_delta
             last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
             timestamps = [int(last_ts * 1000)] * len(channel_values)
-            current_values_queue.put({"timestamps": timestamps, "batch": channel_values})
+            current_values_queue.put(
+                {"timestamps": timestamps, "batch": channel_values}
+            )
         else:
             current_values_queue.put(channel_values)
 
@@ -440,6 +444,28 @@ def wait_for_thread(thread: Thread, error_channel: Optional[Queue] = None):
             break
 
 
+def load_schema(schema_reference: Union[str, Path]):
+    """
+    Load schema for data generation.
+
+    A reference to a schema in JSON format. It can either be the name of a Python resource in
+    full-qualified dotted `pkg_resources`-compatible notation, or an absolute or relative path.
+    """
+
+    logger.info(f"Loading schema from {schema_reference}")
+
+    if isinstance(schema_reference, Path) or ":" not in schema_reference:
+        f = open(schema_reference, "r")
+        data = json.load(f)
+
+    else:
+        module, name = schema_reference.split(":")
+        resource = pkg_resources.resource_stream(module, name)
+        data = json.load(resource)
+
+    return data
+
+
 def start(configuration: DataGeneratorConfig):
     global last_ts, schema, config
 
@@ -453,9 +479,7 @@ def start(configuration: DataGeneratorConfig):
         logger.error(f"Invalid configuration: {config.invalid_configs}")
         exit(-1)
 
-    logger.info(f"Loading schema from {config.schema}")
-    f = open(config.schema, "r")
-    schema = json.load(f)
+    schema = load_schema(config.schema)
 
     logger.info("Probing insert")
     if not probe_insert():

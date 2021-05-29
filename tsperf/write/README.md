@@ -98,7 +98,7 @@ Another way to use the Data Generator is to build the Docker Image:
 + navigate to root directory of this repository
 + build docker image with `docker build -t data_gen -f Dockerfile .`
 + Adapt one of the example docker-compose files in the [example folder](examples)
-+ start (e.g. crate example) with `docker-compose -f examples/docker-compose_crate.yml up`
++ start (e.g. crate example) with `docker-compose -f examples/basic-cratedb.yml up`
 
 For an explanation on how to set the environment variables see [Environment variables](#data-generator-configuration).
 For example use cases see [Example use cases](#example-use-cases)
@@ -864,7 +864,8 @@ of this object should be calculated and saved to the database.
 
 The `button_press` metric is of type `BOOL` and has a true_ratio of `0.001` which means it is true in 1 out of 1000
 cases. Go to [Sensor Types](#sensor-types) to get a more detailed overview over the different Sensor types. Or look at
-[motor.json](examples/motor.json) or [temperature.json](examples/temperature.json) for examples containing descriptions.
+[motor.json](../schema/basic/motor.json) or [environment.json](../schema/basic/environment.json) for examples
+containing schema descriptions.
 
 This is the basic structure of a Data Generator Schema. It can contain any amount of tags and fields, but row/document
 size increases with each add value, as well as calculation time with each metric.
@@ -1062,11 +1063,14 @@ This chapter gives an overview over the available Prometheus metrics and what th
 
 ## Example Use Cases
 
-This chapter gives examples on how the Data Generator can be used. Files for these examples can be found [here](../../examples)
+This chapter gives examples on how the Data Generator can be used. The
+respective files for these examples can be found [here](../schema).
 
 ### Single channel
 
-We want to simulate two factories each with ten lines and each line with five sensors. The sensor measures three readings:
+We want to simulate two factories each with ten lines and each line with five sensors/channels.
+
+The sensor measures three readings:
 + speed (float) in m/s
 + temperature (float) in °C
 + vibration (bool) above or below threshold
@@ -1075,42 +1079,7 @@ Every 5 seconds each sensor reports a value and we want our simulation to run fo
 
 #### Setup
 
-The resulting JSON schema could look like this (you can find it as file [here](../../examples/SingleType/example_model.json)):
-
-```JSON
-{
-    "sensor_values": {
-        "tags": {
-            "factory": 2,
-            "line": 10,
-            "sensor": "id"
-        },
-        "fields": {
-            "speed": {  "key": {"value": "speed"},
-                        "type": {"value": "FLOAT"},
-                        "min": {"value": 0},
-                        "max": {"value": 3},
-                        "mean": {"value": 1.5},
-                        "stdev": {"value": 0.3},
-                        "variance": {"value": 0.01},
-                        "error_rate": {"value": 0.0001},
-                        "error_length": {"value": 1.04}},
-            "temperature": {"key": {"value": "temperature"},
-                            "type": {"value": "FLOAT"},
-                            "min": {"value": 0},
-                            "max": {"value": 200},
-                            "mean": {"value": 50},
-                            "stdev": {"value": 5},
-                            "variance": {"value": 0.01},
-                            "error_rate": {"value": 0.00001},
-                            "error_length": {"value": 2.07}},
-            "vibration": {  "key": {"value": "vibration"},
-                            "type": {"value": "BOOL"},
-                            "true_ratio": {"value": 0.01}}
-        }
-    }
-}
-```
+The resulting JSON schema could look like [`machine.json`](../schema/factory/simple/machine.json).
 
 As we have five sensors on ten lines in two factories we have 100 sensors in total, so for our docker-compose file we
 set the following environment variables:
@@ -1128,8 +1097,8 @@ As we want to have a consistent insert every 5 seconds for one hour we set the f
 + INGEST_SIZE: 720 (an hour has 3600 seconds divided by 5 seconds)
 + INGEST_DELTA: 5
 
-And finally we want to use our just created schema:
-+ SCHEMA: "/example_model.json"
+And finally we want to signal using the appropriate schema:
++ SCHEMA: "tsperf.schema.factory.simple:machine.json"
 
 The resulting yml file could look like this:
 
@@ -1149,10 +1118,8 @@ services:
       INGEST_MODE: 0
       INGEST_SIZE: 720
       INGEST_DELTA: 5
-      SCHEMA: "/example_model.json"
-      DATABASE: 0
-    volumes:
-      - ./example_model.json:/example_model.json
+      SCHEMA: "tsperf.schema.factory.simple:machine.json"
+      ADAPTER: cratedb
 ```
 
 #### Running the example
@@ -1162,9 +1129,9 @@ To run this example follow the following steps:
 + navigate to root directory of this repository
 + build docker image with `docker build -t data_gen -f Dockerfile .`
 + start an instance of CrateDB on localhost with `docker run -p "4200:4200" crate`
-+ Enter USERNAME and PASSWORD in the [docker-compose file](../../examples/SingleType/docker-compose_example_crate.yml)
++ Enter USERNAME and PASSWORD in the [docker-compose file](../../examples/factory-simple-machine.yml)
     + If no user was created you can just delete both environment variables (crate will use a default user)
-+ start the docker-compose file with `docker-compose -f examples/SingleType/docker-compose_example_crate.yml up`
++ start the docker-compose file with `docker-compose -f examples/factory-simple-machine.yml up`
 
 You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the raw data of the Data Generator.
 
@@ -1189,72 +1156,7 @@ combinations have multiple sensors reporting at different time intervals:
 As we actually use four different schemas (temperature metric is different for upper and lower lines) we also have four
 different schema files. You can find them [here](../../examples/MultiType).
 
-To run this use-case we have to write a more complex docker-compose [file](../../examples/MultiType/docker-compose_multitype_example.yml):
-
-```YML
-version: "2.3"
-services:
-  datagen_base1:
-    image: data_gen
-    ports:
-      - 8000:8000
-    environment:
-      ID_START: 1
-      ID_END: 500
-      HOST: "host.docker.internal:4200"
-      INGEST_MODE: 1
-      INGEST_SIZE: 1000
-      INGEST_DELTA: 1
-      SCHEMA: "/example_complex_base1.json"
-      DATABASE: 0
-    volumes:
-      - ./example_complex_base1.json:/example_complex_base1.json
-  datagen_base2:
-    image: data_gen
-    ports:
-      - 8001:8000
-    environment:
-      ID_START: 501
-      ID_END: 1000
-      HOST: "host.docker.internal:4200"
-      INGEST_MODE: 1
-      INGEST_SIZE: 1000
-      INGEST_DELTA: 1
-      SCHEMA: "/example_complex_base2.json"
-      DATABASE: 0
-    volumes:
-      - ./example_complex_base2.json:/example_complex_base2.json
-  datagen_H:
-    image: data_gen
-    ports:
-      - 8002:8000
-    environment:
-      ID_START: 1001
-      ID_END: 1100
-      HOST: "host.docker.internal:4200"
-      INGEST_MODE: 1
-      INGEST_SIZE: 100
-      INGEST_DELTA: 10
-      SCHEMA: "/example_complex_U.json"
-      DATABASE: 0
-    volumes:
-      - ./example_complex_U.json:/example_complex_U.json
-  datagen_L:
-    image: data_gen
-    ports:
-      - 8003:8000
-    environment:
-      ID_START: 1101
-      ID_END: 1200
-      HOST: "host.docker.internal:4200"
-      INGEST_MODE: 1
-      INGEST_SIZE: 100
-      INGEST_DELTA: 10
-      SCHEMA: "/example_complex_L.json"
-      DATABASE: 0
-    volumes:
-      - ./example_complex_L.json:/example_complex_L.json
-```
+To run this use-case we have to write a more complex docker-compose [file](../../examples/factory-complex-scenario.yml).
 
 **Note we use `INGEST_MODE: 1` to insert data fast. To keep data-size small we only insert 1000 seconds worth of data,
 this can obviously be adjusted to create a bigger dataset.**
@@ -1266,9 +1168,9 @@ To run this example follow the following steps:
 + navigate to root directory of this repository
 + build docker image with `docker build -t data_gen -f Dockerfile .`
 + start an instance of CrateDB on localhost with `docker run -p "4200:4200" crate`
-+ Add USERNAME and PASSWORD in the [docker-compose file](../../examples/MultiType/docker-compose_multitype_example.yml)
++ Add USERNAME and PASSWORD in the [docker-compose file](../../examples/factory-complex-scenario.yml)
     + If no user was created you can just ignore both environment variables (crate will use a default user)
-+ start the docker-compose file with `docker-compose -f examples/MultiType/docker-compose_multitype_example.yml up`
++ start the docker-compose file with `docker-compose -f examples/factory-complex-scenario.yml up`
 
 You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the raw data of the Data Generator.
 

@@ -77,4 +77,9 @@ setuptools.setup(
     install_requires=requires,
     extras_require={"testing": test_requires},
     python_requires='>=3.7',
+    include_package_data=True,
+    package_data={
+        "": ["*.md", "*.json"],
+    },
+    zip_safe=False,
 )

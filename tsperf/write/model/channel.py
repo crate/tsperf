@@ -18,7 +18,7 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-from tsperf.write.model.sensor import FloatSensor, BoolSensor
+from tsperf.write.model.sensor import BoolSensor, FloatSensor
 
 factors = [-1, 1]
 

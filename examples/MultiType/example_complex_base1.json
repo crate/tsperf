@@ -5,7 +5,7 @@
             "line": ["L1", "L2", "L3", "L4", "L5", "U1", "U2", "U3", "U4", "U5"],
             "sensor": "id"
         },
-        "metrics": {
+        "fields": {
             "speed": {
                 "key": {
                     "value": "speed"

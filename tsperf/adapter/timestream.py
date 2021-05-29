@@ -80,7 +80,7 @@ class TimeStreamAdapter(DatabaseInterfaceBase):
     @timed_function()
     def _prepare_timestream_stmt(self, timestamps: list, batch: list) -> dict:
         data = {}
-        tags, metrics = self._get_tags_and_metrics()
+        tags, fields = self._get_tags_and_fields()
         for i in range(0, len(batch)):
             record = {"Time": str(timestamps[i])}
             common_attributes = {"Dimensions": []}
@@ -93,16 +93,16 @@ class TimeStreamAdapter(DatabaseInterfaceBase):
                     "common_attributes": common_attributes,
                     "records": [],
                 }
-            for metric in metrics:
-                record_metric = dict(record)
-                record_metric.update(
+            for field in fields:
+                record = dict(record)
+                record.update(
                     {
-                        "MeasureName": metric["name"],
-                        "MeasureValue": str(batch[i][metric["name"]]),
-                        "MeasureValueType": metric["type"],
+                        "MeasureName": field["name"],
+                        "MeasureValue": str(batch[i][field["name"]]),
+                        "MeasureValueType": field["type"],
                     }
                 )
-                data[str(common_attributes)]["records"].append(record_metric)
+                data[str(common_attributes)]["records"].append(record)
         return data
 
     @timed_function()
@@ -120,18 +120,18 @@ class TimeStreamAdapter(DatabaseInterfaceBase):
                 raise RuntimeError(e)
         return result
 
-    def _get_tags_and_metrics(self) -> Tuple[dict, dict]:
+    def _get_tags_and_fields(self) -> Tuple[dict, dict]:
         key = self._get_schema_collection_name()
         tags_ = self.schema[key]["tags"]
-        metrics_ = self.schema[key]["metrics"]
+        fields_ = self.schema[key]["fields"]
         tags = []
-        metrics = []
+        fields = []
         for key in tags_.keys():
             if key != "description":
                 tags.append(key)
-        for key, value in metrics_.items():
+        for key, value in fields_.items():
             if key != "description":
-                metrics.append(
+                fields.append(
                     {
                         "name": value["key"]["value"],
                         "type": self._convert_to_timestream_type(
@@ -139,16 +139,16 @@ class TimeStreamAdapter(DatabaseInterfaceBase):
                         ),
                     }
                 )
-        return tags, metrics
+        return tags, fields
 
     @staticmethod
-    def _convert_to_timestream_type(metric_type: str) -> str:
-        metric_type = metric_type.lower()
-        if metric_type in ["float", "double"]:
+    def _convert_to_timestream_type(field_type: str) -> str:
+        field_type = field_type.lower()
+        if field_type in ["float", "double"]:
             return "DOUBLE"
-        elif metric_type in ["bool", "boolean"]:
+        elif field_type in ["bool", "boolean"]:
             return "BOOLEAN"
-        elif metric_type in ["int", "long", "uint"]:
+        elif field_type in ["int", "long", "uint"]:
             return "BIGINT"
         else:
             return "VARCHAR"

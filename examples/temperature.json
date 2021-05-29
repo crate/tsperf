@@ -7,8 +7,8 @@
             "line": 5,
             "sensor_id": "id"
         },
-        "metrics": {
-            "description": "metrics contain all measured values associated with a tag",
+        "fields": {
+            "description": "fields contain all measured values associated with a tag",
             "temperature": {
                 "description": "temperature measured in a fridge",
                 "key": {

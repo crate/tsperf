@@ -63,10 +63,10 @@ class DatabaseInterfaceBase:
     def _get_schema_table_name(self) -> str:
         pass
 
-    def _get_tags_and_metrics(self):
+    def _get_tags_and_fields(self):
         key = self._get_schema_table_name()
         tags = self.schema[key]["tags"]
-        metrics = self.schema[key]["metrics"]
+        fields = self.schema[key]["fields"]
         columns = {}
         for key, value in tags.items():
             if key != "description":
@@ -74,7 +74,7 @@ class DatabaseInterfaceBase:
                     columns[key] = "TEXT"
                 else:
                     columns[key] = "INTEGER"
-        for key, value in metrics.items():
+        for key, value in fields.items():
             if key != "description":
                 columns[value["key"]["value"]] = value["type"]["value"]
         return columns

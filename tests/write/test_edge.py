@@ -3,8 +3,8 @@ import pytest
 
 from tests.write.schema import (
     bool_schema,
-    metrics_schema_float1_bool1,
-    metrics_schema_string,
+    channel_schema_float1_bool1,
+    channel_schema_string,
     tag_schema_list,
     tag_schema_plant100_line5_sensorId,
 )
@@ -19,7 +19,7 @@ def test_init_sensors():
     Edge is initialized with:
     id: 1
     tags: valid tag schema
-    metrics: metrics schema containing one float and one bool sensor
+    fields: fields schema containing one float and one bool sensor
     -> FloatSensor must be in sensor_types
     -> BoolSensor must be in sensor_types
 
@@ -27,11 +27,11 @@ def test_init_sensors():
     Edge is initialized with:
     id: 1
     tags: valid tag schema
-    metrics: metrics schema containing one string sensor
+    fields: fields schema containing one string sensor
     -> Constructor raises NotImplementedError
     """
     # Test Case 1:
-    edge = Edge(1, tag_schema_plant100_line5_sensorId, metrics_schema_float1_bool1)
+    edge = Edge(1, tag_schema_plant100_line5_sensorId, channel_schema_float1_bool1)
     sensor_types = []
     for sensor in edge.sensors:
         sensor_types.append(sensor.__class__.__name__)
@@ -40,14 +40,14 @@ def test_init_sensors():
 
     # Test Case 2:
     with pytest.raises(NotImplementedError):
-        Edge(1, tag_schema_plant100_line5_sensorId, metrics_schema_string)
+        Edge(1, tag_schema_plant100_line5_sensorId, channel_schema_string)
 
 
 def test_calculate_next_value_edge():
     """
     This function tests if the Edge Object correctly calculates the next value of it's sensors
 
-    Pre Condition: Edge Object created with id 1, a valid tag schema and a the `metrics_schema_float1_bool1` schema
+    Pre Condition: Edge Object created with id 1, a valid tag schema and a the `channel_schema_float1_bool1` schema
 
     Test Case 1: the first value of the edge object is calculated
     -> "plant" tag is in batch
@@ -67,7 +67,7 @@ def test_calculate_next_value_edge():
     -> length of unique values in values array is bigger than 1
     """
     # Pre Condition
-    edge = Edge(1, tag_schema_plant100_line5_sensorId, metrics_schema_float1_bool1)
+    edge = Edge(1, tag_schema_plant100_line5_sensorId, channel_schema_float1_bool1)
     results = []
     # Test Case 1.
     batch = edge.calculate_next_value()
@@ -136,7 +136,7 @@ def test_calculate_next_value_tag_list():
         ["E", "L3"],
     ]
     for i in range(1, 16):
-        edge = Edge(i, tag_schema_list, metrics_schema_float1_bool1)
+        edge = Edge(i, tag_schema_list, channel_schema_float1_bool1)
         payload = edge.calculate_next_value()
         assert payload["plant"] == results[i - 1][0]
         assert payload["line"] == results[i - 1][1]

@@ -54,7 +54,7 @@ class MsSQLDbAdapter(DatabaseInterfaceBase):
         ]
 
     def prepare_database(self):
-        columns = self._get_tags_and_metrics()
+        columns = self._get_tags_and_fields()
         stmt = f"""
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE id = object_id(N'{self.table_name}')
 AND OBJECTPROPERTY(id, N'IsUserTable') = 1) CREATE TABLE {self.table_name} (
@@ -81,7 +81,7 @@ ts DATETIME NOT NULL,
 
     @timed_function()
     def _prepare_mssql_stmt(self, timestamps: list, batch: list) -> Tuple[str, list]:
-        columns = self._get_tags_and_metrics().keys()
+        columns = self._get_tags_and_fields().keys()
         stmt = f"""INSERT INTO {self.table_name} (ts ,"""
         for column in columns:
             stmt += f"""{column}, """
@@ -107,10 +107,10 @@ ts DATETIME NOT NULL,
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    def _get_tags_and_metrics(self) -> dict:
+    def _get_tags_and_fields(self) -> dict:
         key = self._get_schema_table_name()
         tags = self.schema[key]["tags"]
-        metrics = self.schema[key]["metrics"]
+        fields = self.schema[key]["fields"]
         columns = {}
         for key, value in tags.items():
             if key != "description":
@@ -118,7 +118,7 @@ ts DATETIME NOT NULL,
                     columns[key] = "TEXT"
                 else:
                     columns[key] = "INTEGER"
-        for key, value in metrics.items():
+        for key, value in fields.items():
             if key != "description":
                 if value["type"]["value"] == "BOOL":
                     columns[value["key"]["value"]] = "BIT"

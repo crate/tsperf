@@ -68,14 +68,14 @@ class InfluxDbAdapter(DatabaseInterfaceBase):
     @timed_function()
     def _prepare_influx_stmt(self, timestamps: list, batch: list) -> list:
         data = []
-        tags, metrics = self._get_tags_and_metrics()
+        tags, fields = self._get_tags_and_fields()
         for i in range(0, len(batch)):
             t = datetime.fromtimestamp(timestamps[i] / 1000)
             point = Point(self.database_name).time(t)
             for tag in tags:
                 point.tag(tag, batch[i][tag])
-            for metric in metrics:
-                point.field(metric, batch[i][metric])
+            for field in fields:
+                point.field(field, batch[i][field])
             data.append(point)
 
         return data
@@ -84,19 +84,19 @@ class InfluxDbAdapter(DatabaseInterfaceBase):
     def execute_query(self, query: str) -> list:
         return self.query_api.query(query)
 
-    def _get_tags_and_metrics(self) -> Tuple[dict, dict]:
+    def _get_tags_and_fields(self) -> Tuple[dict, dict]:
         key = self._get_schema_database_name()
         tags_ = self.schema[key]["tags"]
-        metrics_ = self.schema[key]["metrics"]
+        fields_ = self.schema[key]["fields"]
         tags = []
-        metrics = []
+        fields = []
         for key in tags_.keys():
             if key != "description":
                 tags.append(key)
-        for key, value in metrics_.items():
+        for key, value in fields_.items():
             if key != "description":
-                metrics.append(value["key"]["value"])
-        return tags, metrics
+                fields.append(value["key"]["value"])
+        return tags, fields
 
     def _get_schema_database_name(self) -> str:
         for key in self.schema.keys():

@@ -192,23 +192,23 @@ bucket is created without retention rules (data is saved indefinitely)
 ##### Insert
 
 Insert into InfluxDB is done using the `Point` type from the `influxdb_client.client.write.api`. All tags from the
-[schema](#data-generator-schemas) are added to `Point.tag` (InfluxDB creates indices for tags). Metrics are saved to
-`Point.field`. The timestamp is added to `Point.time`. Multiple Points are then inserted in a batch.
+[schema](#data-generator-schemas) are added to `Point.tag` (InfluxDB creates indices for tags). Measurements are saved
+to `Point.field`. The timestamp is added to `Point.time`. Multiple Points are then inserted in a batch.
 
 ##### Specifics
 
 + All tags are automatically indexed
 + Insert of multiple schemas into a single bucket is possible due to InfluxDB being a NoSQL database.
-+ When using InfluxDB V2 with a usage-based plan insert is limited to 300MB/5m, this is about 15.000 metrics per second,
-  additional metrics are dropped by InfluxDB and the client is not informed.
++ When using InfluxDB V2 with a usage-based plan insert is limited to 300MB/5m, this is about 15.000 data points
+  per second. Excess data is dropped by InfluxDB and the client is not informed.
 
 #### TimescaleDB
 
 ##### Client Library
 
 For TimescaleDB the [psycopg2](https://pypi.org/project/psycopg2/) library is used. As psycopg2 does not have the best
-insert performance for TimescaleDB (see [here](https://docs.timescale.com/latest/tutorials/quickstart-python#insert_rows))
-to insert a lot of metrics it is advised to split [IDs](#id_start) over multiple data-generator instances.
+insert performance for TimescaleDB (see [here](https://docs.timescale.com/latest/tutorials/quickstart-python#insert_rows)),
+to insert a lot of data points, it is advised to split [IDs](#id_start) over multiple data-generator instances.
 
 Note: starting with version `0.1.3` TimescaleDB uses the [pgcopy](https://pypi.org/project/pgcopy/) library by default
 to enhance insert performance for single clients. To override the default setting you can set
@@ -231,9 +231,9 @@ A table for TimescaleDB consists of the following columns:
 
 + `ts`: column containing a timestamp (occurrence of the payload)
 + `ts_'interval'`: column containing the `ts` value truncated to the value set with [PARTITION](#partition).
-+ a column for each entry in `tags` and `metrics`.
++ a column for each entry in `tags` and `fields`.
     + `tags` are of type `INTEGER` when using numbers and of type `TEXT` when using list notation
-    + `metrics` are of the type defined in the [schema](#data-generator-schemas)
+    + `fields` are of the type defined in the [schema](#data-generator-schemas)
 
 **If a table with the same name already exists which doesn't have the expected structure the data-generator will fail
 when inserting values.**
@@ -249,7 +249,7 @@ Insert is done in batches.
 + No index is created, to query data indices must be created manually.
 + Insert of multiple schemas into a single table is not possible as the table schema is only created once.
 + psycopg2 does not have the best insert performance for TimescaleDB (see [here](https://docs.timescale.com/latest/tutorials/quickstart-python#insert_rows))
-  to insert a lot of metrics it is advised to split [IDs](#id_start) over multiple data-generator instances.
+  to insert a lot of data points, it is advised to split [IDs](#id_start) over multiple data-generator instances.
 + TimescaleDB can be used with distributed hypertables. To test the data_generator on hypertables, the
   `TIMESCALE_DISTRIBUTED` environment variable must be set to `True`.
 
@@ -276,7 +276,7 @@ A document in the collection consists of the following elements:
 + `measurement`: same as the collection name
 + `date`: the timestamp of the measurement in datetime format
 + `tags`: tags that were defined in the [schema](#data-generator-schemas)
-+ `metrics`: metrics that were defined in the [schema](#data-generator-schemas)
++ `fields`: fields that were defined in the [schema](#data-generator-schemas)
 
 ##### Insert
 
@@ -311,9 +311,9 @@ A table for PostgreSQL consists of the following columns:
 
 + `ts`: column containing a timestamp (occurrence of the payload)
 + `ts_'interval'`: column containing the `ts` value truncated to the value set with [PARTITION](#partition).
-+ a column for each entry in `tags` and `metrics`.
++ a column for each entry in `tags` and `fields`.
     + `tags` are of type `INTEGER` when using numbers and of type `TEXT` when using list notation
-    + `metrics` are of the type defined in the [schema](#data-generator-schemas)
+    + `fields` are of the type defined in the [schema](#data-generator-schemas)
 
 **If a table with the same name already exists which doesn't have the expected structure the data-generator will fail
 when inserting values.**
@@ -361,7 +361,7 @@ The insert is done according to the optimized write [documentation](https://docs
 Tests show that about 600 values per second can be inserted by a single data generator instance. So the data schema has
 to be adjusted accordingly to not be slower than the settings require.
 
-For example, having 600 sensors with each 2 metrics, and each should write a single value each second, would require
+For example, having 600 sensors with each 2 fields, and each should write a single value each second, would require
 1200 values/s of insert speed. For satisfying this scenario, at least 2 data generator instance would be needed.
   
 #### Microsoft SQL Server
@@ -385,9 +385,9 @@ A table gets it's name from the provided [schema](#data-generator-schemas)
 A table for Microsoft SQL Server consists of the following columns:
 
 + `ts`: column containing a timestamp (occurrence of the payload)
-+ a column for each entry in `tags` and `metrics`.
++ a column for each entry in `tags` and `fields`.
     + `tags` are of type `INTEGER` when using numbers and of type `TEXT` when using list notation
-    + `metrics` are of the type defined in the [schema](#data-generator-schemas)
+    + `fields` are of the type defined in the [schema](#data-generator-schemas)
 
 **If a table or database with the same name already exists it will be used by the data generator**
 
@@ -491,8 +491,8 @@ Example:
 
 We have 500 edges and for each edge 2000 values are generated, therefore we will have 1.000.000 values in total.
 
-**Note: a value contains all the information for a single edge, including the defined `tags` and `metrics`. See
-[Data Generator Schemas](#data-generator-schemas) for more information about tags and metrics.**
+**Note: a value contains all the information for a single edge, including the defined `tags` and `fields`. See
+[Data Generator Schemas](#data-generator-schemas) for more information about tags and fields.**
 
 #### INGEST_TS
 
@@ -578,7 +578,7 @@ Values: 1 to 65535
 
 Default: 8000
 
-The port that is used to publish prometheus metrics.
+The port that is used to publish Prometheus metrics.
 
 ### Environment variables used to configure different databases
 
@@ -817,8 +817,8 @@ JSON Object would contain a schema called `button_sensor`.
 }
 ```
 
-This top-level object must have two sub-level objects `tags` and `metrics`. `tags` are all values that identify the
-thing where the measured values come from. `metrics` are all measured values of a thing. For example we use our
+This top-level object must have two sub-level objects `tags` and `fields`. `tags` are all values that identify the
+thing where the measured values come from. `fields` describe all measured values of a thing. For example, we use our
 `button_sensor` schema. A sensor is identified by a `sensor_id` (we keep it simple for the first example). And has a
 single metric `button_press`:
 
@@ -828,7 +828,7 @@ single metric `button_press`:
         "tags": {
             "sensor_id": "id"
         },
-        "metrics": {
+        "fields": {
             "button_press": {"..."}
         }
     }
@@ -845,7 +845,7 @@ of this object should be calculated and saved to the database.
         "tags": {
             "sensor_id": "id"
         },
-        "metrics": {
+        "fields": {
             "button_press": {
                 "key": {
                     "value": "button_pressed"
@@ -866,7 +866,7 @@ The `button_press` metric is of type `BOOL` and has a true_ratio of `0.001` whic
 cases. Go to [Sensor Types](#sensor-types) to get a more detailed overview over the different Sensor types. Or look at
 [motor.json](examples/motor.json) or [temperature.json](examples/temperature.json) for examples containing descriptions.
 
-This is the basic structure of a Data Generator Schema. It can contain any amount of tags and metrics, but row/document
+This is the basic structure of a Data Generator Schema. It can contain any amount of tags and fields, but row/document
 size increases with each add value, as well as calculation time with each metric.
 
 **Note: `tags` are ordered by their hierarchic structure, e.g. the upper tag contains the lower tags. This means the
@@ -882,7 +882,7 @@ This then uses the values in the array to setup the tags.
 + We want to schema a certain edge in **50 different plants**
 + Each plant contains of **5 lines**
 + Each line consists of **10 edges**
-+ Each edge has **5 different metrics**:
++ Each edge has **5 different fields**:
     + voltage
     + current
     + temperature
@@ -902,7 +902,7 @@ Now we know that we have to use 2500 IDs so we set `ID_START=1` and `ID_END=2500
             "line": 5,
             "edge": "id"
         },
-        "metrics": {
+        "fields": {
             "voltage": {"..."},
             "current": {"..."},
             "temperature": {"..."},
@@ -928,7 +928,7 @@ To generate real world resembling float values the *floating value simulator* li
 ##### Schema
 
 We describe all the keys and the corresponding values a schema for a Float Sensor must contain. All elements are
-associated with the key under the metrics object (see [here](#structure)). So for example we already have this schema:
+associated with the key under the `fields` object (see [here](#structure)). So for example we already have this schema:
 
 ```JSON
 {
@@ -938,7 +938,7 @@ associated with the key under the metrics object (see [here](#structure)). So fo
             "line": 5,
             "edge": "id"
         },
-        "metrics": {
+        "fields": {
             "voltage": {"..."},
             "current": {"..."},
             "temperature": {"..."},
@@ -1041,7 +1041,7 @@ or equal `0`. When activated everything else is done automatically.
 
 ## Prometheus Metrics
 
-This chapter gives an overview over the available prometheus metrics and what they represent
+This chapter gives an overview over the available Prometheus metrics and what they represent
 
 + tsperf_generated_values: how many values have been generated
 + tsperf_inserted_values: how many values have been inserted
@@ -1064,7 +1064,7 @@ This chapter gives examples on how the Data Generator can be used. Files for the
 
 ### Single Type of Edge
 
-We want to simulate two factories each with ten lines and each line with five sensors. The sensor measures three metrics:
+We want to simulate two factories each with ten lines and each line with five sensors. The sensor measures three readings:
 + speed (float) in m/s
 + temperature (float) in °C
 + vibration (bool) above or below threshold
@@ -1083,7 +1083,7 @@ The resulting JSON schema could look like this (you can find it as file [here](.
             "line": 10,
             "sensor": "id"
         },
-        "metrics": {
+        "fields": {
             "speed": {  "key": {"value": "speed"},
                         "type": {"value": "FLOAT"},
                         "min": {"value": 0},
@@ -1164,7 +1164,7 @@ To run this example follow the following steps:
     + If no user was created you can just delete both environment variables (crate will use a default user)
 + start the docker-compose file with `docker-compose -f examples/SingleType/docker-compose_example_crate.yml up`
 
-You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the metrics of the Data Generator.
+You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the raw data of the Data Generator.
 
 ### Multiple Types of Edges
 
@@ -1268,7 +1268,7 @@ To run this example follow the following steps:
     + If no user was created you can just ignore both environment variables (crate will use a default user)
 + start the docker-compose file with `docker-compose -f examples/MultiType/docker-compose_multitype_example.yml up`
 
-You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the metrics of the Data Generator.
+You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the raw data of the Data Generator.
 
 ## Alternative data generators
 

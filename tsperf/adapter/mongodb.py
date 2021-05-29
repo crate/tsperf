@@ -54,19 +54,19 @@ class MongoDbAdapter(DatabaseInterfaceBase):
     @timed_function()
     def _prepare_mongo_stmt(self, timestamps: list, batch: list) -> list:
         data = []
-        tags, metrics = self._get_tags_and_metrics()
+        tags, fields = self._get_tags_and_fields()
         for i in range(0, len(batch)):
             t = datetime.fromtimestamp(timestamps[i] / 1000)
             document = {
                 "measurement": self._get_schema_collection_name(),
                 "date": t,
                 "tags": {},
-                "metrics": {},
+                "fields": {},
             }
             for tag in tags:
                 document["tags"][tag] = batch[i][tag]
-            for metric in metrics:
-                document["metrics"][metric] = batch[i][metric]
+            for field in fields:
+                document["fields"][field] = batch[i][field]
             data.append(document)
         return data
 
@@ -75,19 +75,19 @@ class MongoDbAdapter(DatabaseInterfaceBase):
         cursor = self.collection.find(query, cursor_type=CursorType.EXHAUST)
         return list(cursor)
 
-    def _get_tags_and_metrics(self) -> Tuple[dict, dict]:
+    def _get_tags_and_fields(self) -> Tuple[dict, dict]:
         key = self._get_schema_collection_name()
         tags_ = self.schema[key]["tags"]
-        metrics_ = self.schema[key]["metrics"]
+        fields_ = self.schema[key]["fields"]
         tags = []
-        metrics = []
+        fields = []
         for key in tags_.keys():
             if key != "description":
                 tags.append(key)
-        for key, value in metrics_.items():
+        for key, value in fields_.items():
             if key != "description":
-                metrics.append(value["key"]["value"])
-        return tags, metrics
+                fields.append(value["key"]["value"])
+        return tags, fields
 
     def _get_schema_collection_name(self) -> str:
         for key in self.schema.keys():

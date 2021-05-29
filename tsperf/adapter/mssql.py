@@ -35,7 +35,7 @@ class MsSQLDbAdapter(DatabaseInterfaceBase):
         username: str,
         password: str,
         db_name: str,
-        model: dict,
+        schema: dict,
         port: int = 1433,
         table_name: str = None,
     ):
@@ -48,8 +48,8 @@ class MsSQLDbAdapter(DatabaseInterfaceBase):
         self.conn = pyodbc.connect(connection_string)
         self.cursor = self.conn.cursor()
         self.cursor.fast_executemany = True
-        self.model = model
-        self.table_name = (table_name, self._get_model_table_name())[
+        self.schema = schema
+        self.table_name = (table_name, self._get_schema_table_name())[
             table_name is None or table_name == ""
         ]
 
@@ -64,7 +64,7 @@ ts DATETIME NOT NULL,
             stmt += f"""{key} {value},"""
 
         stmt += f" CONSTRAINT PK_{self.table_name} PRIMARY KEY (ts, "
-        tags = list(self.model[self._get_model_table_name()]["tags"].keys())
+        tags = list(self.schema[self._get_schema_table_name()]["tags"].keys())
         for tag in tags:
             if tag != "description":
                 stmt += f"{tag}, "
@@ -108,9 +108,9 @@ ts DATETIME NOT NULL,
         return self.cursor.fetchall()
 
     def _get_tags_and_metrics(self) -> dict:
-        key = self._get_model_table_name()
-        tags = self.model[key]["tags"]
-        metrics = self.model[key]["metrics"]
+        key = self._get_schema_table_name()
+        tags = self.schema[key]["tags"]
+        metrics = self.schema[key]["metrics"]
         columns = {}
         for key, value in tags.items():
             if key != "description":
@@ -126,8 +126,8 @@ ts DATETIME NOT NULL,
                     columns[value["key"]["value"]] = value["type"]["value"]
         return columns
 
-    def _get_model_table_name(self) -> str:
-        for key in self.model.keys():
+    def _get_schema_table_name(self) -> str:
+        for key in self.schema.keys():
             if key != "description":
                 return key
 

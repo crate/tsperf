@@ -32,16 +32,16 @@ from tsperf.util.tictrack import timed_function
 
 class InfluxDbAdapter(DatabaseInterfaceBase):
     def __init__(
-        self, host: str, token: str, org: str, model: dict, database_name: str = None
+        self, host: str, token: str, org: str, schema: dict, database_name: str = None
     ):
         super().__init__()
         self.client = InfluxDBClient(url=host, token=token)
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
         self.query_api = self.client.query_api()
         self.org = org
-        self.model = model
+        self.schema = schema
         self.bucket = None
-        self.database_name = (database_name, self._get_model_database_name())[
+        self.database_name = (database_name, self._get_schema_database_name())[
             database_name is None or database_name == ""
         ]
 
@@ -85,9 +85,9 @@ class InfluxDbAdapter(DatabaseInterfaceBase):
         return self.query_api.query(query)
 
     def _get_tags_and_metrics(self) -> Tuple[dict, dict]:
-        key = self._get_model_database_name()
-        tags_ = self.model[key]["tags"]
-        metrics_ = self.model[key]["metrics"]
+        key = self._get_schema_database_name()
+        tags_ = self.schema[key]["tags"]
+        metrics_ = self.schema[key]["metrics"]
         tags = []
         metrics = []
         for key in tags_.keys():
@@ -98,8 +98,8 @@ class InfluxDbAdapter(DatabaseInterfaceBase):
                 metrics.append(value["key"]["value"])
         return tags, metrics
 
-    def _get_model_database_name(self) -> str:
-        for key in self.model.keys():
+    def _get_schema_database_name(self) -> str:
+        for key in self.schema.keys():
             if key != "description":
                 return key
 

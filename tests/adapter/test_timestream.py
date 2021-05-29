@@ -1,6 +1,6 @@
 from unittest import mock
 
-from tests.write.test_models import test_model
+from tests.write.schema import test_schema1
 from tsperf.adapter.timestream import TimeStreamAdapter
 
 
@@ -18,7 +18,7 @@ def test_close_connection(mock_boto):
     session = mock.MagicMock()
     mock_boto.session.Session.return_value = session
     _ = TimeStreamAdapter(
-        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_model
+        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_schema1
     )
     mock_boto.session.Session.assert_called_with(
         "aws_key_id", aws_secret_access_key="aws_secrete", region_name="aws_region"
@@ -46,7 +46,7 @@ def test_insert_stmt(mock_boto):
     write_client = mock.MagicMock()
     session.client.return_value = write_client
     db_writer = TimeStreamAdapter(
-        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_model
+        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_schema1
     )
     # Test Case 1:
     db_writer.insert_stmt(
@@ -129,7 +129,7 @@ def test_execute_query(mock_boto):
     paginator = mock.MagicMock()
     query_client.get_paginator.return_value = paginator
     db_writer = TimeStreamAdapter(
-        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_model
+        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_schema1
     )
     # Test Case 1:
     query = "SELECT * FROM temperature;"
@@ -160,7 +160,7 @@ def test_prepare_database_not_existing_db_and_table(mock_boto):
     write_client = mock.MagicMock()
     session.client.return_value = write_client
     db_writer = TimeStreamAdapter(
-        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_model
+        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_schema1
     )
     # Test Case 1:
     db_writer.prepare_database()
@@ -188,7 +188,7 @@ def test_prepare_database_existing_db_and_table(mock_boto):
     write_client = mock.MagicMock()
     session.client.return_value = write_client
     db_writer = TimeStreamAdapter(
-        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_model
+        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_schema1
     )
     # Test Case 1:
     write_client.create_database.side_effect = Exception()

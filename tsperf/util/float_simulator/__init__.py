@@ -24,7 +24,7 @@ import random
 
 class FloatSimulator:
     """
-    The FloatSimulator produces consecutive float values based on a statistical model and the normal
+    The FloatSimulator produces consecutive float values based on a statistical schema and the normal
     distribution. It can be used to simulate sensor data with more than 100.000 simulated values per second.
 
     To use the FloatSimulator instantiate an object and call the `calculate_next_value()` function

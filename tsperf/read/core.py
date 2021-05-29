@@ -43,7 +43,7 @@ from tsperf.model.interface import DatabaseInterfaceBase
 from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import tic_toc, timed_function
 
-model = {"value": "none"}
+schema = {"value": "none"}
 start_time = time.time()
 success = 0
 failure = 0
@@ -58,14 +58,14 @@ logger = logging.getLogger(__name__)
 
 def get_database_adapter() -> DatabaseInterfaceBase:
     adapter = AdapterManager.create(
-        interface=config.adapter, config=config, model=model
+        interface=config.adapter, config=config, schema=schema
     )
     return adapter
 
 
 def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
     if config.database == 0:
-        adapter = CrateDbAdapter(config=config, model=model)
+        adapter = CrateDbAdapter(config=config, schema=schema)
     elif config.database == 1:
         adapter = TimescaleDbAdapter(
             config.host,
@@ -73,16 +73,18 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
             config.username,
             config.password,
             config.db_name,
-            model,
+            schema,
         )
     elif config.database == 2:
-        adapter = InfluxDbAdapter(config.host, config.token, config.organization, model)
+        adapter = InfluxDbAdapter(
+            config.host, config.token, config.organization, schema
+        )
     elif config.database == 3:
         raise ValueError(
             "MongoDB queries are not supported (but can be manually added to the script - see "
             "read documentation)"
         )
-        # adapter = MongoDbAdapter(config.host, config.username, config.password, config.db_name, model)
+        # adapter = MongoDbAdapter(config.host, config.username, config.password, config.db_name, schema)
     elif config.database == 4:
         adapter = PostgresDbAdapter(
             config.host,
@@ -90,7 +92,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
             config.username,
             config.password,
             config.db_name,
-            model,
+            schema,
         )
     elif config.database == 5:
         adapter = TimeStreamAdapter(
@@ -98,7 +100,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
             config.aws_secret_access_key,
             config.aws_region_name,
             config.db_name,
-            model,
+            schema,
         )
     elif config.database == 6:
         adapter = MsSQLDbAdapter(
@@ -106,7 +108,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
             config.username,
             config.password,
             config.db_name,
-            model,
+            schema,
             port=config.port,
         )
     else:
@@ -212,7 +214,7 @@ def print_progress_thread():
 
 def run_qt():
 
-    logger.info(f"Starting query timer with {config} and model {model}")
+    logger.info(f"Starting query timer with {config} and schema {schema}")
     global start_time
     start_time = time.time()
 

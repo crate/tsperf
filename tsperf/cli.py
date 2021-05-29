@@ -97,11 +97,12 @@ general_options = cloup.option_group(
 write_options = cloup.option_group(
     "Write options",
     cloup.option(
-        "--model",
-        envvar="MODEL",
-        type=click.Path(exists=False, dir_okay=False),
+        "--schema",
+        envvar="SCHEMA",
+        type=str,
         required=True,
-        help="A relative or absolute path to a model in JSON format",
+        help="A reference to a schema in JSON format. It can either be the name of a Python resource in "
+        "full-qualified dotted `pkg_resources`-compatible notation, or an absolute or relative path.",
     ),
     cloup.option(
         "--id-start",

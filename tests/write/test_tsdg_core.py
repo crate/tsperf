@@ -36,7 +36,7 @@ def test_get_database_adapter_cratedb(mock_cratedb, config):
             shards=4,
             replicas=1,
         ),
-        model={},
+        schema={},
     )
 
 
@@ -53,7 +53,7 @@ def test_get_database_adapter(factory_mock, adapter, config):
             adapter=adapter,
             host="localhost",
         ),
-        model={},
+        schema={},
     )
 
 
@@ -68,10 +68,10 @@ def test_create_edges(mock_edge, config):
 
 
 def test_get_sub_element():
-    dg.model = {"description": 1}
+    dg.schema = {"description": 1}
     element = dg.get_sub_element("test")
     assert element == {}
-    dg.model = {"description": 1, "test": {"x": {"z": 3, "description": 4}, "y": 2}}
+    dg.schema = {"description": 1, "test": {"x": {"z": 3, "description": 4}, "y": 2}}
     element = dg.get_sub_element("x")
     assert element == {"z": 3}
     element = dg.get_sub_element("z")

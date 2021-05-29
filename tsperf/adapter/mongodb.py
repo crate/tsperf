@@ -30,10 +30,10 @@ from tsperf.util.tictrack import timed_function
 
 class MongoDbAdapter(DatabaseInterfaceBase):
     def __init__(
-        self, host: str, username: str, password: str, database_name: str, model: dict
+        self, host: str, username: str, password: str, database_name: str, schema: dict
     ):
         super().__init__()
-        self.model = model
+        self.schema = schema
         if host == "localhost":
             connection_string = f"""mongodb://{username}:{password}@{host}"""
         else:
@@ -41,7 +41,7 @@ class MongoDbAdapter(DatabaseInterfaceBase):
 
         self.client = MongoClient(connection_string)
         self.db = self.client[database_name]
-        self.collection = self.db[self._get_model_collection_name()]
+        self.collection = self.db[self._get_schema_collection_name()]
 
     def close_connection(self):
         self.client.close()
@@ -58,7 +58,7 @@ class MongoDbAdapter(DatabaseInterfaceBase):
         for i in range(0, len(batch)):
             t = datetime.fromtimestamp(timestamps[i] / 1000)
             document = {
-                "measurement": self._get_model_collection_name(),
+                "measurement": self._get_schema_collection_name(),
                 "date": t,
                 "tags": {},
                 "metrics": {},
@@ -76,9 +76,9 @@ class MongoDbAdapter(DatabaseInterfaceBase):
         return list(cursor)
 
     def _get_tags_and_metrics(self) -> Tuple[dict, dict]:
-        key = self._get_model_collection_name()
-        tags_ = self.model[key]["tags"]
-        metrics_ = self.model[key]["metrics"]
+        key = self._get_schema_collection_name()
+        tags_ = self.schema[key]["tags"]
+        metrics_ = self.schema[key]["metrics"]
         tags = []
         metrics = []
         for key in tags_.keys():
@@ -89,7 +89,7 @@ class MongoDbAdapter(DatabaseInterfaceBase):
                 metrics.append(value["key"]["value"])
         return tags, metrics
 
-    def _get_model_collection_name(self) -> str:
-        for key in self.model.keys():
+    def _get_schema_collection_name(self) -> str:
+        for key in self.schema.keys():
             if key != "description":
                 return key

@@ -38,12 +38,12 @@ class TimeStreamAdapter(DatabaseInterfaceBase):
         aws_secret_access_key: str,
         region_name: str,
         database_name: str,
-        model: dict,
+        schema: dict,
     ):
         super().__init__()
-        self.model = model
+        self.schema = schema
         self.database_name = database_name
-        self.table_name = self._get_model_collection_name()
+        self.table_name = self._get_schema_collection_name()
         self.session = boto3.session.Session(
             aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
@@ -121,9 +121,9 @@ class TimeStreamAdapter(DatabaseInterfaceBase):
         return result
 
     def _get_tags_and_metrics(self) -> Tuple[dict, dict]:
-        key = self._get_model_collection_name()
-        tags_ = self.model[key]["tags"]
-        metrics_ = self.model[key]["metrics"]
+        key = self._get_schema_collection_name()
+        tags_ = self.schema[key]["tags"]
+        metrics_ = self.schema[key]["metrics"]
         tags = []
         metrics = []
         for key in tags_.keys():
@@ -153,8 +153,8 @@ class TimeStreamAdapter(DatabaseInterfaceBase):
         else:
             return "VARCHAR"
 
-    def _get_model_collection_name(self) -> str:
-        for key in self.model.keys():
+    def _get_schema_collection_name(self) -> str:
+        for key in self.schema.keys():
             if key != "description":
                 return key
 

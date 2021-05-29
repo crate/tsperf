@@ -1,4 +1,4 @@
-# example docker-compose when inserting 1000 values for 1000 edges into InfluxDB using the temperature model
+# example docker-compose when inserting 1000 values for 1000 edges into InfluxDB using the temperature schema
 # prometheus metrics for ID 1 - 500 on port 8000, for ID 501 - 1000 on port 8001
 # assuming InfluxDB runs on localhost
 # Token and Organization have to be inserted before running

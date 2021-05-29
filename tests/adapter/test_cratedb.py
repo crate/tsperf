@@ -2,7 +2,7 @@ from unittest import mock
 
 from crate import client
 
-from tests.write.test_models import test_model, test_model2
+from tests.write.schema import test_schema1, test_schema2
 from tsperf.adapter.cratedb import CrateDbAdapter
 from tsperf.model.configuration import DatabaseConnectionConfiguration
 from tsperf.model.interface import DatabaseInterfaceType
@@ -34,7 +34,7 @@ def test_close_connection(mock_connect):
         username="crate",
         password="password",
     )
-    db_writer = CrateDbAdapter(config=config, model=test_model)
+    db_writer = CrateDbAdapter(config=config, schema=test_schema1)
     mock_connect.assert_called_with(
         "localhost:4200", username="crate", password="password"
     )
@@ -76,7 +76,7 @@ def test_prepare_database1(mock_connect):
         username="crate2",
         password="password2",
     )
-    db_writer = CrateDbAdapter(config=config, model=test_model)
+    db_writer = CrateDbAdapter(config=config, schema=test_schema1)
 
     mock_connect.assert_called_with(
         "localhost:4200", username="crate2", password="password2"
@@ -130,7 +130,7 @@ def test_prepare_database2(mock_connect):
         replicas=0,
         partition="day",
     )
-    db_writer = CrateDbAdapter(config=config, model=test_model2)
+    db_writer = CrateDbAdapter(config=config, schema=test_schema2)
 
     db_writer.prepare_database()
     # Test Case 1:
@@ -173,7 +173,7 @@ def test_insert_stmt(mock_connect):
         username="crate2",
         password="password2",
     )
-    db_writer = CrateDbAdapter(config=config, model=test_model)
+    db_writer = CrateDbAdapter(config=config, schema=test_schema1)
 
     # Test Case 1:
     db_writer.insert_stmt(
@@ -221,7 +221,7 @@ def test_execute_query(mock_connect):
         username="crate2",
         password="password2",
     )
-    db_writer = CrateDbAdapter(config=config, model=test_model)
+    db_writer = CrateDbAdapter(config=config, schema=test_schema1)
 
     # Test Case 1:
     db_writer.execute_query("SELECT * FROM temperature;")

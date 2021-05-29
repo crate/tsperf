@@ -2,7 +2,7 @@ from unittest import mock
 
 import pyodbc
 
-from tests.write.test_models import test_model, test_model2, test_model3
+from tests.write.schema import test_schema1, test_schema2, test_schema3
 from tsperf.adapter.mssql import MsSQLDbAdapter
 
 
@@ -26,7 +26,7 @@ def test_prepare_database1(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = MsSQLDbAdapter("localhost", "mssql", "password", "test", test_model)
+    db_writer = MsSQLDbAdapter("localhost", "mssql", "password", "test", test_schema1)
     connection_string = (
         "DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost,1433;"
         "DATABASE=test;UID=mssql;PWD=password;CONNECTION TIMEOUT=170000;"
@@ -60,7 +60,7 @@ def test_prepare_database2(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
     db_writer = MsSQLDbAdapter(
-        "localhost", "timescale2", "password2", "test", test_model2, 1444, "table_name"
+        "localhost", "timescale2", "password2", "test", test_schema2, 1444, "table_name"
     )
     # Test Case 1:
     db_writer.prepare_database()
@@ -91,7 +91,7 @@ def test_prepare_database3(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
     db_writer = MsSQLDbAdapter(
-        "localhost", "timescale2", "password2", "test", test_model3
+        "localhost", "timescale2", "password2", "test", test_schema3
     )
     # Test Case 1:
     db_writer.prepare_database()
@@ -125,7 +125,7 @@ def test_insert_stmt(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = MsSQLDbAdapter("localhost", "mssql", "password", "test", test_model)
+    db_writer = MsSQLDbAdapter("localhost", "mssql", "password", "test", test_schema1)
     # Test Case 1:
     db_writer.insert_stmt(
         [1586327807000],
@@ -162,7 +162,7 @@ def test_execute_query(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = MsSQLDbAdapter("localhost", "mssql", "password", "test", test_model)
+    db_writer = MsSQLDbAdapter("localhost", "mssql", "password", "test", test_schema1)
     db_writer.execute_query("SELECT * FROM temperature;")
     cursor.execute.assert_called_with("SELECT * FROM temperature;")
     cursor.fetchall.assert_called()

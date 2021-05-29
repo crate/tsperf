@@ -32,6 +32,6 @@ class AdapterManager:
         cls.registry[interface] = factory
 
     @classmethod
-    def create(cls, interface, config, model):
+    def create(cls, interface, config, schema):
         factory: DatabaseInterfaceBase = cls.registry[interface]
-        return factory(config, model)
+        return factory(config, schema)

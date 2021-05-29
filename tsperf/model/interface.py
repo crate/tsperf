@@ -60,10 +60,13 @@ class DatabaseInterfaceBase:
     def execute_query(self, query: str):  # pragma: no cover
         pass
 
+    def _get_schema_table_name(self) -> str:
+        pass
+
     def _get_tags_and_metrics(self):
-        key = self._get_model_table_name()
-        tags = self.model[key]["tags"]
-        metrics = self.model[key]["metrics"]
+        key = self._get_schema_table_name()
+        tags = self.schema[key]["tags"]
+        metrics = self.schema[key]["metrics"]
         columns = {}
         for key, value in tags.items():
             if key != "description":

@@ -42,7 +42,7 @@ from tsperf.util import tictrack
 from tsperf.util.batch_size_automator import BatchSizeAutomator
 from tsperf.write.config import DataGeneratorConfig
 from tsperf.write.model import IngestMode
-from tsperf.write.model.edge import Edge
+from tsperf.write.model.channel import Channel
 from tsperf.write.model.metrics import (
     c_generated_values,
     c_inserted_values,
@@ -140,18 +140,18 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
 
 
 @tictrack.timed_function()
-def create_edges() -> dict:
+def create_channels() -> dict:
     """
-    Create metric objects in the given range [id_start, id_end]
+    Create channel objects in the given range [id_start, id_end]
     """
     id_start = config.id_start
     id_end = config.id_end + 1
     count = id_end - id_start
     logger.info(f"Creating {count} objects [{id_start}, {id_end}]")
-    edges = {}
+    channels = {}
     for i in tqdm(range(config.id_start, config.id_end + 1)):
-        edges[i] = Edge(i, get_sub_element("tags"), get_sub_element("fields"))
-    return edges
+        channels[i] = Channel(i, get_sub_element("tags"), get_sub_element("fields"))
+    return channels
 
 
 def get_sub_element(sub: str) -> dict:
@@ -165,24 +165,25 @@ def get_sub_element(sub: str) -> dict:
 
 
 @tictrack.timed_function()
-def get_next_value(edges: dict):
+def get_next_value(channels: dict):
     global last_ts
-    # for each edge in the edges list all next values are calculated and saved to the edge_value list
-    # this list is then added to the FIFO queue, so each entry of the FIFO queue contains all next values for each edge
-    # in the edge list
-    edge_values = []
-    for edge in edges.values():
-        edge_values.append(edge.calculate_next_value())
-    if len(edge_values) > 0:
-        c_generated_values.inc(len(edge_values))
+    # for each channel in the channels list all next values are calculated and
+    # saved to the `channel_values` list. This list is then added to the FIFO
+    # queue, so each entry of the FIFO queue contains all next values for each
+    # channel in the channel list.
+    channel_values = []
+    for channel in channels.values():
+        channel_values.append(channel.calculate_next_value())
+    if len(channel_values) > 0:
+        c_generated_values.inc(len(channel_values))
         if config.ingest_mode == IngestMode.FAST:
             ts = last_ts + config.ingest_delta
             ingest_ts_factor = 1 / config.ingest_delta
             last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
-            timestamps = [int(last_ts * 1000)] * len(edge_values)
-            current_values_queue.put({"timestamps": timestamps, "batch": edge_values})
+            timestamps = [int(last_ts * 1000)] * len(channel_values)
+            current_values_queue.put({"timestamps": timestamps, "batch": channel_values})
         else:
-            current_values_queue.put(edge_values)
+            current_values_queue.put(channel_values)
 
 
 def log_stat_delta(last_stat_ts_local: float) -> float:
@@ -388,7 +389,7 @@ def run_dg():
     prometheus_insert_percentage_thread.start()
 
     try:
-        edges = create_edges()
+        channels = create_channels()
 
         # We are either in endless mode or have a certain amount of values to create.
         # TODO: This should not have an endless loop. For now, stop with CTRL+C.
@@ -397,7 +398,7 @@ def run_dg():
         progress = tqdm(total=config.ingest_size)
         while config.ingest_size == 0 or while_count < config.ingest_size:
             while_count += 1
-            get_next_value(edges)
+            get_next_value(channels)
             progress.update()
         progress.close()
     except Exception as e:

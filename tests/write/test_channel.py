@@ -8,15 +8,16 @@ from tests.write.schema import (
     tag_schema_list,
     tag_schema_plant100_line5_sensorId,
 )
-from tsperf.write.model.edge import BoolSensor, Edge
+from tsperf.write.model.channel import Channel
+from tsperf.write.model.sensor import BoolSensor
 
 
 def test_init_sensors():
     """
-    This function tests if the Edge Object is correctly initialized
+    This function tests if the Channel Object is correctly initialized
 
     Test Case 1:
-    Edge is initialized with:
+    Channel is initialized with:
     id: 1
     tags: valid tag schema
     fields: fields schema containing one float and one bool sensor
@@ -24,32 +25,32 @@ def test_init_sensors():
     -> BoolSensor must be in sensor_types
 
     Test Case 2:
-    Edge is initialized with:
+    Channel is initialized with:
     id: 1
     tags: valid tag schema
     fields: fields schema containing one string sensor
     -> Constructor raises NotImplementedError
     """
     # Test Case 1:
-    edge = Edge(1, tag_schema_plant100_line5_sensorId, channel_schema_float1_bool1)
+    channel = Channel(1, tag_schema_plant100_line5_sensorId, channel_schema_float1_bool1)
     sensor_types = []
-    for sensor in edge.sensors:
+    for sensor in channel.sensors:
         sensor_types.append(sensor.__class__.__name__)
     assert "FloatSensor" in sensor_types
     assert "BoolSensor" in sensor_types
 
     # Test Case 2:
     with pytest.raises(NotImplementedError):
-        Edge(1, tag_schema_plant100_line5_sensorId, channel_schema_string)
+        Channel(1, tag_schema_plant100_line5_sensorId, channel_schema_string)
 
 
-def test_calculate_next_value_edge():
+def test_calculate_next_value_channel():
     """
-    This function tests if the Edge Object correctly calculates the next value of it's sensors
+    This function tests if the Channel Object correctly calculates the next value of it's sensors
 
-    Pre Condition: Edge Object created with id 1, a valid tag schema and a the `channel_schema_float1_bool1` schema
+    Pre Condition: Channel Object created with id 1, a valid tag schema and a the `channel_schema_float1_bool1` schema
 
-    Test Case 1: the first value of the edge object is calculated
+    Test Case 1: the first value of the channel object is calculated
     -> "plant" tag is in batch
     -> "plant" values is 1
     -> "line" tag is in batch
@@ -61,16 +62,16 @@ def test_calculate_next_value_edge():
     -> "button_press" is in batch
     -> "button_press" is not None
 
-    Test Case 2: another 1000 values for the edge object are calculated to see if button_press is at least True once
+    Test Case 2: another 1000 values for the channel object are calculated to see if button_press is at least True once
         and value is not the same value each time
     -> True is contained in button_press array
     -> length of unique values in values array is bigger than 1
     """
     # Pre Condition
-    edge = Edge(1, tag_schema_plant100_line5_sensorId, channel_schema_float1_bool1)
+    channel = Channel(1, tag_schema_plant100_line5_sensorId, channel_schema_float1_bool1)
     results = []
     # Test Case 1.
-    batch = edge.calculate_next_value()
+    batch = channel.calculate_next_value()
     assert "plant" in batch
     assert batch["plant"] == 0
     assert "line" in batch
@@ -86,7 +87,7 @@ def test_calculate_next_value_edge():
     # Test Case 2:
     # because button_press has a probability of 1:100 to be True, we do a thousand operations to get True for sure
     for _ in range(0, 1000):
-        results.append(edge.calculate_next_value())
+        results.append(channel.calculate_next_value())
 
     button_press = []
     values = []
@@ -136,7 +137,7 @@ def test_calculate_next_value_tag_list():
         ["E", "L3"],
     ]
     for i in range(1, 16):
-        edge = Edge(i, tag_schema_list, channel_schema_float1_bool1)
-        payload = edge.calculate_next_value()
+        channel = Channel(i, tag_schema_list, channel_schema_float1_bool1)
+        payload = channel.calculate_next_value()
         assert payload["plant"] == results[i - 1][0]
         assert payload["line"] == results[i - 1][1]

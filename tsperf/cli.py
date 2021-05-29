@@ -109,14 +109,14 @@ write_options = cloup.option_group(
         envvar="ID_START",
         type=click.INT,
         default=1,
-        help="The Data Generator will create `(id_end + 1) - id_start` edges. Must be smaller or equal to id_end.",
+        help="The Data Generator will create `(id_end + 1) - id_start` channels. Must be smaller or equal to id_end.",
     ),
     cloup.option(
         "--id-end",
         envvar="ID_END",
         type=click.INT,
         default=500,
-        help="The Data Generator will create `(id_end + 1) - id_start` edges. Must be bigger or equal to id_start.",
+        help="The Data Generator will create `(id_end + 1) - id_start` channels. Must be bigger or equal to id_start.",
     ),
     cloup.option(
         "--ingest-mode",

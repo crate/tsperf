@@ -2,7 +2,7 @@
     "description": "this json file contains a tables and it's structure and how the values in this structure are calculated. The key represents the table name (in case the database uses tables)",
     "temperature": {
         "tags": {
-            "description": "describes the database structure, tags are indexed columns for most dbs containing information about the 'edge' reporting values but not containing measured values.",
+            "description": "describes the database structure, tags are indexed columns for most dbs containing metadata/location information about the channel but not containing measured values.",
             "plant": 100,
             "line": 5,
             "sensor_id": "id"

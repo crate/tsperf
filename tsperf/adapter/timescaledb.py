@@ -39,7 +39,7 @@ class TimescaleDbAdapter(DatabaseInterfaceBase):
         username: str,
         password: str,
         ts_db_name: str,
-        model: dict,
+        schema: dict,
         table_name: str = None,
         partition: str = "week",
         copy: bool = False,
@@ -50,8 +50,8 @@ class TimescaleDbAdapter(DatabaseInterfaceBase):
             dbname=ts_db_name, user=username, password=password, host=host, port=port
         )
         self.cursor = self.conn.cursor()
-        self.model = model
-        self.table_name = (table_name, self._get_model_table_name())[
+        self.schema = schema
+        self.table_name = (table_name, self._get_schema_table_name())[
             table_name is None or table_name == ""
         ]
         self.partition = partition
@@ -136,14 +136,14 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    def _get_model_table_name(self) -> str:
-        for key in self.model.keys():
+    def _get_schema_table_name(self) -> str:
+        for key in self.schema.keys():
             if key != "description":
                 return key
 
     def _get_partition_tag(self, top_level: bool = False) -> str:
-        key = self._get_model_table_name()
-        tags = list(self.model[key]["tags"].keys())
+        key = self._get_schema_table_name()
+        tags = list(self.schema[key]["tags"].keys())
         if "description" in tags:
             tags.remove("description")
         return tags[0] if top_level else tags[-1]

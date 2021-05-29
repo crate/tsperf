@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest import mock
 
-from tests.write.test_models import test_model
+from tests.write.schema import test_schema1
 from tsperf.adapter.mongodb import MongoDbAdapter
 
 
@@ -23,7 +23,9 @@ def test_close_connection(mock_client):
     # Pre Condition:
     client = mock.MagicMock()
     mock_client.return_value = client
-    db_writer = MongoDbAdapter("localhost", "mongo", "password", "db_name", test_model)
+    db_writer = MongoDbAdapter(
+        "localhost", "mongo", "password", "db_name", test_schema1
+    )
     mock_client.assert_called_with("mongodb://mongo:password@localhost")
     # Test Case 1:
     db_writer.close_connection()
@@ -48,7 +50,7 @@ def test_insert_stmt(mock_client):
     """
     client = mock.MagicMock()
     mock_client.return_value = client
-    db_writer = MongoDbAdapter("srvhost", "mongo", "password", "db_name", test_model)
+    db_writer = MongoDbAdapter("srvhost", "mongo", "password", "db_name", test_schema1)
     mock_client.assert_called_with("mongodb+srv://mongo:password@srvhost")
     # Test Case 1:
     db_writer.insert_stmt(
@@ -85,7 +87,7 @@ def test_execute_query(mock_client):
     """
     client = mock.MagicMock()
     mock_client.return_value = client
-    db_writer = MongoDbAdapter("srvhost", "mongo", "password", "db_name", test_model)
+    db_writer = MongoDbAdapter("srvhost", "mongo", "password", "db_name", test_schema1)
     # Test Case 1:
     db_writer.execute_query({"plant": 1})
     # [2] because there have be 2 prior function calls on client (getting db and collection)

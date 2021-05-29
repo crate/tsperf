@@ -12,7 +12,7 @@ def test_write_cli():
     result = runner.invoke(
         tsperf.cli.write,
         [
-            "--model=examples/temperature.json",
+            "--schema=examples/temperature.json",
             "--adapter=cratedb",
             "--id-end=3",
             "--ingest-size=3",
@@ -26,7 +26,7 @@ def test_write_cli_dryrun():
     ctx = tsperf.cli.write.make_context(
         info_name=None,
         args=[
-            "--model=examples/temperature.json",
+            "--schema=examples/temperature.json",
             "--adapter=cratedb",
             "--id-end=3",
             "--ingest-size=3",
@@ -35,7 +35,7 @@ def test_write_cli_dryrun():
     options = ctx.params
     config = DataGeneratorConfig.create(**options)
 
-    assert config.model == "examples/temperature.json"
+    assert config.schema == "examples/temperature.json"
     assert config.adapter == DatabaseInterfaceType.CrateDB
     assert config.id_end == 3
     assert config.ingest_size == 3

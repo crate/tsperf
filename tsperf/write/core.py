@@ -59,7 +59,7 @@ from tsperf.write.model.metrics import (
 
 # Global variables shared across threads
 config: DataGeneratorConfig = None
-model = {}
+schema = {}
 last_ts = 0
 current_values_queue = Queue(10000)
 inserted_values_queue = Queue(10000)
@@ -72,7 +72,7 @@ logger = logging.getLogger(__name__)
 
 def get_database_adapter() -> DatabaseInterfaceBase:
     adapter = AdapterManager.create(
-        interface=DatabaseInterfaceType(config.adapter), config=config, model=model
+        interface=DatabaseInterfaceType(config.adapter), config=config, schema=schema
     )
     return adapter
 
@@ -80,9 +80,9 @@ def get_database_adapter() -> DatabaseInterfaceBase:
 def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
 
     if config.database == 0:  # crate
-        adapter = CrateDbAdapter(config=config, model=model)
+        adapter = CrateDbAdapter(config=config, schema=schema)
         # adapter = AdapterManager.create(
-        #    interface=DatabaseInterfaceType.CrateDB, config=config, model=model
+        #    interface=DatabaseInterfaceType.CrateDB, config=config, schema=schema
         # )
     elif config.database == 1:  # timescale
         adapter = TimescaleDbAdapter(
@@ -91,7 +91,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
             config.username,
             config.password,
             config.db_name,
-            model,
+            schema,
             config.table_name,
             config.partition,
             config.copy,
@@ -99,11 +99,11 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
         )
     elif config.database == 2:  # influx
         adapter = InfluxDbAdapter(
-            config.host, config.token, config.organization, model, config.db_name
+            config.host, config.token, config.organization, schema, config.db_name
         )
     elif config.database == 3:  # mongo
         adapter = MongoDbAdapter(
-            config.host, config.username, config.password, config.db_name, model
+            config.host, config.username, config.password, config.db_name, schema
         )
     elif config.database == 4:  # postgres
         adapter = PostgresDbAdapter(
@@ -112,7 +112,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
             config.username,
             config.password,
             config.db_name,
-            model,
+            schema,
             config.table_name,
             config.partition,
         )
@@ -122,7 +122,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
             config.aws_secret_access_key,
             config.aws_region_name,
             config.db_name,
-            model,
+            schema,
         )
     elif config.database == 6:  # ms_sql
         adapter = MsSQLDbAdapter(
@@ -130,7 +130,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
             config.username,
             config.password,
             config.db_name,
-            model,
+            schema,
             port=config.port,
             table_name=config.table_name,
         )
@@ -156,9 +156,9 @@ def create_edges() -> dict:
 
 def get_sub_element(sub: str) -> dict:
     element = {}
-    for key in model.keys():
-        if key != "description" and sub in model[key]:
-            element = model[key][sub]
+    for key in schema.keys():
+        if key != "description" and sub in schema[key]:
+            element = schema[key][sub]
     if "description" in element:
         element.pop("description")
     return element
@@ -370,7 +370,7 @@ def prometheus_insert_percentage():
 
 @tictrack.timed_function()
 def run_dg():
-    logger.info(f"Starting data generator with {config} and model {config.model}")
+    logger.info(f"Starting data generator with {config} and schema {config.schema}")
 
     logger.info("Starting database writer subsystem")
     if config.ingest_mode == IngestMode.CONSECUTIVE:
@@ -440,7 +440,7 @@ def wait_for_thread(thread: Thread, error_channel: Optional[Queue] = None):
 
 
 def start(configuration: DataGeneratorConfig):
-    global last_ts, model, config
+    global last_ts, schema, config
 
     config = configuration
 
@@ -452,9 +452,9 @@ def start(configuration: DataGeneratorConfig):
         logger.error(f"Invalid configuration: {config.invalid_configs}")
         exit(-1)
 
-    logger.info(f"Loading model from {config.model}")
-    f = open(config.model, "r")
-    model = json.load(f)
+    logger.info(f"Loading schema from {config.schema}")
+    f = open(config.schema, "r")
+    schema = json.load(f)
 
     logger.info("Probing insert")
     if not probe_insert():

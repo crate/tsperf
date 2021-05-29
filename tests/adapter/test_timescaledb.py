@@ -4,7 +4,7 @@ from unittest import mock
 import psycopg2.extras
 from datetime_truncate import truncate
 
-from tests.write.test_models import test_model, test_model2, test_model3
+from tests.write.schema import test_schema1, test_schema2, test_schema3
 from tsperf.adapter.timescaledb import TimescaleDbAdapter
 
 
@@ -29,7 +29,7 @@ def test_close_connection(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
     db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale", "password", "test", test_model
+        "localhost", 4200, "timescale", "password", "test", test_schema1
     )
     mock_connect.assert_called_with(
         dbname="test",
@@ -66,7 +66,7 @@ def test_prepare_database1(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
     db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale", "password2", "test", test_model
+        "localhost", 4200, "timescale", "password2", "test", test_schema1
     )
     mock_connect.assert_called_with(
         dbname="test",
@@ -111,7 +111,7 @@ def test_prepare_database2(mock_connect):
         "timescale3",
         "password3",
         "test",
-        test_model2,
+        test_schema2,
         "table_name",
         "day",
     )
@@ -151,7 +151,7 @@ def test_prepare_database3(mock_connect):
         "timescale3",
         "password3",
         "test",
-        test_model2,
+        test_schema2,
         "table_name",
         "day",
         True,
@@ -186,7 +186,7 @@ def test_prepare_database4(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
     db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale3", "password3", "test", test_model3
+        "localhost", 4200, "timescale3", "password3", "test", test_schema3
     )
     # Test Case 1:
     db_writer.prepare_database()
@@ -221,7 +221,7 @@ def test_insert_stmt(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
     db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale", "password", "test", test_model
+        "localhost", 4200, "timescale", "password", "test", test_schema1
     )
     # Test Case 1:
     db_writer.insert_stmt(
@@ -266,7 +266,7 @@ def test_insert_stmt_copy(mock_copy_manager, mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
     db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale", "password", "test", test_model, copy=True
+        "localhost", 4200, "timescale", "password", "test", test_schema1, copy=True
     )
 
     copy_manager = mock.MagicMock()
@@ -317,7 +317,7 @@ def test_execute_query(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
     db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale", "password", "test", test_model
+        "localhost", 4200, "timescale", "password", "test", test_schema1
     )
     db_writer.execute_query("SELECT * FROM temperature;")
     cursor.execute.assert_called_with("SELECT * FROM temperature;")

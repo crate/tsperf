@@ -29,17 +29,17 @@ pytest -vvv tests
 docker run -it --rm --publish=4200:4200 --publish=5432:5432 crate/crate:4.5.1
 
 # Feed data into CrateDB running on localhost
-tsperf write --model=examples/temperature.json --adapter=cratedb
+tsperf write --schema=examples/temperature.json --adapter=cratedb
 
 # Increase concurrency
-tsperf write --model=examples/temperature.json --adapter=cratedb --concurrency=8
+tsperf write --schema=examples/temperature.json --adapter=cratedb --concurrency=8
 
 # Feed data into CrateDB running on a remote host
-tsperf write --model=examples/temperature.json --adapter=cratedb --host=cratedb.example.org:4200
+tsperf write --schema=examples/temperature.json --adapter=cratedb --host=cratedb.example.org:4200
 
 # Feed data and expose metrics in Prometheus format
-tsperf write --model=examples/temperature.json --adapter=cratedb --prometheus-enable=true
-tsperf write --model=examples/temperature.json --adapter=cratedb --prometheus-enable=true --prometheus-listen=0.0.0.0:8000
+tsperf write --schema=examples/temperature.json --adapter=cratedb --prometheus-enable=true
+tsperf write --schema=examples/temperature.json --adapter=cratedb --prometheus-enable=true --prometheus-listen=0.0.0.0:8000
 
 # Probe responsiveness of database on the read path
 tsperf read --adapter=cratedb

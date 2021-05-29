@@ -26,7 +26,7 @@ def test_get_database_adapter(factory_mock, adapter, config):
             adapter=adapter,
             host="localhost",
         ),
-        model={"value": "none"},
+        schema={"value": "none"},
     )
 
 

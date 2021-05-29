@@ -21,7 +21,7 @@ def test_config_default():
     assert config.ingest_size == 1000
     assert config.ingest_ts == pytest.approx(time.time(), abs=0.3)
     assert config.ingest_delta == 0.5
-    assert config.model is None
+    assert config.schema is None
     assert config.batch_size == -1
     assert config.stat_delta == 30
 
@@ -42,7 +42,7 @@ def test_config_default():
 def mkconfig(*more_args):
     ctx = tsperf.cli.write.make_context(
         info_name=None,
-        args=["--model=examples/temperature.json", "--adapter=cratedb"]
+        args=["--schema=examples/temperature.json", "--adapter=cratedb"]
         + list(more_args),
     )
     config = DataGeneratorConfig.create(**ctx.params)
@@ -101,15 +101,15 @@ def test_config_env_ingest_delta_set():
     del os.environ["INGEST_DELTA"]
 
 
-def test_config_model_environ():
+def test_config_schema_environ():
     test_path = "test/path"
-    os.environ["MODEL"] = test_path
+    os.environ["SCHEMA"] = test_path
 
     ctx = tsperf.cli.write.make_context(info_name=None, args=["--adapter=cratedb"])
     config = DataGeneratorConfig.create(**ctx.params)
 
-    assert config.model == test_path
-    del os.environ["MODEL"]
+    assert config.schema == test_path
+    del os.environ["SCHEMA"]
 
 
 def test_config_batch_size_environ():
@@ -124,7 +124,7 @@ def test_config_adapter_environ():
     test_adapter = DatabaseInterfaceType.InfluxDB2
     os.environ["ADAPTER"] = test_adapter.name.lower()
 
-    ctx = tsperf.cli.write.make_context(info_name=None, args=["--model=foobar"])
+    ctx = tsperf.cli.write.make_context(info_name=None, args=["--schema=foobar"])
     config = DataGeneratorConfig.create(**ctx.params)
 
     assert config.adapter == test_adapter
@@ -304,12 +304,13 @@ def test_validate_ingest_delta_invalid(mock_isfile):
 
 
 @mock.patch("os.path.isfile")
-def test_validate_model_path_invalid(mock_isfile):
+def test_validate_schema_path_invalid(mock_isfile):
     mock_isfile.return_value = False
     config = mkconfig()
     assert not config.validate_config()
     assert len(config.invalid_configs) == 1
-    assert "MODEL" in config.invalid_configs[0]
+    assert "SCHEMA" in config.invalid_configs[0]
+    assert "does not exist" in config.invalid_configs[0]
 
 
 @mock.patch("os.path.isfile")

@@ -27,16 +27,16 @@ factors = [-1, 1]
 
 
 class Edge:
-    def __init__(self, identifier: int, tags: dict, edge_model: dict):
+    def __init__(self, identifier: int, tags: dict, schema: dict):
         self.id = identifier
         self.tags = tags
-        self.edge_model = edge_model
+        self.schema = schema
         self.sensors = []
         self.payload = {}
         self._init_sensors()
 
     def _init_sensors(self):
-        for value in self.edge_model.values():
+        for value in self.schema.values():
             sensor_type = value["type"]["value"].lower()
             if sensor_type == "float":
                 self.sensors.append(FloatSensor(value))
@@ -82,24 +82,24 @@ class Edge:
 
 
 class Sensor:
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, schema):
+        self.schema = schema
 
     def get_key(self) -> str:
-        return self.model["key"]["value"]
+        return self.schema["key"]["value"]
 
 
 class FloatSensor(Sensor):
-    def __init__(self, model):
-        super().__init__(model)
+    def __init__(self, schema):
+        super().__init__(schema)
         self.float_simulator = FloatSimulator(
-            model["mean"]["value"],
-            model["min"]["value"],
-            model["max"]["value"],
-            model["stdev"]["value"],
-            model["variance"]["value"],
-            model["error_rate"]["value"],
-            model["error_length"]["value"],
+            schema["mean"]["value"],
+            schema["min"]["value"],
+            schema["max"]["value"],
+            schema["stdev"]["value"],
+            schema["variance"]["value"],
+            schema["error_rate"]["value"],
+            schema["error_length"]["value"],
         )
 
     def calculate_next_value(self) -> float:
@@ -107,9 +107,9 @@ class FloatSensor(Sensor):
 
 
 class BoolSensor(Sensor):
-    def __init__(self, model):
-        super().__init__(model)
-        self.true_ratio = self.model["true_ratio"]["value"]
+    def __init__(self, schema):
+        super().__init__(schema)
+        self.true_ratio = self.schema["true_ratio"]["value"]
 
     def calculate_next_value(self) -> bool:
         return random.randint(0, (1 / self.true_ratio)) < 1  # noqa:S311

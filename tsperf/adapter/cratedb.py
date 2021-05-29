@@ -40,7 +40,7 @@ class CrateDbAdapter(DatabaseInterfaceBase):
     def __init__(
         self,
         config: Union[DataGeneratorConfig, QueryTimerConfig],
-        model: Dict,
+        schema: Dict,
     ):
         super().__init__()
         if ":" not in config.host:
@@ -49,8 +49,8 @@ class CrateDbAdapter(DatabaseInterfaceBase):
             config.host, username=config.username, password=config.password
         )
         self.cursor = self.conn.cursor()
-        self.model = model
-        self.table_name = (config.table_name, self._get_model_table_name())[
+        self.schema = schema
+        self.table_name = (config.table_name, self._get_schema_table_name())[
             config.table_name is None or config.table_name == ""
         ]
         self.partition = config.partition
@@ -84,8 +84,8 @@ class CrateDbAdapter(DatabaseInterfaceBase):
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    def _get_model_table_name(self) -> str:
-        for key in self.model.keys():
+    def _get_schema_table_name(self) -> str:
+        for key in self.schema.keys():
             if key != "description":
                 return key
 

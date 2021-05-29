@@ -2,7 +2,7 @@ from unittest import mock
 
 from crate import client
 
-from tests.tsperf.tsdg.test_models import test_model, test_model2
+from tests.write.test_models import test_model, test_model2
 from tsperf.adapter.cratedb import CrateDbAdapter
 from tsperf.model.configuration import DatabaseConnectionConfiguration
 from tsperf.model.interface import DatabaseInterfaceType

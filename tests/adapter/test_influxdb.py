@@ -4,7 +4,7 @@ from dotmap import DotMap
 from influxdb_client import Bucket
 from influxdb_client.client.write_api import Point
 
-from tests.tsperf.tsdg.test_models import test_model
+from tests.write.test_models import test_model
 from tsperf.adapter.influxdb import InfluxDbAdapter
 
 

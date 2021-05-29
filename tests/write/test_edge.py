@@ -1,7 +1,7 @@
 import numpy
 import pytest
 
-from tests.tsperf.tsdg.test_models import (
+from tests.write.test_models import (
     bool_model,
     metrics_model_float1_bool1,
     metrics_model_string,

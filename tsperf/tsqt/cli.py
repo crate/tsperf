@@ -24,21 +24,6 @@ from tsperf.util.common import read_configuration
 from .config import QueryTimerConfig
 
 args_info = {
-    "database": {
-        "help": "Value which defines what database will be used: 0-CrateDB, 1-TimescaleDB, 2-InfluxDB, 3-MongoDB, "
-        "4-PostgreSQL, 5-Timestream, 6-MSSQL",
-        "choices": range(0, 7),
-        "type": int,
-    },
-    "host": {
-        "help": "hostname according to the database client requirements. See documentation for further details:"
-        f"{TSDG_README_URL}#host",
-        "type": str,
-    },
-    "port": {
-        "help": "Defines the port number of the host where the DB is reachable. Integer between 1 to 65535",
-        "type": int,
-    },
     "username": {
         "help": "username of user used for authentication against the database. Used with CrateDB, TimescaleDB, "
         "MongoDB, Postgresql, MSSQL",
@@ -75,14 +60,6 @@ args_info = {
         "help": "AWS region name",
         "type": str,
     },
-    "concurrency": {
-        "help": "Defines how many threads run in parallel executing queries.",
-        "type": int,
-    },
-    "iterations": {
-        "help": "Defines how many times each thread executes the query.",
-        "type": int,
-    },
     "quantiles": {
         "help": "Which quantiles should be displayed at the end of the run. Values "
         "are separated by ','",
@@ -91,10 +68,6 @@ args_info = {
     "refresh_rate": {
         "help": "Output refresh interval in seconds.",
         "type": float,
-    },
-    "query": {
-        "help": "The query that will be timed. It must be a valid query in string format for the chosen database",
-        "type": str,
     },
 }
 

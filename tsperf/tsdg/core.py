@@ -39,8 +39,8 @@ from tsperf.adapter.postgresql import PostgresDbAdapter
 from tsperf.adapter.timescaledb import TimescaleDbAdapter
 from tsperf.adapter.timestream import TimeStreamAdapter
 from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
-from tsperf.tsdg.cli import parse_arguments
 from tsperf.tsdg.config import DataGeneratorConfig
+from tsperf.tsdg.model import IngestMode
 from tsperf.tsdg.model.edge import Edge
 from tsperf.tsdg.model.metrics import (
     c_generated_values,
@@ -57,10 +57,9 @@ from tsperf.tsdg.model.metrics import (
 )
 from tsperf.util import tictrack
 from tsperf.util.batch_size_automator import BatchSizeAutomator
-from tsperf.util.common import setup_logging
 
-# global variables shared accross threads
-config = DataGeneratorConfig()
+# Global variables shared across threads
+config: DataGeneratorConfig = None
 model = {}
 last_ts = 0
 current_values_queue = Queue(10000)
@@ -72,20 +71,15 @@ insert_exceptions = Queue()
 logger = logging.getLogger(__name__)
 
 
-def get_database_adapter_class(database: int) -> DatabaseInterfaceBase:
-    db_to_adapter_map = {
-        0: CrateDbAdapter,
-        1: TimescaleDbAdapter,
-        2: InfluxDbAdapter,
-        3: MongoDbAdapter,
-        4: PostgresDbAdapter,
-        5: TimeStreamAdapter,
-        6: MsSQLDbAdapter,
-    }
-    return db_to_adapter_map.get(database)
+def get_database_adapter() -> DatabaseInterfaceBase:
+    adapter = AdapterManager.create(
+        interface=DatabaseInterfaceType(config.adapter), config=config, model=model
+    )
+    return adapter
 
 
-def get_database_adapter() -> DatabaseInterfaceBase:  # noqa
+def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
+
     if config.database == 0:  # crate
         # adapter = CrateDbAdapter(config=config, model=model)
         adapter = AdapterManager.create(
@@ -182,7 +176,7 @@ def get_next_value(edges: dict):
         edge_values.append(edge.calculate_next_value())
     if len(edge_values) > 0:
         c_generated_values.inc(len(edge_values))
-        if config.ingest_mode == 1:
+        if config.ingest_mode == IngestMode.FAST:
             ts = last_ts + config.ingest_delta
             ingest_ts_factor = 1 / config.ingest_delta
             last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
@@ -200,7 +194,7 @@ def log_stat_delta(last_stat_ts_local: float) -> float:
     return time.time()
 
 
-def stat_delta_thread_function():  # pragma: no cover
+def stat_delta_thread_function():
     logger.info("Starting statistics delta computation thread")
     last_stat_ts_local = time.time()
     while not stop_process():
@@ -242,15 +236,19 @@ def get_insert_values(batch_size: int) -> Tuple[list, list]:
     return batch, timestamps
 
 
-def insert_routine():
-    name = current_thread().name
+def probe_insert():
     adapter = get_database_adapter()
     try:
         adapter.prepare_database()
-    except Exception as ex:
-        logger.exception("Failed communicating with database")
-        insert_exceptions.put(sys.exc_info())
-        return
+        return True
+    except Exception:
+        logger.exception(f"Failure communicating with or preparing database")
+        return False
+
+
+def insert_routine():
+    name = current_thread().name
+    adapter = get_database_adapter()
     data_batch_size = config.id_end - config.id_start + 1
     insert_bsa = BatchSizeAutomator(
         batch_size=config.batch_size,
@@ -283,22 +281,24 @@ def insert_routine():
 
     adapter.close_connection()
 
+    return True
 
-def spawn_insert_threads():  # pragma: no cover
-    logger.info(f"Starting {config.num_threads} database writer thread(s)")
+
+def spawn_insert_threads():
+    logger.info(f"Starting {config.concurrency} database writer thread(s)")
     insert_threads = []
-    for i in range(config.num_threads):
+    for i in range(config.concurrency):
         insert_threads.append(Thread(target=insert_routine, name=f"InsertThread-{i}"))
     for thread in insert_threads:
         thread.start()
     for thread in insert_threads:
         thread.join()
 
-    # Signal the prometheus thread that insertion is finished.
+    # Signal the Prometheus thread that insert is finished.
     insert_finished_queue.put_nowait(True)
 
 
-def fast_insert():  # pragma: no cover
+def fast_insert():
     fast_insert_threads = [
         Thread(target=spawn_insert_threads, name="InsertThreadSpawner"),
         Thread(target=stat_delta_thread_function, name="StatDeltaThread"),
@@ -342,7 +342,8 @@ def consecutive_insert():
         else:
             time.sleep(config.ingest_delta - insert_delta)
     adapter.close_connection()
-    # signal the prometheus thread that insert is finished
+
+    # Signal the Prometheus thread that insert is finished.
     insert_finished_queue.put_nowait(True)
 
 
@@ -350,7 +351,7 @@ def stop_process() -> bool:
     return not stop_queue.empty()
 
 
-def prometheus_insert_percentage():  # pragma: no cover
+def prometheus_insert_percentage():
     while not inserted_values_queue.empty() or insert_finished_queue.empty():
         try:
             inserted_values = inserted_values_queue.get_nowait()
@@ -369,11 +370,11 @@ def prometheus_insert_percentage():  # pragma: no cover
 
 
 @tictrack.timed_function()
-def run_dg():  # pragma: no cover
-    logger.info(f"Starting data generator with {config} and model {model}")
+def run_dg():
+    logger.info(f"Starting data generator with {config} and model {config.model}")
 
     logger.info("Starting database writer subsystem")
-    if config.ingest_mode == 0:
+    if config.ingest_mode == IngestMode.CONSECUTIVE:
         logger.info("Using consecutive insert mode")
         adapter_thread = Thread(target=consecutive_insert, name="ConsecutiveInsert")
     else:
@@ -383,7 +384,7 @@ def run_dg():  # pragma: no cover
 
     logger.info("Starting metrics collector thread")
     prometheus_insert_percentage_thread = Thread(
-        target=prometheus_insert_percentage, name="prometheus_insert_percentage_thread"
+        target=prometheus_insert_percentage, name="PrometheusThread"
     )
     prometheus_insert_percentage_thread.start()
 
@@ -409,7 +410,7 @@ def run_dg():  # pragma: no cover
         logger.info("Waiting for database writer thread(s)")
         wait_for_thread(adapter_thread, insert_exceptions)
 
-        if config.prometheus_enabled:
+        if config.prometheus_enable:
             logger.info("Waiting for metrics collector thread")
             prometheus_insert_percentage_thread.join()
 
@@ -439,27 +440,32 @@ def wait_for_thread(thread: Thread, error_channel: Optional[Queue] = None):
             break
 
 
-def main():  # pragma: no cover
+def start(configuration: DataGeneratorConfig):
     global last_ts, model, config
 
-    setup_logging()
+    config = configuration
 
     # Load configuration an set everything up.
-    config = parse_arguments(config)
-
-    database_adapter = get_database_adapter_class(database=config.database)
-    valid_config = config.validate_config(adapter=database_adapter)
+    adapter = get_database_adapter()
+    logger.info(f"Using database adapter {adapter}")
+    valid_config = config.validate_config(adapter=adapter)
     if not valid_config:
         logger.error(f"Invalid configuration: {config.invalid_configs}")
         exit(-1)
 
-    logger.info(f"Loading model from {config.model_path}")
-    f = open(config.model_path, "r")
+    logger.info(f"Loading model from {config.model}")
+    f = open(config.model, "r")
     model = json.load(f)
 
-    if config.prometheus_enabled:
-        logger.info("Starting Prometheus HTTP server")
-        start_http_server(config.prometheus_port)
+    logger.info(f"Probing insert")
+    if not probe_insert():
+        raise Exception("Failure communicating with or preparing database")
+
+    if config.prometheus_enable:
+        logger.info(
+            f"Starting Prometheus HTTP server on {config.prometheus_host}:{config.prometheus_port}"
+        )
+        start_http_server(config.prometheus_port, addr=config.prometheus_host)
 
     data_batch_size = config.id_end - config.id_start + 1
     last_ts = config.ingest_ts
@@ -478,7 +484,3 @@ def main():  # pragma: no cover
     logger.info(
         f"Metrics per second: {data_batch_size * config.ingest_size * len(get_sub_element('metrics').keys()) / run}"
     )
-
-
-if __name__ == "__main__":  # pragma: no cover
-    main()

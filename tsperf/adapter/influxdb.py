@@ -25,7 +25,8 @@ from typing import Tuple
 from influxdb_client import Bucket, InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS, Point
 
-from tsperf.model.interface import DatabaseInterfaceBase
+from tsperf.adapter import AdapterManager
+from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
 from tsperf.util.tictrack import timed_function
 
 
@@ -101,3 +102,8 @@ class InfluxDbAdapter(DatabaseInterfaceBase):
         for key in self.model.keys():
             if key != "description":
                 return key
+
+
+AdapterManager.register(
+    interface=DatabaseInterfaceType.InfluxDB1, factory=InfluxDbAdapter
+)

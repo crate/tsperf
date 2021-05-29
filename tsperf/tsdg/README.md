@@ -87,7 +87,7 @@ data.
 
 #### PyPI package
 
-The *Time Series Data Generator* `tsdg` is part of the `tsperf` package and can be installed using `pip install tsperf`.
+The *Time Series Data Generator* `tsperf` package and can be installed using `pip install tsperf`.
 
 #### Docker image
 
@@ -103,8 +103,8 @@ For example use cases see [Example use cases](#example-use-cases)
 
 ### Usage
 
-+ Look at the default configuration of the Data Generator by executing `tsdg -h` in a terminal.
-+ Run the Data Generator with the desired configuration values by executing `tsdg` in a terminal.
++ Look at the default configuration of the Data Generator by executing `tsperf write --help` in a terminal.
++ Run the Data Generator with the desired configuration values by executing `tsperf write` in a terminal.
 
 To look at example configurations navigate to the [example folder](examples). Each environment variable can be
 overwritten by using the corresponding command line argument.

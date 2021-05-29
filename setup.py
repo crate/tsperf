@@ -20,6 +20,7 @@ requires = [
     "pgcopy==1.5.0",
     "pyodbc==4.0.30",
     "tqdm==4.61.0",
+    "cloup==0.8.2",
 ]
 
 test_requires = [
@@ -41,7 +42,7 @@ setuptools.setup(
     version=__version__,
     author="Crate.io",
     author_email="office@crate.at",
-    description="A tool to test performance of different timeseries databases",
+    description="A tool to test performance of different time-series databases",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/crate/tsperf",
@@ -70,8 +71,7 @@ setuptools.setup(
     ],
     entry_points={
         "console_scripts": [
-            "tsdg = tsperf.tsdg.core:main",
-            "tsqt = tsperf.tsqt.core:main",
+            "tsperf = tsperf.cli:main",
         ]
     },
     install_requires=requires,

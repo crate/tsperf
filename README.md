@@ -29,17 +29,19 @@ pytest -vvv tests
 docker run -it --rm --publish=4200:4200 --publish=5432:5432 crate/crate:4.5.1
 
 # Feed data into CrateDB running on localhost
-tsdg --model_path=examples/temperature.json --database=0
+tsperf write --model=examples/temperature.json --adapter=cratedb
 
 # Increase concurrency
-tsdg --model_path=examples/temperature.json --database=0 --num_threads=4
+tsperf write --model=examples/temperature.json --adapter=cratedb --concurrency=8
 
 # Feed data into CrateDB running on a remote host
-tsdg --model_path=examples/temperature.json --database=0 --host=cratedb.example.org:4200
+tsperf write --model=examples/temperature.json --adapter=cratedb --host=cratedb.example.org:4200
 
 # Feed data and expose metrics in Prometheus format
-tsdg --model_path=examples/temperature.json --database=0 --prometheus_enabled
+tsperf write --model=examples/temperature.json --adapter=cratedb --prometheus-enable=true
+tsperf write --model=examples/temperature.json --adapter=cratedb --prometheus-enable=true --prometheus-listen=0.0.0.0:8000
 
 # Probe responsiveness of database on the read path
-tsqt --database=0 --query="SELECT 1;"
+tsperf read --adapter=cratedb
+tsperf read --adapter=cratedb --query="SELECT * FROM foobar WHERE bazqux='testdrive';"
 ```

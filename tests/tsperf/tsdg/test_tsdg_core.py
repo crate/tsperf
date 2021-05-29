@@ -2,35 +2,30 @@ import time
 from queue import Empty
 from unittest import mock
 
+import pytest
+
 import tsperf
 from tsperf.model.interface import DatabaseInterfaceType
 from tsperf.tsdg import core as dg
 from tsperf.tsdg.config import DataGeneratorConfig
+from tsperf.tsdg.model import IngestMode
+
+
+@pytest.fixture(scope="function")
+def config():
+    config = DataGeneratorConfig(adapter=DatabaseInterfaceType.CrateDB)
+    return config
 
 
 @mock.patch("tsperf.adapter.AdapterManager.create", autospec=True)
-@mock.patch("tsperf.tsdg.core.TimescaleDbAdapter", autospec=True)
-@mock.patch("tsperf.tsdg.core.InfluxDbAdapter", autospec=True)
-@mock.patch("tsperf.tsdg.core.MongoDbAdapter", autospec=True)
-@mock.patch("tsperf.tsdg.core.MsSQLDbAdapter", autospec=True)
-@mock.patch("tsperf.tsdg.core.PostgresDbAdapter", autospec=True)
-@mock.patch("tsperf.tsdg.core.TimeStreamAdapter", autospec=True)
-def test_get_database_adapter(
-    mock_timestream,
-    mock_postgres,
-    mock_mssql,
-    mock_mongo,
-    mock_influx,
-    mock_timescale,
-    mock_crate,
-):
-    dg.config.database = 0
+def test_get_database_adapter_cratedb(mock_cratedb, config):
+    dg.config = config
     dg.get_database_adapter()
-    mock_crate.assert_called_once()
-    mock_crate.assert_called_with(
+    mock_cratedb.assert_called_once()
+    mock_cratedb.assert_called_with(
         interface=DatabaseInterfaceType.CrateDB,
         config=DataGeneratorConfig(
-            database=0,
+            adapter=DatabaseInterfaceType.CrateDB,
             host="localhost",
             port=None,
             username=None,
@@ -44,36 +39,27 @@ def test_get_database_adapter(
         model={},
     )
 
-    dg.config.database = 1
-    dg.get_database_adapter()
-    mock_timescale.assert_called_once()
 
-    dg.config.database = 2
+@pytest.mark.parametrize("adapter", list(DatabaseInterfaceType))
+@mock.patch("tsperf.adapter.AdapterManager.create", autospec=True)
+def test_get_database_adapter(factory_mock, adapter, config):
+    dg.config = config
+    dg.config.adapter = adapter
     dg.get_database_adapter()
-    mock_influx.assert_called_once()
-
-    dg.config.database = 3
-    dg.get_database_adapter()
-    mock_mongo.assert_called_once()
-
-    dg.config.database = 4
-    dg.get_database_adapter()
-    mock_postgres.assert_called_once()
-
-    dg.config.database = 5
-    dg.get_database_adapter()
-    mock_timestream.assert_called_once()
-
-    dg.config.database = 6
-    dg.get_database_adapter()
-    mock_mssql.assert_called_once()
-    dg.config.database = 7
-    db_writer = dg.get_database_adapter()
-    assert db_writer is None
+    factory_mock.assert_called_once()
+    factory_mock.assert_called_with(
+        interface=adapter,
+        config=DataGeneratorConfig(
+            adapter=adapter,
+            host="localhost",
+        ),
+        model={},
+    )
 
 
 @mock.patch("tsperf.tsdg.core.Edge", autospec=True, return_value=mock.MagicMock)
-def test_create_edges(mock_edge):
+def test_create_edges(mock_edge, config):
+    dg.config = config
     dg.config.id_start = 0
     dg.config.id_end = 0
     edges = dg.create_edges()
@@ -93,7 +79,7 @@ def test_get_sub_element():
 
 
 def test_get_next_value_ingest():
-    dg.config.ingest_mode = 1
+    dg.config.ingest_mode = IngestMode.FAST
 
     # no edges
     dg.get_next_value({})
@@ -182,11 +168,15 @@ def test_get_insert_values():
 
 @mock.patch("tsperf.tsdg.core.get_database_adapter", autospec=True)
 def test_insert_routine_auto_batch_mode(mock_get_database_adapter):
-    dg.stop_queue.put(True)  # we signal stop to not run indefinitely
-    dg.config.batch_size = 0
-    dg.config.ingest_mode = 1
-    dg.config.id_start = 0
-    dg.config.id_end = 0  # only a single edge
+    # Immediately signal stop to not run indefinitely.
+    dg.stop_queue.put(True)
+    dg.config = DataGeneratorConfig(
+        adapter=DatabaseInterfaceType.CrateDB,
+        ingest_mode=IngestMode.FAST,
+        batch_size=0,
+        id_start=0,
+        id_end=0,
+    )
     mock_db_writer = mock.MagicMock()
     mock_get_database_adapter.return_value = mock_db_writer
     # populate current values
@@ -199,8 +189,11 @@ def test_insert_routine_auto_batch_mode(mock_get_database_adapter):
 
 
 @mock.patch("tsperf.tsdg.core.get_database_adapter", autospec=True)
-def test_insert_routine_fixed_batch_mode(mock_get_database_adapter):
+def test_insert_routine_fixed_batch_mode(mock_get_database_adapter, config):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
+
+    dg.config = config
+
     dg.config.batch_size = 5
     dg.config.ingest_mode = 1
     dg.config.id_start = 0

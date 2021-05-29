@@ -26,7 +26,8 @@ import psycopg2.extras
 from datetime_truncate import truncate
 from pgcopy import CopyManager
 
-from tsperf.model.interface import DatabaseInterfaceBase
+from tsperf.adapter import AdapterManager
+from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
 from tsperf.util.tictrack import timed_function
 
 
@@ -146,3 +147,8 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         if "description" in tags:
             tags.remove("description")
         return tags[0] if top_level else tags[-1]
+
+
+AdapterManager.register(
+    interface=DatabaseInterfaceType.TimescaleDB, factory=TimescaleDbAdapter
+)

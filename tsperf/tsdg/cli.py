@@ -24,32 +24,6 @@ from tsperf.util.common import read_configuration
 TSDG_README_URL = "https://github.com/crate/tsperf/blob/main/tsdg/README.md"
 
 args_info = {
-    "database": {
-        "help": "Value which defines what database will be used: 0-CrateDB, 1-TimescaleDB, 2-InfluxDB, 3-MongoDB, "
-        "4-PostgreSQL, 5-Timestream, 6-MSSQL",
-        "choices": range(0, 7),
-        "type": int,
-    },
-    "id_start": {
-        "help": "The Data Generator will create `(id_end + 1) - id_start` edges. Must be smaller or equal to id_end.",
-        "type": int,
-    },
-    "id_end": {
-        "help": "The Data Generator will create `(id_end + 1) - id_start` edges. Must be bigger or equal to id_start.",
-        "type": int,
-    },
-    "ingest_mode": {
-        "help": "The ingest_mode argument turns on fast insert when set to True or switches to consecutive inserts "
-        "when set to False. For more information, please refer to the documentation."
-        f"{TSDG_README_URL}#ingest_mode)",
-        "choices": [0, 1],
-        "type": int,
-    },
-    "ingest_size": {
-        "help": "Number of values per edge to create (positive integer). "
-        "If set to 0, an infinite amount of values will be created.",
-        "type": int,
-    },
     "ingest_ts": {
         "help": "The start UNIX timestamp of the generated data. If not provided will be the timestamp when the data "
         "generator has been started.",
@@ -60,37 +34,9 @@ args_info = {
         "With `ingest_mode = False`, this is the actual time between inserts.",
         "type": float,
     },
-    "model_path": {
-        "help": "A relative or absolute path to a model in the json format (see the data generator documentation for "
-        "more details: "
-        f"{TSDG_README_URL}#data-generator-models)",
-        "type": str,
-    },
-    "batch_size": {
-        "help": "The batch size used when `ingest_mode = True` (positive integer). A value smaller or equal to 0 in "
-        "combination with `ingest_mode` turns on auto batch mode using the batch size automator library",
-        "type": int,
-    },
     "stat_delta": {
         "help": "Interval in seconds to emit statistic outputs to the log",
         "type": float,
-    },
-    "num_threads": {
-        "help": "The number of python-threads used for inserting values (positive integer). Recommendation: 1-4",
-        "type": int,
-    },
-    "prometheus_enabled": {
-        "help": "Whether to start the Prometheus HTTP server for exposing metrics",
-        "action": "store_true",
-    },
-    "prometheus_port": {
-        "help": "Port for publishing Prometheus metrics (1 to 65535)",
-        "type": int,
-    },
-    "host": {
-        "help": "Hostname according to the database client requirements. See documentation for further details:"
-        f"{TSDG_README_URL}#host",
-        "type": str,
     },
     "username": {
         "help": "User name of user used for authentication against the database. Used with CrateDB, TimescaleDB, "
@@ -125,20 +71,6 @@ args_info = {
             "year",
         ],
         "type": str,
-    },
-    "shards": {
-        "help": "Set the sharding of the CrateDB table (positive integer). See also: "
-        "https://crate.io/docs/crate/reference/en/latest/general/ddl/sharding.html",
-        "type": int,
-    },
-    "replicas": {
-        "help": "Set the number of replicas for CrateDB (positive integer). See also: "
-        "https://crate.io/docs/crate/reference/en/latest/general/ddl/replication.html",
-        "type": int,
-    },
-    "port": {
-        "help": "Defines the port number of the host where the DB is reachable (1 to 65535)",
-        "type": int,
     },
     "copy": {
         "help": "Used to toggle between pgcopy and psycopg2 library with TimescaleDB. When set to True pgcopy is used "

@@ -1,12 +1,18 @@
 import dataclasses
 import os
 
+from tsperf.model.interface import DatabaseInterfaceType
+from tsperf.tsdg.model import IngestMode
+
 
 @dataclasses.dataclass
 class DatabaseConnectionConfiguration:
 
     # The database interface type.
-    database: int = None
+    adapter: DatabaseInterfaceType
+
+    # The concurrency level.
+    concurrency: int = 2
 
     # Configuration variables common to multiple databases.
     host: str = None
@@ -18,15 +24,15 @@ class DatabaseConnectionConfiguration:
     partition: str = None
 
     # Configuration variables for CrateDB.
-    shards: int = None
-    replicas: int = None
+    shards: int = 4
+    replicas: int = 1
+
+    @classmethod
+    def create(cls, **options):
+        options = enrich_options(options)
+        return cls(**options)
 
     def __post_init__(self):
-        self.database = (
-            self.database is not None
-            and int(self.database)
-            or int(os.getenv("DATABASE", 0))
-        )
         self.host = self.host or os.getenv("HOST", "localhost")
         self.port = self.port or os.getenv("PORT", None)
         self.username = self.username or os.getenv("USERNAME", None)
@@ -35,10 +41,17 @@ class DatabaseConnectionConfiguration:
         self.table_name = self.table_name or os.getenv("TABLE_NAME", "")
         self.partition = self.partition or os.getenv("PARTITION", "week")
 
-        self.shards = (
-            self.shards is not None and int(self.shards) or int(os.getenv("SHARDS", 4))
-        )
-        if self.replicas is None:
-            self.replicas = int(os.getenv("REPLICAS", 1))
-        else:
-            self.replicas = int(self.replicas)
+    def validate(self):
+        if self.adapter is not None:
+            assert DatabaseInterfaceType(self.adapter)
+
+
+def enrich_options(kwargs):
+    if "adapter" in kwargs:
+        kwargs["adapter"] = DatabaseInterfaceType(kwargs["adapter"])
+    if "ingest_mode" in kwargs:
+        kwargs["ingest_mode"] = IngestMode(kwargs["ingest_mode"])
+    if "debug" in kwargs:
+        del kwargs["debug"]
+    kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    return kwargs

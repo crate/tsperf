@@ -35,9 +35,7 @@ def setup_logging(level=logging.INFO) -> None:
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-def read_configuration(
-    config: object, args_info: Dict, description: str
-):  # pragma: no cover
+def read_configuration(config: object, args_info: Dict, description: str):
 
     parser = argparse.ArgumentParser(
         description=description,

@@ -25,28 +25,36 @@ import time
 from argparse import Namespace
 from distutils.util import strtobool
 
-from tsperf.model.configuration import DatabaseConnectionConfiguration
+from tsperf.model.configuration import DatabaseConnectionConfiguration, enrich_options
+from tsperf.tsdg.model import IngestMode
 
 
 @dataclasses.dataclass
 class DataGeneratorConfig(DatabaseConnectionConfiguration):
+
+    # Describing how the TSDG behaves
+    model: str = None
+    id_start: int = 1
+    id_end: int = 500
+    ingest_mode: IngestMode = IngestMode.FAST
+    ingest_size: int = 1000
+    batch_size: int = -1
+
+    # Whether to expose metrics in Prometheus format.
+    prometheus_enable: bool = False
+    prometheus_listen: str = "localhost:8000"
+    prometheus_host: str = None
+    prometheus_port: int = None
+
     def __post_init__(self):
 
         super().__post_init__()
 
         # environment variables describing how the tsdg behaves
-        self.id_start = int(os.getenv("ID_START", 1))
-        self.id_end = int(os.getenv("ID_END", 500))
-        self.ingest_mode = strtobool(os.getenv("INGEST_MODE", "True"))
-        self.ingest_size = int(os.getenv("INGEST_SIZE", 1000))
         self.ingest_ts = float(os.getenv("INGEST_TS", time.time()))
         self.ingest_delta = float(os.getenv("INGEST_DELTA", 0.5))
-        self.model_path = os.getenv("MODEL_PATH", "")
-        self.batch_size = int(os.getenv("BATCH_SIZE", -1))
+        # self.batch_size = int(os.getenv("BATCH_SIZE", -1))
         self.stat_delta = int(os.getenv("STAT_DELTA", 30))
-        self.num_threads = int(os.getenv("NUM_THREADS", 4))
-        self.prometheus_enabled = strtobool(os.getenv("PROMETHEUS_ENABLED", "False"))
-        self.prometheus_port = int(os.getenv("PROMETHEUS_PORT", 8000))
 
         # environment variables to configure timescaledb
         self.copy = strtobool(os.getenv("TIMESCALE_COPY", "True"))
@@ -64,8 +72,11 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
         self.invalid_configs = []
 
     def validate_config(self, adapter=None) -> bool:  # noqa
-        if self.num_threads < 1:
-            self.invalid_configs.append(f"NUM_THREADS: {self.num_threads} < 1")
+
+        super().validate()
+
+        if self.concurrency < 1:
+            self.invalid_configs.append(f"CONCURRENCY: {self.concurrency} < 1")
         if self.id_start < 0:
             self.invalid_configs.append(f"ID_START: {self.id_start} < 0")
         if self.id_end < 0:
@@ -74,20 +85,19 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
             self.invalid_configs.append(
                 f"ID_START: {self.id_start} > ID_END: {self.id_end}"
             )
-        if self.ingest_mode not in [0, 1]:
-            self.invalid_configs.append(f"INGEST_MODE: {self.ingest_mode} not 0 or 1")
+        if not IngestMode(self.ingest_mode):
+            self.invalid_configs.append(
+                f"INGEST_MODE: {self.ingest_mode} not in {IngestMode}"
+            )
         if self.ingest_size < 0:
             self.invalid_configs.append(f"INGEST_SIZE: {self.ingest_size} < 0")
         if self.ingest_ts < 0:
             self.invalid_configs.append(f"INGEST_TS: {self.ingest_ts} < 0")
         if self.ingest_delta <= 0:
             self.invalid_configs.append(f"INGEST_DELTA: {self.ingest_delta} <= 0")
-        if not os.path.isfile(self.model_path):
-            self.invalid_configs.append(f"MODEL_PATH: {self.model_path} does not exist")
-        if self.database not in [0, 1, 2, 3, 4, 5, 6]:
-            self.invalid_configs.append(
-                f"DATABASE: {self.database} not 0, 1, 2, 3, 4, 5 or 6"
-            )
+        if not os.path.isfile(self.model):
+            self.invalid_configs.append(f"MODEL: {self.model} does not exist")
+
         if self.stat_delta <= 0:
             self.invalid_configs.append(f"STAT_DELTA: {self.stat_delta} <= 0")
         if self.partition.lower() not in [
@@ -114,10 +124,20 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
         if self.port is not None and int(self.port) <= 0:
             self.invalid_configs.append(f"PORT: {self.port} <= 0")
 
-        if self.prometheus_port < 1 or self.prometheus_port > 65535:
-            self.invalid_configs.append(
-                f"PROMETHEUS_PORT: {self.prometheus_port} not in valid port range"
-            )
+        if self.prometheus_enable:
+            if ":" in self.prometheus_listen:
+                host, port = self.prometheus_listen.split(":")
+            else:
+                host = "localhost"
+                port = self.prometheus_listen
+            port = int(port)
+            if port < 1 or port > 65535:
+                self.invalid_configs.append(
+                    f"PROMETHEUS_PORT: {port} not in valid port range"
+                )
+            else:
+                self.prometheus_host = host
+                self.prometheus_port = port
 
         return len(self.invalid_configs) == 0
 

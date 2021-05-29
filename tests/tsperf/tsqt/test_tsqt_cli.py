@@ -1,14 +1,31 @@
-from tsperf.tsqt.cli import args_info
+import pytest
+from click.testing import CliRunner
+
+import tsperf
+from tsperf.model.interface import DatabaseInterfaceType
 from tsperf.tsqt.config import QueryTimerConfig
 
 
-def test_each_config_has_arg():
-    config = QueryTimerConfig()
-    config_elements = vars(config)
-    config_elements.pop("invalid_configs")
-    config_elements.pop("partition")
-    config_elements.pop("table_name")
-    config_elements.pop("replicas")
-    config_elements.pop("shards")
-    arg_elements = list(args_info)
-    assert sorted(arg_elements) == sorted(list(config_elements))
+@pytest.mark.skip
+def test_read_cli():
+    runner = CliRunner()
+    result = runner.invoke(
+        tsperf.cli.read,
+        [
+            "--adapter=cratedb",
+        ],
+    )
+    assert result.exit_code == 0
+    # assert result.output == 'Hello Peter!\n'
+
+
+def test_read_cli_dryrun():
+    ctx = tsperf.cli.read.make_context(
+        info_name=None,
+        args=[
+            "--adapter=cratedb",
+        ],
+    )
+    config = QueryTimerConfig.create(**ctx.params)
+
+    assert config.adapter == DatabaseInterfaceType.CrateDB

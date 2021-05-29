@@ -30,6 +30,7 @@ from threading import Thread
 import numpy
 from blessed import Terminal
 
+from tsperf.adapter import AdapterManager
 from tsperf.adapter.cratedb import CrateDbAdapter
 from tsperf.adapter.influxdb import InfluxDbAdapter
 
@@ -39,10 +40,7 @@ from tsperf.adapter.postgresql import PostgresDbAdapter
 from tsperf.adapter.timescaledb import TimescaleDbAdapter
 from tsperf.adapter.timestream import TimeStreamAdapter
 from tsperf.model.interface import DatabaseInterfaceBase
-from tsperf.tsdg.core import get_database_adapter_class
-from tsperf.tsqt.cli import parse_arguments
 from tsperf.tsqt.config import QueryTimerConfig
-from tsperf.util.common import setup_logging
 from tsperf.util.tictrack import tic_toc, timed_function
 
 model = {"value": "none"}
@@ -51,14 +49,21 @@ success = 0
 failure = 0
 queries_done = Queue(1)
 
-config = QueryTimerConfig()
+config: QueryTimerConfig = None
 
 terminal = Terminal()
 
 logger = logging.getLogger(__name__)
 
 
-def get_database_adapter() -> DatabaseInterfaceBase:  # noqa
+def get_database_adapter() -> DatabaseInterfaceBase:
+    adapter = AdapterManager.create(
+        interface=config.adapter, config=config, model=model
+    )
+    return adapter
+
+
+def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
     if config.database == 0:
         adapter = CrateDbAdapter(config=config, model=model)
     elif config.database == 1:
@@ -120,7 +125,7 @@ def percentage_to_rgb(percentage):
 @timed_function()
 def print_progressbar(
     iteration, total, prefix="", suffix="", decimals=1, length=100, fill="█"
-):  # pragma: no cover
+):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -169,6 +174,16 @@ def print_progressbar(
         logger.info(f"\n{report}")
 
 
+def probe_query():
+    adapter = get_database_adapter()
+    try:
+        adapter.cursor.execute(config.query)
+        return True
+    except Exception:
+        logger.exception(f"Failure executing query '{config.query}'")
+        return False
+
+
 def start_query_run():
     global success, failure
     adapter = get_database_adapter()
@@ -181,7 +196,7 @@ def start_query_run():
             logger.exception(f"Failure executing query '{config.query}'")
 
 
-def print_progress_thread():  # pragma: no cover
+def print_progress_thread():
     while queries_done.empty():
         time.sleep(config.refresh_rate)
         total_queries = success + failure
@@ -195,7 +210,7 @@ def print_progress_thread():  # pragma: no cover
         )
 
 
-def run_qt():  # pragma: no cover
+def run_qt():
 
     logger.info(f"Starting query timer with {config} and model {model}")
     global start_time
@@ -222,25 +237,23 @@ def run_qt():  # pragma: no cover
     progress_thread.join()
 
 
-def main():  # pragma: no cover
+def start(configuration: QueryTimerConfig):
     global config
-
-    # Clear screen.
-    print(terminal.home + terminal.clear)
-
-    setup_logging()
+    config = configuration
 
     # Load configuration an set everything up.
-    config = parse_arguments(config)
-
-    database_adapter = get_database_adapter_class(database=config.database)
-    valid_config = config.validate_config(adapter=database_adapter)
+    adapter = get_database_adapter()
+    logger.info(f"Using database adapter {adapter}")
+    valid_config = config.validate_config(adapter=adapter)
 
     if not valid_config:
         logger.error(f"Invalid configuration: {config.invalid_configs}")
         exit(-1)
 
-    logger.info(f"Invoking query »{config.query}«")
+    logger.info(f"Probing query »{config.query}«")
+    if not probe_query():
+        raise click.ClickException(message=f"Query »{config.query}« considered invalid")
+
     logger.info(
         f"Running {config.iterations} iterations with concurrency {config.concurrency}"
     )
@@ -268,7 +281,3 @@ def main():  # pragma: no cover
             report = f.getvalue()
             logger.info("\n")
             logger.info(f"Statistics:\n{report}")
-
-
-if __name__ == "__main__":  # pragma: no cover
-    main()

@@ -3,43 +3,31 @@ from unittest import mock
 import pytest
 
 import tsperf.tsqt.core as qt
+from tsperf.model.interface import DatabaseInterfaceType
+from tsperf.tsqt.config import QueryTimerConfig
 
 
-@mock.patch("tsperf.tsqt.core.CrateDbAdapter", autospec=True)
-@mock.patch("tsperf.tsqt.core.TimescaleDbAdapter", autospec=True)
-@mock.patch("tsperf.tsqt.core.InfluxDbAdapter", autospec=True)
-@mock.patch("tsperf.tsqt.core.MsSQLDbAdapter", autospec=True)
-@mock.patch("tsperf.tsqt.core.PostgresDbAdapter", autospec=True)
-@mock.patch("tsperf.tsqt.core.TimeStreamAdapter", autospec=True)
-def test_get_database_adapter(
-    mock_timestream, mock_postgres, mock_mssql, mock_influx, mock_timescale, mock_crate
-):
-    qt.config.database = 0
-    qt.get_database_adapter()
-    mock_crate.assert_called_once()
-    qt.config.database = 1
-    qt.get_database_adapter()
-    mock_timescale.assert_called_once()
-    qt.config.database = 2
-    qt.get_database_adapter()
-    mock_influx.assert_called_once()
-    qt.config.database = 3
-    with pytest.raises(ValueError):
-        qt.get_database_adapter()
-    qt.config.database = 4
-    qt.get_database_adapter()
-    mock_postgres.assert_called_once()
-    qt.config.database = 5
-    qt.get_database_adapter()
-    mock_timestream.assert_called_once()
-    qt.config.database = 6
-    qt.get_database_adapter()
-    mock_mssql.assert_called_once()
+@pytest.fixture(scope="function")
+def config():
+    config = QueryTimerConfig(adapter=DatabaseInterfaceType.CrateDB)
+    return config
 
-    with pytest.raises(ValueError):
-        qt.config.database = 7
-        db_writer = qt.get_database_adapter()
-        assert db_writer is None
+
+@pytest.mark.parametrize("adapter", list(DatabaseInterfaceType))
+@mock.patch("tsperf.adapter.AdapterManager.create", autospec=True)
+def test_get_database_adapter(factory_mock, adapter, config):
+    qt.config = config
+    qt.config.adapter = adapter
+    qt.get_database_adapter()
+    factory_mock.assert_called_once()
+    factory_mock.assert_called_with(
+        interface=adapter,
+        config=QueryTimerConfig(
+            adapter=adapter,
+            host="localhost",
+        ),
+        model={"value": "none"},
+    )
 
 
 def test_percentage_to_rgb():

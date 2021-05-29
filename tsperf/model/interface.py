@@ -22,6 +22,17 @@ from abc import abstractmethod
 from enum import Enum
 
 
+class DatabaseInterfaceType(Enum):
+    CrateDB = "cratedb"
+    TimescaleDB = "timescaledb"
+    InfluxDB1 = "influxdb1"
+    InfluxDB2 = "influxdb2"
+    MongoDB = "mongodb"
+    PostgreSQL = "postgresql"
+    TimeStream = "timestream"
+    MsSQL = "mssql"
+
+
 class DatabaseInterfaceBase:
 
     default_port = None
@@ -64,14 +75,3 @@ class DatabaseInterfaceBase:
             if key != "description":
                 columns[value["key"]["value"]] = value["type"]["value"]
         return columns
-
-
-class DatabaseInterfaceType(Enum):
-    CrateDB = "cratedb"
-    TimescaleDB = "timescaledb"
-    InfluxDB1 = "influxdb1"
-    InfluxDB2 = "influxdb2"
-    MongoDB = "mongodb"
-    PostgreSQL = "postgresql"
-    TimeStream = "timestream"
-    MsSQL = "mssql"

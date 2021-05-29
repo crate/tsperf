@@ -18,7 +18,7 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
+import dataclasses
 import os
 import shutil
 from argparse import Namespace
@@ -26,17 +26,26 @@ from argparse import Namespace
 from tsperf.model.configuration import DatabaseConnectionConfiguration
 
 
+@dataclasses.dataclass
 class QueryTimerConfig(DatabaseConnectionConfiguration):
-    def __init__(self):
 
-        self.__post_init__()
+    # The query to invoke against the database.
+    query: str = None
+
+    # The concurrency level.
+    concurrency: int = 10
+
+    # How many times each thread executes the query.
+    iterations: int = 100
+
+    def __post_init__(self):
+
+        super().__post_init__()
 
         # environment variables describing how the tsqt behaves
-        self.concurrency = int(os.getenv("CONCURRENCY", 10))
-        self.iterations = int(os.getenv("ITERATIONS", 100))
+        # self.concurrency = int(os.getenv("CONCURRENCY", 10))
         self.quantiles = os.getenv("QUANTILES", "50,60,75,90,99").split(",")
         self.refresh_rate = float(os.getenv("REFRESH_RATE", 0.1))
-        self.query = os.getenv("QUERY", None)
 
         # environment variables to connect to influxdb
         self.token = os.getenv("TOKEN", "")
@@ -50,10 +59,8 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
         self.invalid_configs = []
 
     def validate_config(self, adapter=None) -> bool:  # noqa
-        if self.database not in [0, 1, 2, 3, 4, 5, 6]:
-            self.invalid_configs.append(
-                f"DATABASE: {self.database} not 0, 1, 2, 3, 4, 5 or 6"
-            )
+
+        super().validate()
 
         if self.query is None and adapter is not None:
             self.query = adapter.default_select_query

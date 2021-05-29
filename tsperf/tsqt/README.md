@@ -12,13 +12,13 @@ The Query Timer is a tool to run queries against different databases and determi
 
 #### Pip install
 
-The *Time Series Query Timer* `tsqt` is part of the `tsperf` package and can be installed using `pip install tsperf`.
+The *Time Series Query Timer* is part of the `tsperf` package and can be installed using `pip install tsperf`.
 
-By calling `tsqt -h` the possible configurations are listed. For further details see
+By calling `tsperf read --help` the possible configurations are listed. For further details see
 [Query Timer Configuration](#query-timer-configuration). All configurations can be done with either command line
 arguments or environment variables but when both are set then command line arguments will be used.
 
-When calling `tsqt` with the desired arguments the Query Timer outputs live updated statistics on the query execution.
+When calling `tsperf read` with the desired arguments the Query Timer outputs live updated statistics on the query execution.
 This includes:
 
 + concurrency: how many threads are running, defined by [CONCURRENCY](#concurrency)

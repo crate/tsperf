@@ -5,6 +5,7 @@ from crate import client
 from tests.tsperf.tsdg.test_models import test_model, test_model2
 from tsperf.adapter.cratedb import CrateDbAdapter
 from tsperf.model.configuration import DatabaseConnectionConfiguration
+from tsperf.model.interface import DatabaseInterfaceType
 
 
 @mock.patch.object(client, "connect", autospec=True)
@@ -28,7 +29,10 @@ def test_close_connection(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
     config = DatabaseConnectionConfiguration(
-        host="localhost:4200", username="crate", password="password"
+        adapter=DatabaseInterfaceType.CrateDB,
+        host="localhost:4200",
+        username="crate",
+        password="password",
     )
     db_writer = CrateDbAdapter(config=config, model=test_model)
     mock_connect.assert_called_with(
@@ -67,7 +71,10 @@ def test_prepare_database1(mock_connect):
     conn.cursor.return_value = cursor
 
     config = DatabaseConnectionConfiguration(
-        host="localhost:4200", username="crate2", password="password2"
+        adapter=DatabaseInterfaceType.CrateDB,
+        host="localhost:4200",
+        username="crate2",
+        password="password2",
     )
     db_writer = CrateDbAdapter(config=config, model=test_model)
 
@@ -114,6 +121,7 @@ def test_prepare_database2(mock_connect):
     conn.cursor.return_value = cursor
 
     config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.CrateDB,
         host="localhost:4200",
         username="crate3",
         password="password3",
@@ -160,7 +168,10 @@ def test_insert_stmt(mock_connect):
     conn.cursor.return_value = cursor
 
     config = DatabaseConnectionConfiguration(
-        host="localhost:4200", username="crate2", password="password2"
+        adapter=DatabaseInterfaceType.CrateDB,
+        host="localhost:4200",
+        username="crate2",
+        password="password2",
     )
     db_writer = CrateDbAdapter(config=config, model=test_model)
 
@@ -205,7 +216,10 @@ def test_execute_query(mock_connect):
     conn.cursor.return_value = cursor
 
     config = DatabaseConnectionConfiguration(
-        host="localhost:4200", username="crate2", password="password2"
+        adapter=DatabaseInterfaceType.CrateDB,
+        host="localhost:4200",
+        username="crate2",
+        password="password2",
     )
     db_writer = CrateDbAdapter(config=config, model=test_model)
 

@@ -52,6 +52,6 @@ show_missing = true
 fail_under = 0
 omit = [
     "tests/*",
-    "tsperf/tsqt/cli.py",
     "tsperf/write/cli.py",
+    "tsperf/read/cli.py",
 ]

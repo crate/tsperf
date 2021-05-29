@@ -25,10 +25,10 @@ import click
 import cloup
 from blessed import Terminal
 
-import tsperf.tsqt.core
+import tsperf.read.core
 import tsperf.write.core
 from tsperf.model.interface import DatabaseInterfaceType
-from tsperf.tsqt.config import QueryTimerConfig
+from tsperf.read.config import QueryTimerConfig
 from tsperf.util.common import setup_logging
 from tsperf.write.config import DataGeneratorConfig
 from tsperf.write.model import IngestMode
@@ -216,4 +216,4 @@ def read(**kwargs):
     adapter = kwargs["adapter"]
     logger.info(f"Invoking read workload on time-series database »{adapter}«")
     config = QueryTimerConfig.create(**kwargs)
-    tsperf.tsqt.core.start(config)
+    tsperf.read.core.start(config)

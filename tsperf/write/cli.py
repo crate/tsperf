@@ -21,7 +21,7 @@
 from tsperf.util.common import read_configuration
 from tsperf.write.config import DataGeneratorConfig
 
-TSDG_README_URL = "https://github.com/crate/tsperf/blob/main/tsdg/README.md"
+TSPERF_WRITE_README_URL = "https://github.com/crate/tsperf/blob/main/write/README.md"
 
 args_info = {
     "ingest_ts": {
@@ -51,7 +51,7 @@ args_info = {
     "db_name": {
         "help": "Name of the database where table will be created. Used with InfluxDB, TimescaleDB, MongoDB, "
         "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
-        f"{TSDG_README_URL}#db-name",
+        f"{TSPERF_WRITE_README_URL}#db-name",
         "type": str,
     },
     "table_name": {

@@ -19,7 +19,7 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 from tsperf.util.common import read_configuration
-from tsperf.write.cli import TSDG_README_URL
+from tsperf.write.cli import TSPERF_WRITE_README_URL
 
 from .config import QueryTimerConfig
 
@@ -37,7 +37,7 @@ args_info = {
     "db_name": {
         "help": "Name of the database where query will be executed. Used with InfluxDB, TimescaleDB, MongoDB, "
         "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
-        f"{TSDG_README_URL}#db_name",
+        f"{TSPERF_WRITE_README_URL}#db_name",
         "type": str,
     },
     "token": {

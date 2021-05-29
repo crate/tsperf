@@ -42,7 +42,7 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
 
         super().__post_init__()
 
-        # environment variables describing how the tsqt behaves
+        # environment variables describing how the read behaves
         # self.concurrency = int(os.getenv("CONCURRENCY", 10))
         self.quantiles = os.getenv("QUANTILES", "50,60,75,90,99").split(",")
         self.refresh_rate = float(os.getenv("REFRESH_RATE", 0.1))

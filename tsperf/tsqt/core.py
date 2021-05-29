@@ -157,7 +157,7 @@ def print_progressbar(
                 f"{suffix} {round(duration, 2)}s"
             )
             print(
-                f"time left: {round(((duration / float(percent)) * 100) - duration, 2)}s                                "
+                f"time left: {round(((duration / float(percent)) * 100) - duration, 2)}s                              "
             )
             if len(values) > 1:
                 print(
@@ -252,7 +252,7 @@ def start(configuration: QueryTimerConfig):
 
     logger.info(f"Probing query »{config.query}«")
     if not probe_query():
-        raise click.ClickException(message=f"Query »{config.query}« considered invalid")
+        raise RuntimeError(f"Query »{config.query}« considered invalid")
 
     logger.info(
         f"Running {config.iterations} iterations with concurrency {config.concurrency}"

@@ -3,7 +3,7 @@
         "tags": {
             "plant": 50,
             "line": 5,
-            "edge": "id"
+            "machine": "id"
         },
         "fields": {
             "voltage": {

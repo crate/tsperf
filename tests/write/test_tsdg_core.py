@@ -57,14 +57,14 @@ def test_get_database_adapter(factory_mock, adapter, config):
     )
 
 
-@mock.patch("tsperf.write.core.Edge", autospec=True, return_value=mock.MagicMock)
-def test_create_edges(mock_edge, config):
+@mock.patch("tsperf.write.core.Channel", autospec=True, return_value=mock.MagicMock)
+def test_create_channels(mock_channel, config):
     dg.config = config
     dg.config.id_start = 0
     dg.config.id_end = 0
-    edges = dg.create_edges()
-    assert len(edges) == 1
-    assert 0 in list(edges.keys())
+    channels = dg.create_channels()
+    assert len(channels) == 1
+    assert 0 in list(channels.keys())
 
 
 def test_get_sub_element():
@@ -81,14 +81,14 @@ def test_get_sub_element():
 def test_get_next_value_ingest():
     dg.config.ingest_mode = IngestMode.FAST
 
-    # no edges
+    # no channels
     dg.get_next_value({})
     assert dg.current_values_queue.empty()
 
     # ingest includes timestamp
-    edge = mock.MagicMock()
-    edge.calculate_next_value.return_value = 1
-    dg.get_next_value({"0": edge})
+    channel = mock.MagicMock()
+    channel.calculate_next_value.return_value = 1
+    dg.get_next_value({"0": channel})
     assert not dg.current_values_queue.empty()
     values = dg.current_values_queue.get()
     assert "timestamps" in values
@@ -99,14 +99,14 @@ def test_get_next_value_ingest():
 def test_get_next_value_continuous():
     dg.config.ingest_mode = 0
 
-    # no edges
+    # no channels
     dg.get_next_value({})
     assert dg.current_values_queue.empty()
 
     # continuous does not include timestamp
-    edge = mock.MagicMock()
-    edge.calculate_next_value.return_value = 1
-    dg.get_next_value({"0": edge})
+    channel = mock.MagicMock()
+    channel.calculate_next_value.return_value = 1
+    dg.get_next_value({"0": channel})
     assert not dg.current_values_queue.empty()
     values = dg.current_values_queue.get()
     assert "timestamps" not in values
@@ -197,7 +197,7 @@ def test_insert_routine_fixed_batch_mode(mock_get_database_adapter, config):
     dg.config.batch_size = 5
     dg.config.ingest_mode = 1
     dg.config.id_start = 0
-    dg.config.id_end = 0  # only a single edge
+    dg.config.id_end = 0  # only a single channel
     mock_db_writer = mock.MagicMock()
     mock_get_database_adapter.return_value = mock_db_writer
     # populate current values
@@ -219,7 +219,7 @@ def test_insert_routine_empty_batch(
     dg.config.batch_size = 5
     dg.config.ingest_mode = 1
     dg.config.id_start = 0
-    dg.config.id_end = 0  # only a single edge
+    dg.config.id_end = 0  # only a single channel
     mock_db_writer = mock.MagicMock()
     mock_get_database_adapter.return_value = mock_db_writer
     dg.insert_routine()
@@ -238,7 +238,7 @@ def test_consecutive_insert_queue_empty(
     mock_current_values_queue.get_nowait.side_effect = Empty()
     dg.config.ingest_mode = 0
     dg.config.id_start = 0
-    dg.config.id_end = 0  # only a single edge
+    dg.config.id_end = 0  # only a single channel
     mock_db_writer = mock.MagicMock()
     mock_get_database_adapter.return_value = mock_db_writer
     dg.consecutive_insert()
@@ -253,7 +253,7 @@ def test_consecutive_insert(mock_get_database_adapter):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
     dg.config.ingest_mode = 0
     dg.config.id_start = 0
-    dg.config.id_end = 0  # only a single edge
+    dg.config.id_end = 0  # only a single channel
     mock_db_writer = mock.MagicMock()
     mock_get_database_adapter.return_value = mock_db_writer
     # populate current values

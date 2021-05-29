@@ -65,8 +65,8 @@ Data Generator can be setup and the functionality as well as explain different e
   * [Batch-Size-Automator](#batch-size-automator)
   * [Prometheus Metrics](#prometheus-metrics)
   * [Example Use Cases](#example-use-cases)
-    + [Single Type of Edge](#single-type-of-edge)
-    + [Multiple Types of Edges](#multiple-types-of-edges)
+    + [Single channel](#single-channel)
+    + [Multiple channels](#multiple-channels)
   * [Alternative data generators](#alternative-data-generators)
     + [Why use this data generator over the alternatives?](#why-use-this-data-generator-over-the-alternatives)
     + [cr8 + mkjson](#cr8--mkjson)
@@ -423,7 +423,7 @@ Value: A positive number. Must be smaller than [ID_END](#id_end).
 
 Default: 1
 
-The Data Generator will create `(ID_END + 1) - ID_START` edges.
+The Data Generator will create `(ID_END + 1) - ID_START` channels.
 
 #### ID_END
 
@@ -433,7 +433,7 @@ Value: A positive number. Must be greater than [ID_START](#id_start).
 
 Default: 500
 
-The Data Generator will create `(ID_END + 1) - ID_START` edges.
+The Data Generator will create `(ID_END + 1) - ID_START` channels.
 
 #### INGEST_MODE
 
@@ -445,10 +445,10 @@ Default: True
 
 ##### INGEST_MODE False
 
-When `INGEST_MODE` is set to `False` the Data Generator goes into "steady load"-mode. This means for all edges
+When `INGEST_MODE` is set to `False` the Data Generator goes into "steady load"-mode. This means for all channels
 controlled by the Data Generator an insert is performed each [INGEST_DELTA](#ingest_delta) seconds.
 
-**Note: If too many edges are controlled by one Data Generator instance so an insert cannot be performed in the
+**Note: If too many channels are controlled by one Data Generator instance so an insert cannot be performed in the
 timeframe set by INGEST_DELTA it is advised to split half the IDs to a separate Data Generator instance.
 For example, one instance uses `ID_START=1, ID_END=500` and the other `ID_START=501, ID_END=1000`**.
 
@@ -480,7 +480,7 @@ Values: A positive number
 
 Default: 1000
 
-`INGEST_SIZE` defines how many values for each edge will be created. When setting `INGEST_SIZE` to `0` an endless
+`INGEST_SIZE` defines how many values for each channel will be created. When setting `INGEST_SIZE` to `0` an endless
 amount of values is created until the Data Generator is terminated.
 
 Example:
@@ -489,9 +489,9 @@ Example:
 + ID_END: 500
 + INGEST_SIZE: 2000
 
-We have 500 edges and for each edge 2000 values are generated, therefore we will have 1.000.000 values in total.
+We have 500 channels and for each channel 2000 values are generated, therefore we will have 1.000.000 values in total.
 
-**Note: a value contains all the information for a single edge, including the defined `tags` and `fields`. See
+**Note: a value contains all the information for a single channel, including the defined `tags` and `fields`. See
 [Data Generator Schemas](#data-generator-schemas) for more information about tags and fields.**
 
 #### INGEST_TS
@@ -879,10 +879,12 @@ This then uses the values in the array to setup the tags.
 
 **Use Case:**
 
-+ We want to schema a certain edge in **50 different plants**
+We want to describe channels for:
+
++ We have **50 plants**
 + Each plant contains of **5 lines**
-+ Each line consists of **10 edges**
-+ Each edge has **5 different fields**:
++ Each line consists of **10 machines**
++ Each machine has **5 different sensors**:
     + voltage
     + current
     + temperature
@@ -891,7 +893,7 @@ This then uses the values in the array to setup the tags.
 
 **Solution:**
 
-The first thing we need to identify how many edges we have in total: `50 plants * 5 lines * 10 edges = 2500 edges total`.
+The first thing we need to identify how many channels we have in total: `50 plants * 5 lines * 10 machines = 2500 channels total`.
 Now we know that we have to use 2500 IDs so we set `ID_START=1` and `ID_END=2500`. Then we create our schema:
 
 ```JSON
@@ -900,7 +902,7 @@ Now we know that we have to use 2500 IDs so we set `ID_START=1` and `ID_END=2500
         "tags": {
             "plant": 50,
             "line": 5,
-            "edge": "id"
+            "machine": "id"
         },
         "fields": {
             "voltage": {"..."},
@@ -936,7 +938,7 @@ associated with the key under the `fields` object (see [here](#structure)). So f
         "tags": {
             "plant": 50,
             "line": 5,
-            "edge": "id"
+            "machine": "id"
         },
         "fields": {
             "voltage": {"..."},
@@ -1062,7 +1064,7 @@ This chapter gives an overview over the available Prometheus metrics and what th
 
 This chapter gives examples on how the Data Generator can be used. Files for these examples can be found [here](../../examples)
 
-### Single Type of Edge
+### Single channel
 
 We want to simulate two factories each with ten lines and each line with five sensors. The sensor measures three readings:
 + speed (float) in m/s
@@ -1166,7 +1168,7 @@ To run this example follow the following steps:
 
 You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the raw data of the Data Generator.
 
-### Multiple Types of Edges
+### Multiple channels
 
 Note the provided examples for this use-case are supposed to run with CrateDB. To run it with other Databases changes
 according to the documentation have to be made. This use-case is not possible to run with TimescaleDB as it uses a fixed
@@ -1302,4 +1304,9 @@ The Data Generator has the following advantages compared to tsbs (when used as d
 
 ## Glossary
 
-EDGE: A thing that collects and reports measured values.
+- Sensor: A "sensor" yields a single reading/value.
+- Channel: A "channel" is a container for measurements of multiple sensors.
+
+- Plant:
+- Line:
+- Machine: 

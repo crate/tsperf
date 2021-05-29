@@ -1,4 +1,4 @@
-# example docker-compose when inserting 1000 values for 1000 edges into MongoDB using the temperature schema
+# example docker-compose when inserting 1000 values for 1000 channels into MongoDB using the temperature schema
 # prometheus metrics for ID 1 - 500 on port 8000, for ID 501 - 1000 on port 8001
 # assuming MongoDB runs on localhost
 # Username and Password have to be inserted before running

@@ -42,8 +42,7 @@ def test_config_default():
 def mkconfig(*more_args):
     ctx = tsperf.cli.write.make_context(
         info_name=None,
-        args=["--schema=examples/temperature.json", "--adapter=cratedb"]
-        + list(more_args),
+        args=["--schema=foobar.json", "--adapter=cratedb"] + list(more_args),
     )
     config = DataGeneratorConfig.create(**ctx.params)
     return config
@@ -301,16 +300,6 @@ def test_validate_ingest_delta_invalid(mock_isfile):
     assert not config.validate_config()
     assert len(config.invalid_configs) == 1
     assert "INGEST_DELTA" in config.invalid_configs[0]
-
-
-@mock.patch("os.path.isfile")
-def test_validate_schema_path_invalid(mock_isfile):
-    mock_isfile.return_value = False
-    config = mkconfig()
-    assert not config.validate_config()
-    assert len(config.invalid_configs) == 1
-    assert "SCHEMA" in config.invalid_configs[0]
-    assert "does not exist" in config.invalid_configs[0]
 
 
 @mock.patch("os.path.isfile")

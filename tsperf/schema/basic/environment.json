@@ -1,6 +1,6 @@
 {
     "description": "this json file contains a tables and it's structure and how the values in this structure are calculated. The key represents the table name (in case the database uses tables)",
-    "temperature": {
+    "environment": {
         "tags": {
             "description": "describes the database structure, tags are indexed columns for most dbs containing metadata/location information about the channel but not containing measured values.",
             "plant": 100,
@@ -49,21 +49,6 @@
                 "error_length": {
                     "value": 1.08,
                     "description": "the average consecutive values that are outside the stdev"
-                }
-            },
-            "button": {
-                "description": "indicating a pressed button",
-                "key": {
-                    "description": "key used in the database to store this measurement",
-                    "value": "button_press"
-                },
-                "type": {
-                    "description": "some databases (e.g. timescaleDB) need a column type because they don't have a schema less approach, calculation also differs for different types",
-                    "value": "BOOL"
-                },
-                "true_ratio": {
-                    "description": "how high is the change of this boolean to be true, e.g. 0,001 means it is on average true for one in a thousand values, or 1 means it's true every time",
-                    "value": 0.001
                 }
             }
         }

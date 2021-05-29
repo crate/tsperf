@@ -53,10 +53,6 @@ spec:
           limits:
             cpu: "4000m"
             memory: "8196Mi"
-        volumeMounts:
-        - name: datamodel
-          mountPath: "/temperature.json"
-          subPath: temperature.json
         env:
         - name: ID_START
           value: "{{ ID_START }}"
@@ -68,8 +64,8 @@ spec:
           value: "1"
         - name: INGEST_SIZE
           value: "2400000"
-        - name: MODEL_PATH
-          value: "/temperature.json"
+        - name: SCHEMA
+          value: "tsperf.schema.basic:environment.json"
         - name: INGEST_DELTA
           value: "0.5"
         - name: SHARDS
@@ -85,10 +81,5 @@ spec:
               name: datagenerator
               key: crate_password
       restartPolicy: Never
-      volumes:
-      - name: datamodel
-        configMap:
-          name: datamodel
-
 ```
 *) secrets, configmap **NOT** shown here.

@@ -1,5 +1,6 @@
 version: "2.3"
 services:
+
   datagen:
     image: data_gen
     ports:
@@ -13,7 +14,5 @@ services:
       INGEST_MODE: 0
       INGEST_SIZE: 720
       INGEST_DELTA: 5
-      MODEL_PATH: "/example_model.json"
-      DATABASE: 0
-    volumes:
-      - ./example_model.json:/example_model.json
+      SCHEMA: "tsperf.schema.factory.simple:machine.json"
+      ADAPTER: cratedb

@@ -95,8 +95,6 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
             self.invalid_configs.append(f"INGEST_TS: {self.ingest_ts} < 0")
         if self.ingest_delta <= 0:
             self.invalid_configs.append(f"INGEST_DELTA: {self.ingest_delta} <= 0")
-        if not os.path.isfile(self.schema):
-            self.invalid_configs.append(f"SCHEMA: {self.schema} does not exist")
 
         if self.stat_delta <= 0:
             self.invalid_configs.append(f"STAT_DELTA: {self.stat_delta} <= 0")

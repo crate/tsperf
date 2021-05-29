@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 from queue import Empty
 from unittest import mock
 
@@ -8,6 +9,7 @@ import tsperf
 from tsperf.model.interface import DatabaseInterfaceType
 from tsperf.write import core as dg
 from tsperf.write.config import DataGeneratorConfig
+from tsperf.write.core import load_schema
 from tsperf.write.model import IngestMode
 
 
@@ -273,3 +275,41 @@ def test_stop_process():
     dg.stop_queue.put(1)
     assert dg.stop_process()
     dg.stop_queue.get()  # resetting the stop queue
+
+
+def test_load_schema_from_file_valid():
+    import pkg_resources
+
+    schema_location = pkg_resources.resource_filename(
+        "tsperf.schema.basic", "demo.json"
+    )
+    schema = load_schema(schema_location)
+    assert schema["demo"]
+    assert "tags" in schema["demo"]
+    assert "fields" in schema["demo"]
+
+
+def test_load_schema_from_file_invalid():
+    schema_location = Path("foobar") / "bazqux.json"
+    with pytest.raises(FileNotFoundError):
+        load_schema(schema_location)
+
+
+def test_load_schema_from_module_valid():
+    schema_location = "tsperf.schema.basic:demo.json"
+    schema = load_schema(schema_location)
+    assert schema["demo"]
+    assert "tags" in schema["demo"]
+    assert "fields" in schema["demo"]
+
+
+def test_load_schema_from_module_invalid_unknown_file():
+    schema_location = "tsperf.schema.basic:foobar.json"
+    with pytest.raises(FileNotFoundError):
+        load_schema(schema_location)
+
+
+def test_load_schema_from_module_invalid_unknown_module():
+    schema_location = "foo.bar.baz.qux:foobar.json"
+    with pytest.raises(ModuleNotFoundError):
+        load_schema(schema_location)

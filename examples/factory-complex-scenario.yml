@@ -1,5 +1,6 @@
 version: "2.3"
 services:
+
   datagen_base1:
     image: data_gen
     ports:
@@ -11,10 +12,9 @@ services:
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       INGEST_DELTA: 1
-      MODEL_PATH: "/example_complex_base1.json"
-      DATABASE: 0
-    volumes:
-      - ./example_complex_base1.json:/example_complex_base1.json
+      SCHEMA: "tsperf.schema.factory.complex:base1.json"
+      ADAPTER: cratedb
+
   datagen_base2:
     image: data_gen
     ports:
@@ -26,11 +26,10 @@ services:
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       INGEST_DELTA: 1
-      MODEL_PATH: "/example_complex_base2.json"
-      DATABASE: 0
-    volumes:
-      - ./example_complex_base2.json:/example_complex_base2.json
-  datagen_H:
+      SCHEMA: "tsperf.schema.factory.complex:base2.json"
+      ADAPTER: cratedb
+
+  datagen_upper:
     image: data_gen
     ports:
       - 8002:8000
@@ -41,11 +40,10 @@ services:
       INGEST_MODE: 1
       INGEST_SIZE: 100
       INGEST_DELTA: 10
-      MODEL_PATH: "/example_complex_U.json"
-      DATABASE: 0
-    volumes:
-      - ./example_complex_U.json:/example_complex_U.json
-  datagen_L:
+      SCHEMA: "tsperf.schema.factory.complex:upper.json"
+      ADAPTER: cratedb
+
+  datagen_lower:
     image: data_gen
     ports:
       - 8003:8000
@@ -56,7 +54,5 @@ services:
       INGEST_MODE: 1
       INGEST_SIZE: 100
       INGEST_DELTA: 10
-      MODEL_PATH: "/example_complex_L.json"
-      DATABASE: 0
-    volumes:
-      - ./example_complex_L.json:/example_complex_L.json
+      SCHEMA: "tsperf.schema.factory.complex:lower.json"
+      ADAPTER: cratedb

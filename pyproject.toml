@@ -42,6 +42,8 @@ flake8-bugbear = ["-B007"]
 [tool.flakehell.exceptions."tests/**/*.py"]
 flake8-bandit = ["-S101", "-S105", "-S106"]
 
+[tool.flakehell.exceptions."tsperf/adapter/__init__.py"]
+pyflakes = ["-F401"]
 
 [tool.flakehell.exceptions."tsperf/util/float_simulator/__init__.py"]
 flake8-bandit = ["-S311"]

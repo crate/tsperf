@@ -12,10 +12,9 @@ services:
     environment:
       ID_START: 1
       ID_END: 500
-      HOST: "host.docker.internal"
-      PORT: 8086
-      TOKEN: ""
-      ORG: ""
+      ADDRESS: "address.docker.internal:8086"
+      INFLUXDB_ORGANIZATION: ""
+      INFLUXDB_TOKEN: ""
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       SCHEMA: "tsperf.schema.basic:environment.json"
@@ -28,10 +27,9 @@ services:
     environment:
       ID_START: 501
       ID_END: 1000
-      HOST: "host.docker.internal"
-      PORT: 8086
-      TOKEN: ""
-      ORG: ""
+      ADDRESS: "address.docker.internal:8086"
+      INFLUXDB_ORGANIZATION: ""
+      INFLUXDB_TOKEN: ""
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       SCHEMA: "tsperf.schema.basic:environment.json"

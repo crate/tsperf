@@ -12,7 +12,7 @@ def test_read_cli():
     result = runner.invoke(
         tsperf.cli.read,
         [
-            "--adapter=cratedb",
+            "--adapter=dummy",
         ],
     )
     assert result.exit_code == 0
@@ -23,9 +23,9 @@ def test_read_cli_dryrun():
     ctx = tsperf.cli.read.make_context(
         info_name=None,
         args=[
-            "--adapter=cratedb",
+            "--adapter=dummy",
         ],
     )
     config = QueryTimerConfig.create(**ctx.params)
 
-    assert config.adapter == DatabaseInterfaceType.CrateDB
+    assert config.adapter == DatabaseInterfaceType.Dummy

@@ -11,7 +11,7 @@ services:
     environment:
       ID_START: 1
       ID_END: 500
-      HOST: "host.docker.internal:4200"
+      ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       TABLE_NAME: "timeseries"
@@ -25,7 +25,7 @@ services:
     environment:
       ID_START: 501
       ID_END: 1000
-      HOST: "host.docker.internal:4200"
+      ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       TABLE_NAME: "timeseries"

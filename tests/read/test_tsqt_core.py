@@ -3,30 +3,42 @@ from unittest import mock
 import pytest
 
 import tsperf.read.core as qt
+from tsperf.engine import TsPerfEngine
 from tsperf.model.interface import DatabaseInterfaceType
 from tsperf.read.config import QueryTimerConfig
 
 
 @pytest.fixture(scope="function")
-def config():
-    config = QueryTimerConfig(adapter=DatabaseInterfaceType.CrateDB)
+def config() -> QueryTimerConfig:
+    config = QueryTimerConfig(adapter=DatabaseInterfaceType.Dummy)
     return config
 
 
 @pytest.mark.parametrize("adapter", list(DatabaseInterfaceType))
 @mock.patch("tsperf.adapter.AdapterManager.create", autospec=True)
 def test_get_database_adapter(factory_mock, adapter, config):
-    qt.config = config
-    qt.config.adapter = adapter
-    qt.get_database_adapter()
+
+    if adapter in [
+        DatabaseInterfaceType.MongoDB,
+        DatabaseInterfaceType.PostgreSQL,
+        DatabaseInterfaceType.TimeStream,
+        DatabaseInterfaceType.MsSQL,
+    ]:
+        raise pytest.skip(f"Database adapter {adapter} not implemented yet")
+
+    config.adapter = adapter
+    engine = TsPerfEngine(config=config)
+    engine.bootstrap()
+
     factory_mock.assert_called_once()
     factory_mock.assert_called_with(
         interface=adapter,
         config=QueryTimerConfig(
             adapter=adapter,
-            host="localhost",
+            address=mock.ANY,
+            query=mock.ANY,
         ),
-        schema={"value": "none"},
+        schema={},
     )
 
 
@@ -45,11 +57,19 @@ def test_percentage_to_rgb():
     assert b == 0
 
 
-@mock.patch("tsperf.read.core.get_database_adapter", autospec=True)
-def test_start_query_run(mock_get_db_writer):
+@mock.patch("tsperf.read.core.engine", autospec=True)
+def test_start_query_run(mock_get_db_writer, config):
     mock_db_writer = mock.MagicMock()
     mock_db_writer.execute_query.side_effect = [[1, 2, 3], Exception("mocked failure")]
     mock_get_db_writer.return_value = mock_db_writer
+
+    engine = TsPerfEngine(config=config)
+    engine.adapter = mock_db_writer
+
+    # FIXME: This uses variables in the module scope. Get rid of it.
+    qt.engine = engine
+    qt.config = engine.config
+
     qt.config.iterations = 2
     qt.start_query_run()
     assert mock_db_writer.execute_query.call_count == 2

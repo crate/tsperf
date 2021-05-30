@@ -1,6 +1,8 @@
 import dataclasses
 import os
+from typing import Dict
 
+from tsperf.adapter import AdapterManager
 from tsperf.model.interface import DatabaseInterfaceType
 from tsperf.write.model import IngestMode
 
@@ -11,17 +13,18 @@ class DatabaseConnectionConfiguration:
     # The database interface type.
     adapter: DatabaseInterfaceType
 
-    # The concurrency level.
-    concurrency: int = 2
+    schema: Dict = None
 
     # Configuration variables common to multiple databases.
-    host: str = None
-    port: str = None
+    address: str = None
     username: str = None
     password: str = None
     db_name: str = None
     table_name: str = None
     partition: str = None
+
+    # The concurrency level.
+    concurrency: int = 2
 
     # Configuration variables for CrateDB.
     shards: int = 4
@@ -33,8 +36,6 @@ class DatabaseConnectionConfiguration:
         return cls(**options)
 
     def __post_init__(self):
-        self.host = self.host or os.getenv("HOST", "localhost")
-        self.port = self.port or os.getenv("PORT", None)
         self.username = self.username or os.getenv("USERNAME", None)
         self.password = self.password or os.getenv("PASSWORD", None)
         self.db_name = self.db_name or os.getenv("DB_NAME", "")
@@ -45,6 +46,10 @@ class DatabaseConnectionConfiguration:
         if self.adapter is not None:
             if not DatabaseInterfaceType(self.adapter):
                 raise Exception(f"Invalid database interface: {self.adapter}")
+
+        if self.address is None:
+            adapter = AdapterManager.get(self.adapter)
+            self.address = adapter.default_address
 
 
 def enrich_options(kwargs):

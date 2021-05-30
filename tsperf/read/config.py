@@ -22,7 +22,9 @@ import dataclasses
 import os
 import shutil
 from argparse import Namespace
+from typing import List
 
+from tsperf.adapter import AdapterManager
 from tsperf.model.configuration import DatabaseConnectionConfiguration
 
 
@@ -33,23 +35,20 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
     query: str = None
 
     # The concurrency level.
-    concurrency: int = 10
+    concurrency: int = 4
 
     # How many times each thread executes the query.
     iterations: int = 100
 
-    def __post_init__(self):
+    invalid_configs: dataclasses.InitVar[List] = None
+
+    def __post_init__(self, invalid_configs):
 
         super().__post_init__()
 
         # environment variables describing how the read behaves
-        # self.concurrency = int(os.getenv("CONCURRENCY", 10))
         self.quantiles = os.getenv("QUANTILES", "50,60,75,90,99").split(",")
         self.refresh_rate = float(os.getenv("REFRESH_RATE", 0.1))
-
-        # environment variables to connect to influxdb
-        self.token = os.getenv("TOKEN", "")
-        self.organization = os.getenv("ORG", "")
 
         # environment variable to connect to aws timestream
         self.aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID", "")
@@ -58,27 +57,26 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
 
         self.invalid_configs = []
 
-    def validate_config(self, adapter=None) -> bool:  # noqa
+    def validate_config(self) -> bool:  # noqa
 
         super().validate()
 
-        if self.query is None and adapter is not None:
-            self.query = adapter.default_select_query
+        if self.query is None:
+            adapter = AdapterManager.get(self.adapter)
+            self.query = adapter.default_query
+
+        if isinstance(self.query, str):
+            self.query = self.query.format(**self.__dict__)
 
         if "PYTEST_CURRENT_TEST" not in os.environ:
-            if self.host is None or self.host.strip() == "":
+            if self.address is None or self.address.strip() == "":
                 self.invalid_configs.append(
-                    "--host parameter or HOST environment variable required"
+                    "--address parameter or ADDRESS environment variable required"
                 )
             if self.query is None or self.query.strip() == "":
                 self.invalid_configs.append(
                     "--query parameter or QUERY environment variable required"
                 )
-
-        if self.port is None and adapter is not None:
-            self.port = adapter.default_port
-        if self.port is not None and int(self.port) <= 0:
-            self.invalid_configs.append(f"PORT: {self.port} <= 0")
 
         if self.concurrency * self.iterations < 100:
             self.invalid_configs.append(

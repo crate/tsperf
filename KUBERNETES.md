@@ -58,7 +58,7 @@ spec:
           value: "{{ ID_START }}"
         - name: ID_END
           value: "{{ ID_END }}"
-        - name: HOST
+        - name: ADDRESS
           value: {{ db.crateuri }}
         - name: INGEST_MODE
           value: "1"

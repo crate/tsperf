@@ -69,3 +69,12 @@ def read_configuration(config: object, args_info: Dict, description: str):
     arguments = parser.parse_args()
     config.load_args(vars(arguments))
     return config
+
+
+def to_list(obj):
+    """Convert an object to a list if it is not already one"""
+    if not isinstance(obj, (list, tuple)):
+        obj = [
+            obj,
+        ]
+    return obj

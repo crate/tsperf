@@ -18,28 +18,17 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
-import json
 import logging
 import time
-from pathlib import Path
 from queue import Empty, Queue
 from threading import Thread, current_thread
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
-import pkg_resources
 from prometheus_client import start_http_server
 from tqdm import tqdm
 
-from tsperf.adapter import AdapterManager
-from tsperf.adapter.cratedb import CrateDbAdapter
-from tsperf.adapter.influxdb import InfluxDbAdapter
-from tsperf.adapter.mongodb import MongoDbAdapter
-from tsperf.adapter.mssql import MsSQLDbAdapter
-from tsperf.adapter.postgresql import PostgresDbAdapter
-from tsperf.adapter.timescaledb import TimescaleDbAdapter
-from tsperf.adapter.timestream import TimeStreamAdapter
-from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
+from tsperf.engine import TsPerfEngine, load_schema
+from tsperf.model.interface import DatabaseInterfaceBase
 from tsperf.util import tictrack
 from tsperf.util.batch_size_automator import BatchSizeAutomator
 from tsperf.write.config import DataGeneratorConfig
@@ -59,7 +48,12 @@ from tsperf.write.model.metrics import (
     g_rows_per_second,
 )
 
+logger = logging.getLogger(__name__)
+
+
 # Global variables shared across threads
+# TODO: Get rid of global variables.
+engine: TsPerfEngine = None
 config: DataGeneratorConfig = None
 schema = {}
 last_ts = 0
@@ -69,18 +63,9 @@ stop_queue = Queue(1)
 insert_finished_queue = Queue(1)
 insert_exceptions = Queue()
 
-logger = logging.getLogger(__name__)
-
-
-def get_database_adapter() -> DatabaseInterfaceBase:
-    adapter = AdapterManager.create(
-        interface=DatabaseInterfaceType(config.adapter), config=config, schema=schema
-    )
-    return adapter
-
 
 def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
-
+    """
     if config.database == 0:  # crate
         adapter = CrateDbAdapter(config=config, schema=schema)
         # adapter = AdapterManager.create(
@@ -88,7 +73,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
         # )
     elif config.database == 1:  # timescale
         adapter = TimescaleDbAdapter(
-            config.host,
+            config.address,
             config.port,
             config.username,
             config.password,
@@ -101,15 +86,15 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
         )
     elif config.database == 2:  # influx
         adapter = InfluxDbAdapter(
-            config.host, config.token, config.organization, schema, config.db_name
+            config.address, config.token, config.organization, schema, config.db_name
         )
     elif config.database == 3:  # mongo
         adapter = MongoDbAdapter(
-            config.host, config.username, config.password, config.db_name, schema
+            config.address, config.username, config.password, config.db_name, schema
         )
     elif config.database == 4:  # postgres
         adapter = PostgresDbAdapter(
-            config.host,
+            config.address,
             config.port,
             config.username,
             config.password,
@@ -128,7 +113,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
         )
     elif config.database == 6:  # ms_sql
         adapter = MsSQLDbAdapter(
-            config.host,
+            config.address,
             config.username,
             config.password,
             config.db_name,
@@ -139,6 +124,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
     else:
         adapter = None
     return adapter
+    """
 
 
 @tictrack.timed_function()
@@ -241,9 +227,8 @@ def get_insert_values(batch_size: int) -> Tuple[list, list]:
 
 
 def probe_insert():
-    adapter = get_database_adapter()
     try:
-        adapter.prepare_database()
+        engine.adapter.prepare_database()
         return True
     except Exception:
         logger.exception("Failure communicating with or preparing database")
@@ -252,7 +237,6 @@ def probe_insert():
 
 def insert_routine():
     name = current_thread().name
-    adapter = get_database_adapter()
     data_batch_size = config.id_end - config.id_start + 1
     insert_bsa = BatchSizeAutomator(
         batch_size=config.batch_size,
@@ -269,7 +253,7 @@ def insert_routine():
 
         if len(batch) > 0:
             start = time.time()
-            do_insert(adapter, timestamps, batch)
+            do_insert(engine.adapter, timestamps, batch)
 
             if insert_bsa.auto_batch_mode and len(batch) == local_batch_size:
                 duration = time.time() - start
@@ -283,7 +267,7 @@ def insert_routine():
                 )
                 insert_bsa.insert_batch_time(duration)
 
-    adapter.close_connection()
+    engine.adapter.close_connection()
 
     return True
 
@@ -316,8 +300,7 @@ def fast_insert():
 def consecutive_insert():
     global last_ts
     logger.info("Starting single database writer thread")
-    adapter = get_database_adapter()
-    adapter.prepare_database()
+    engine.adapter.prepare_database()
     last_insert = config.ingest_ts
     last_stat_ts_local = time.time()
     while not current_values_queue.empty() or not stop_process():
@@ -339,13 +322,13 @@ def consecutive_insert():
                 ingest_ts_factor = 1 / config.ingest_delta
                 last_insert = round(ts * ingest_ts_factor) / ingest_ts_factor
                 timestamps = [int(last_insert * 1000)] * len(batch)
-                do_insert(adapter, timestamps, batch)
+                do_insert(engine.adapter, timestamps, batch)
             except Empty:
                 c_values_queue_was_empty.inc()
 
         else:
             time.sleep(config.ingest_delta - insert_delta)
-    adapter.close_connection()
+    engine.adapter.close_connection()
 
     # Signal the Prometheus thread that insert is finished.
     insert_finished_queue.put_nowait(True)
@@ -444,46 +427,25 @@ def wait_for_thread(thread: Thread, error_channel: Optional[Queue] = None):
             break
 
 
-def load_schema(schema_reference: Union[str, Path]):
-    """
-    Load schema for data generation.
-
-    A reference to a schema in JSON format. It can either be the name of a Python resource in
-    full-qualified dotted `pkg_resources`-compatible notation, or an absolute or relative path.
-    """
-
-    logger.info(f"Loading schema from {schema_reference}")
-
-    if isinstance(schema_reference, Path) or ":" not in schema_reference:
-        f = open(schema_reference, "r")
-        data = json.load(f)
-
-    else:
-        module, name = schema_reference.split(":")
-        resource = pkg_resources.resource_stream(module, name)
-        data = json.load(resource)
-
-    return data
-
-
 def start(configuration: DataGeneratorConfig):
-    global last_ts, schema, config
 
-    config = configuration
+    # TODO: Get rid of global variables.
+    global engine, config
+    global schema, last_ts
 
-    # Load configuration an set everything up.
-    adapter = get_database_adapter()
-    logger.info(f"Using database adapter {adapter}")
-    valid_config = config.validate_config(adapter=adapter)
-    if not valid_config:
-        logger.error(f"Invalid configuration: {config.invalid_configs}")
-        exit(-1)
+    # TODO: Move schema loading to engine.
+    schema = load_schema(configuration.schema)
+    engine = TsPerfEngine(config=configuration, schema=schema)
+    engine.bootstrap()
 
-    schema = load_schema(config.schema)
+    # TODO: Get rid of global variables.
+    config = engine.config
 
     logger.info("Probing insert")
     if not probe_insert():
-        raise Exception("Failure communicating with or preparing database")
+        raise Exception(
+            f"Failure communicating with or preparing database at {config.address}"
+        )
 
     if config.prometheus_enable:
         logger.info(
@@ -506,5 +468,5 @@ def start(configuration: DataGeneratorConfig):
 
     logger.info(f"Records per second: {data_batch_size * config.ingest_size / run}")
     logger.info(
-        f"Fields per second: {data_batch_size * config.ingest_size * len(get_sub_element('fields').keys()) / run}"
+        f"Readings per second: {data_batch_size * config.ingest_size * len(get_sub_element('fields').keys()) / run}"
     )

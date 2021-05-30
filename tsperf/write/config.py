@@ -33,7 +33,6 @@ from tsperf.write.model import IngestMode
 class DataGeneratorConfig(DatabaseConnectionConfiguration):
 
     # Describing how the Timeseries Datagenerator (TSDG) behaves
-    schema: str = None
     id_start: int = 1
     id_end: int = 500
     ingest_mode: IngestMode = IngestMode.FAST
@@ -53,16 +52,11 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
         # environment variables describing how the write behaves
         self.ingest_ts = float(os.getenv("INGEST_TS", time.time()))
         self.ingest_delta = float(os.getenv("INGEST_DELTA", 0.5))
-        # self.batch_size = int(os.getenv("BATCH_SIZE", -1))
         self.stat_delta = int(os.getenv("STAT_DELTA", 30))
 
         # environment variables to configure timescaledb
         self.copy = strtobool(os.getenv("TIMESCALE_COPY", "True"))
         self.distributed = strtobool(os.getenv("TIMESCALE_DISTRIBUTED", "False"))
-
-        # environment variables to connect to influxdb
-        self.token = os.getenv("TOKEN", "")
-        self.organization = os.getenv("ORG", "")
 
         # environment variable to connect to aws timestream
         self.aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID", "")
@@ -71,7 +65,7 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
 
         self.invalid_configs = []
 
-    def validate_config(self, adapter=None) -> bool:  # noqa
+    def validate_config(self) -> bool:  # noqa
 
         super().validate()
 
@@ -116,11 +110,6 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
             self.invalid_configs.append(f"SHARDS: {self.shards} <= 0")
         if self.replicas < 0:
             self.invalid_configs.append(f"REPLICAS: {self.replicas} < 0")
-
-        if self.port is None and adapter is not None:
-            self.port = adapter.default_port
-        if self.port is not None and int(self.port) <= 0:
-            self.invalid_configs.append(f"PORT: {self.port} <= 0")
 
         if self.prometheus_enable:
             if ":" in self.prometheus_listen:

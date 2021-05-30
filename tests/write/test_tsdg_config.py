@@ -6,15 +6,44 @@ from unittest import mock
 import pytest
 
 import tsperf.cli
-from tsperf.adapter.cratedb import CrateDbAdapter
 from tsperf.model.interface import DatabaseInterfaceType
+from tsperf.util.common import to_list
 from tsperf.write.config import DataGeneratorConfig
 from tsperf.write.model import IngestMode
 
 
+def mkconfig(cli_more_args=None):
+    cli_more_args = cli_more_args or []
+    ctx = tsperf.cli.write.make_context(
+        info_name=None,
+        args=["--schema=foobar.json", "--adapter=dummy"] + cli_more_args,
+    )
+    config = DataGeneratorConfig.create(**ctx.params)
+    return config
+
+
+@pytest.fixture(scope="function")
+def config_cmdline(cli_args):
+    cli_args = to_list(cli_args)
+    return mkconfig(cli_args)
+
+
+@pytest.fixture(scope="function")
+def config_environ(env_vars):
+    env_vars = to_list(env_vars)
+    names = []
+    for env_var in env_vars:
+        name, value = env_var.split("=")
+        names.append(name)
+        os.environ[name] = value
+    yield mkconfig()
+    for name in names:
+        del os.environ[name]
+
+
 def test_config_default():
-    config = DataGeneratorConfig(adapter=DatabaseInterfaceType.CrateDB)
-    assert config.adapter == DatabaseInterfaceType.CrateDB
+    config = DataGeneratorConfig(adapter=DatabaseInterfaceType.Dummy)
+    assert config.adapter == DatabaseInterfaceType.Dummy
     assert config.id_start == 1
     assert config.id_end == 500
     assert config.ingest_mode == IngestMode.FAST
@@ -25,7 +54,7 @@ def test_config_default():
     assert config.batch_size == -1
     assert config.stat_delta == 30
 
-    assert config.host == "localhost"
+    assert config.address is None
     assert config.username is None
     assert config.password is None
     assert config.db_name == ""
@@ -35,92 +64,23 @@ def test_config_default():
     assert config.shards == 4
     assert config.replicas == 1
 
-    assert config.token == ""
-    assert config.organization == ""
-
-
-def mkconfig(*more_args):
-    ctx = tsperf.cli.write.make_context(
-        info_name=None,
-        args=["--schema=foobar.json", "--adapter=cratedb"] + list(more_args),
-    )
-    config = DataGeneratorConfig.create(**ctx.params)
-    return config
-
-
-def test_config_id_start_environ():
-    os.environ["ID_START"] = str(10)
-    config = mkconfig()
-    assert config.id_start == 10
-    del os.environ["ID_START"]
-
-
-def test_config_id_start_cmdline():
-    config = mkconfig("--id-start=10")
-    assert config.id_start == 10
-
-
-def test_config_id_end_environ():
-    test_id_end = 50
-    os.environ["ID_END"] = str(test_id_end)
-    config = mkconfig()
-    assert config.id_end == test_id_end
-    del os.environ["ID_END"]
-
-
-def test_config_ingest_mode_environ():
-    test_ingest_mode = IngestMode.CONSECUTIVE
-    os.environ["INGEST_MODE"] = test_ingest_mode.name.lower()
-    config = mkconfig()
-    assert config.ingest_mode == test_ingest_mode
-    del os.environ["INGEST_MODE"]
-
-
-def test_config_env_ingest_size_set():
-    test_ingest_size = 1000
-    os.environ["INGEST_SIZE"] = str(test_ingest_size)
-    config = mkconfig()
-    assert config.ingest_size == test_ingest_size
-    del os.environ["INGEST_SIZE"]
-
-
-def test_config_env_ingest_ts_set():
-    ts = time.time()
-    os.environ["INGEST_TS"] = str(ts)
-    config = mkconfig()
-    assert config.ingest_ts == ts
-    del os.environ["INGEST_TS"]
-
-
-def test_config_env_ingest_delta_set():
-    test_ingest_delta = 10
-    os.environ["INGEST_DELTA"] = str(test_ingest_delta)
-    config = mkconfig()
-    assert config.ingest_delta == test_ingest_delta
-    del os.environ["INGEST_DELTA"]
+    assert config.influxdb_organization is None
+    assert config.influxdb_token is None
 
 
 def test_config_schema_environ():
     test_path = "test/path"
     os.environ["SCHEMA"] = test_path
 
-    ctx = tsperf.cli.write.make_context(info_name=None, args=["--adapter=cratedb"])
+    ctx = tsperf.cli.write.make_context(info_name=None, args=["--adapter=dummy"])
     config = DataGeneratorConfig.create(**ctx.params)
 
     assert config.schema == test_path
     del os.environ["SCHEMA"]
 
 
-def test_config_batch_size_environ():
-    test_batch_size = 100
-    os.environ["BATCH_SIZE"] = str(test_batch_size)
-    config = mkconfig()
-    assert config.batch_size == test_batch_size
-    del os.environ["BATCH_SIZE"]
-
-
 def test_config_adapter_environ():
-    test_adapter = DatabaseInterfaceType.InfluxDB2
+    test_adapter = DatabaseInterfaceType.InfluxDB
     os.environ["ADAPTER"] = test_adapter.name.lower()
 
     ctx = tsperf.cli.write.make_context(info_name=None, args=["--schema=foobar"])
@@ -130,100 +90,108 @@ def test_config_adapter_environ():
     del os.environ["ADAPTER"]
 
 
-def test_config_env_stat_delta_set():
-    test_stat_delta = 60
-    os.environ["STAT_DELTA"] = str(test_stat_delta)
+@pytest.mark.parametrize("cli_args", ["--id-start=10"])
+def test_config_id_start_cmdline(config_cmdline):
+    assert config_cmdline.id_start == 10
+
+
+@pytest.mark.parametrize("env_vars", ["ID_START=11"])
+def test_config_id_start_environ(config_environ):
+    assert config_environ.id_start == 11
+
+
+@pytest.mark.parametrize("env_vars", ["ID_END=50"])
+def test_config_id_end_environ(config_environ):
+    assert config_environ.id_start == 1
+    assert config_environ.id_end == 50
+
+
+@pytest.mark.parametrize("env_vars", ["INGEST_MODE=consecutive"])
+def test_config_ingest_mode_consecutive_environ(config_environ):
+    assert config_environ.ingest_mode == IngestMode.CONSECUTIVE
+
+
+@pytest.mark.parametrize("env_vars", ["INGEST_MODE=fast"])
+def test_config_ingest_mode_fast_environ(config_environ):
+    assert config_environ.ingest_mode == IngestMode.FAST
+
+
+@pytest.mark.parametrize("env_vars", ["INGEST_SIZE=1000"])
+def test_config_ingest_size_environ(config_environ):
+    assert config_environ.ingest_size == 1000
+
+
+def test_config_ingest_ts_environ():
+    ts = time.time()
+    os.environ["INGEST_TS"] = str(ts)
     config = mkconfig()
-    assert config.stat_delta == test_stat_delta
-    del os.environ["STAT_DELTA"]
+    assert config.ingest_ts == ts
+    del os.environ["INGEST_TS"]
 
 
-def test_config_env_host_set():
-    test_host = "test/host"
-    os.environ["HOST"] = test_host
-    config = mkconfig()
-    assert config.host == test_host
-    del os.environ["HOST"]
+@pytest.mark.parametrize("env_vars", ["INGEST_DELTA=10"])
+def test_config_ingest_delta_environ(config_environ):
+    assert config_environ.ingest_delta == 10
 
 
-def test_config_env_username_set():
-    test_username = "testUsername"
-    os.environ["USERNAME"] = test_username
-    config = mkconfig()
-    assert config.username == test_username
-    del os.environ["USERNAME"]
+@pytest.mark.parametrize("env_vars", ["STAT_DELTA=60"])
+def test_config_stat_delta_environ(config_environ):
+    assert config_environ.stat_delta == 60
 
 
-def test_config_env_password_set():
-    test_password = "password"
-    os.environ["PASSWORD"] = test_password
-    config = mkconfig()
-    assert config.password == test_password
-    del os.environ["PASSWORD"]
+@pytest.mark.parametrize("env_vars", ["BATCH_SIZE=100"])
+def test_config_batch_size_environ(config_environ):
+    assert config_environ.batch_size == 100
 
 
-def test_config_env_db_name_set():
-    test_db_name = "dbName"
-    os.environ["DB_NAME"] = test_db_name
-    config = mkconfig()
-    assert config.db_name == test_db_name
-    del os.environ["DB_NAME"]
+@pytest.mark.parametrize("env_vars", ["ADDRESS=test/address"])
+def test_config_address_environ(config_environ):
+    assert config_environ.address == "test/address"
 
 
-def test_config_env_table_name_set():
-    test_table_name = "testTableName"
-    os.environ["TABLE_NAME"] = test_table_name
-    config = mkconfig()
-    assert config.table_name == test_table_name
-    del os.environ["TABLE_NAME"]
+@pytest.mark.parametrize("env_vars", ["USERNAME=testUsername"])
+def test_config_username_environ(config_environ):
+    assert config_environ.username == "testUsername"
 
 
-def test_config_env_partition_set():
-    test_partition = "day"
-    os.environ["PARTITION"] = test_partition
-    config = mkconfig()
-    assert config.partition == test_partition
-    del os.environ["PARTITION"]
+@pytest.mark.parametrize("env_vars", ["PASSWORD=password"])
+def test_config_password_environ(config_environ):
+    assert config_environ.password == "password"
 
 
-def test_config_shards_environ():
-    test_shards = 6
-    os.environ["SHARDS"] = str(test_shards)
-    config = mkconfig()
-    assert config.shards == test_shards
-    del os.environ["SHARDS"]
+@pytest.mark.parametrize("env_vars", ["DB_NAME=dbName"])
+def test_config_dbname_environ(config_environ):
+    assert config_environ.db_name == "dbName"
 
 
-def test_config_replicas_environ():
-    test_replicas = 2
-    os.environ["REPLICAS"] = str(test_replicas)
-    config = mkconfig()
-    assert config.replicas == test_replicas
-    del os.environ["REPLICAS"]
+@pytest.mark.parametrize("env_vars", ["TABLE_NAME=testTableName"])
+def test_config_tablename_environ(config_environ):
+    assert config_environ.table_name == "testTableName"
 
 
-def test_config_env_port_set():
-    test_port = "1234"
-    os.environ["PORT"] = test_port
-    config = mkconfig()
-    assert config.port == test_port
-    del os.environ["PORT"]
+@pytest.mark.parametrize("env_vars", ["PARTITION=day"])
+def test_config_partition_environ(config_environ):
+    assert config_environ.partition == "day"
 
 
-def test_config_env_token_set():
-    test_token = "testToken"
-    os.environ["TOKEN"] = test_token
-    config = mkconfig()
-    assert config.token == test_token
-    del os.environ["TOKEN"]
+@pytest.mark.parametrize("env_vars", ["SHARDS=6"])
+def test_config_shards_environ(config_environ):
+    assert config_environ.shards == 6
 
 
-def test_config_env_organization_set():
-    test_organization = "testOrganization"
-    os.environ["ORG"] = test_organization
-    config = mkconfig()
-    assert config.organization == test_organization
-    del os.environ["ORG"]
+@pytest.mark.parametrize("env_vars", ["REPLICAS=2"])
+def test_config_replicas_environ(config_environ):
+    assert config_environ.replicas == 2
+
+
+@pytest.mark.parametrize("env_vars", ["INFLUXDB_ORGANIZATION=testOrganization"])
+def test_config_influxdb_organization_environ(config_environ):
+    assert config_environ.influxdb_organization == "testOrganization"
+
+
+@pytest.mark.parametrize("env_vars", ["INFLUXDB_TOKEN=testToken"])
+def test_config_influxdb_token_environ(config_environ):
+    assert config_environ.influxdb_token == "testToken"
 
 
 @mock.patch("os.path.isfile")
@@ -370,21 +338,10 @@ def test_validate_replicas_invalid(mock_isfile):
 
 
 @mock.patch("os.path.isfile")
-def test_validate_port_invalid(mock_isfile):
-    mock_isfile.return_value = True
-    test_port = "0"
-    config = mkconfig()
-    config.port = test_port
-    assert not config.validate_config()
-    assert len(config.invalid_configs) == 1
-    assert "PORT" in config.invalid_configs[0]
-
-
-@mock.patch("os.path.isfile")
 def test_validate_prometheus_port_invalid(mock_isfile):
     mock_isfile.return_value = True
     config = DataGeneratorConfig(
-        adapter=DatabaseInterfaceType.CrateDB,
+        adapter=DatabaseInterfaceType.Dummy,
         prometheus_enable=True,
         prometheus_listen=":0",
     )
@@ -424,8 +381,18 @@ def test_config_default_concurrency(mock_isfile):
 
 
 @mock.patch("os.path.isfile")
-def test_config_default_port_cratedb(mock_isfile):
+def test_config_defaults_cratedb(mock_isfile):
     mock_isfile.return_value = True
     config = mkconfig()
-    assert config.validate_config(adapter=CrateDbAdapter)
-    assert config.port == 4200
+    config.adapter = DatabaseInterfaceType.CrateDB
+    assert config.validate_config()
+    assert config.address == "localhost:4200"
+
+
+@mock.patch("os.path.isfile")
+def test_config_defaults_influxdb(mock_isfile):
+    mock_isfile.return_value = True
+    config = mkconfig()
+    config.adapter = DatabaseInterfaceType.InfluxDB
+    assert config.validate_config()
+    assert config.address == "http://localhost:8086/"

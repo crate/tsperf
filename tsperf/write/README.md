@@ -36,13 +36,12 @@ Data Generator can be setup and the functionality as well as explain different e
       - [STAT_DELTA](#stat_delta)
       - [PROMETHEUS_PORT](#prometheus_port)
     + [Environment variables used to configure different databases](#environment-variables-used-to-configure-different-databases)
-      - [HOST](#host)
+      - [ADDRESS](#address)
       - [USERNAME](#username)
       - [PASSWORD](#password)
       - [DB_NAME](#db_name)
       - [TABLE_NAME](#table_name)
       - [PARTITION](#partition)
-      - [PORT](#port)
     + [Environment variables used to configure CrateDB](#environment-variables-used-to-configure-cratedb)
       - [SHARDS](#shards)
       - [REPLICAS](#replicas)
@@ -134,7 +133,7 @@ The following chapters give an overview over the specific implementation for the
 For CrateDB the [crate](https://pypi.org/project/crate/) library is used. To connect to CrateDB the following
 environment variables must be set:
 
-+ [HOST](#host): hostname including port e.g. `localhost:4200`
++ [ADDRESS](#address): hostname including port e.g. `localhost:4200`
 + [USERNAME](#username): CrateDB username.
 + [PASSWORD](#password): password for CrateDB user.
 
@@ -177,7 +176,7 @@ function of CrateDB.
 For InfluxDB the [influx-client](https://pypi.org/project/influxdb-client/) library is used as the Data Generator only
 supports InfluxDB V2. To connect to InfluxDB the following environment variables must be set:
 
-+ [HOST](#host): hostname
++ [ADDRESS](#address): Database address. Either a DSN URI, or `hostname:port`.
 + [TOKEN](#token): InfluxDB Read/Write token
 + [ORG](#org): InfluxDB organization
 
@@ -216,8 +215,7 @@ to enhance insert performance for single clients. To override the default settin
 
 To connect with TimescaleDB the following environment variables must be set:
 
-+ [HOST](#host): hostname
-+ [PORT](#port): port
++ [ADDRESS](#address): Database address
 + [USERNAME](#username): username of TimescaleDB user
 + [PASSWORD](#password): password of TimescaleDB user
 + [DB_NAME](#db_name): the database name with which to connect
@@ -262,7 +260,7 @@ used.
 
 To connect with MongoDB the following environment variables must be set:
 
-+ [HOST](#host): hostname (can include port if not standard MongoDB port is used)
++ [ADDRESS](#address): hostname (can include port if not standard MongoDB port is used)
 + [USERNAME](#username): username of TimescaleDB user
 + [PASSWORD](#password): password of TimescaleDB user
 + [DB_NAME](#db_name): The name of the MongoDB database that will be used
@@ -296,8 +294,7 @@ For PostgreSQL the [psycopg2](https://pypi.org/project/psycopg2/) library is use
 
 To connect with PostgreSQL the following environment variables must be set:
 
-+ [HOST](#host): hostname
-+ [PORT](#port): port
++ [ADDRESS](#address): hostname
 + [USERNAME](#username): username of TimescaleDB user
 + [PASSWORD](#password): password of TimescaleDB user
 + [DB_NAME](#db_name): the database name with which to connect
@@ -373,7 +370,7 @@ If the Data Generator is run via `pip install` please ensure that `pyodbc` is pr
 
 To connect with Microsoft SQL Server the following environment variables must be set:
 
-+ [HOST](#host): the host where Microsoft SQL Server is running in this [format](https://www.connectionstrings.com/azure-sql-database/)
++ [ADDRESS](#address): the host where Microsoft SQL Server is running in this [format](https://www.connectionstrings.com/azure-sql-database/)
 + [USERNAME](#username): Database user
 + [PASSWORD](#password): Password of the database user
 + [DB_NAME](#db_name): the database name to connect to or create
@@ -591,31 +588,27 @@ the chapters for the database:
 + [Postgresql](#postgresql)
 + [MS SQL Server](#microsoft-sql-server)
 
-#### HOST
+#### ADDRESS
 
 Type: String
 
-Values: hostname according to database client requirements
-
-Default: localhost
-
-used with CrateDB, TimescaleDB, InfluxDB, MongoDB, Postgresql, MSSQL.
+Values: Database address (DSN URI, hostname:port) according to the database client requirements
 
 **CrateDB:**
 
-host must include port, e.g.: `"localhost:4200"`
+Host must include port, e.g.: `"localhost:4200"`
 
 **TimescaleDB, Postgresql and InfluxDB:**
 
-host must be hostname excluding port, e.g.: `"localhost"`
+Host must be hostname excluding port, e.g.: `"localhost"`
 
 **MongoDB:**
 
-host can be either without port (e.g. `"localhost"`) or with port (e.g. `"localhost:27017"`)
+Host can be either without port (e.g. `"localhost"`) or with port (e.g. `"localhost:27017"`)
 
 **MSSQL:**
 
-host must start with `tcp:`
+Host must start with `tcp:`
 
 #### USERNAME
 
@@ -684,18 +677,6 @@ Default: week
 used with CrateDB, Postgresql and TimescaleDB. Is used to define an additional Column to partition the table. For
 example, when using `week` an additional column is created (Crate: `g_ts_week`, Timescale/Postgres `ts_week`) and the
 value from the `ts` column is truncated to its week value.
-
-#### PORT
-
-Type: Integer
-
-Values: positive number
-
-Default: 5432
-
-Defines the port number of the host where the DB is reachable.
-
-used with TimescaleDB, Postgresql and MSSQL
 
 ### Environment variables used to configure CrateDB
 
@@ -1087,7 +1068,7 @@ set the following environment variables:
 
 As we want to use CrateDB running on localhost we set the following environment variables:
 + ADAPTER: cratedb
-+ HOST: "host.docker.internal:4200" (this is the host when trying to access localhost from inside a docker container)
++ ADDRESS: "host.docker.internal:4200" (this is the host when trying to access localhost from inside a docker container)
 + USERNAME: "aValidUsername"
 + PASSWORD: "PasswordForTheValidUsername"
 
@@ -1111,7 +1092,7 @@ services:
     environment:
       ID_START: 1
       ID_END: 100
-      HOST: "host.docker.internal:4200"
+      ADDRESS: "address.docker.internal:4200"
       USERNAME: ""
       PASSWORD: ""
       INGEST_MODE: 0

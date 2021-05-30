@@ -132,8 +132,13 @@ def print_progressbar(
     screen_position_y = 25
 
     duration = time.time() - start_time
-    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    r, g, b = percentage_to_rgb(float(percent))
+    percentage = ("{0:." + str(decimals) + "f}").format(
+        100 * (iteration / float(total))
+    )
+    # Prevent "division by zero" errors.
+    percent = max(float(percentage), 0.1)
+
+    r, g, b = percentage_to_rgb(percent)
     filled_length = int(length * iteration // total)
     bar = fill * filled_length + "-" * (length - filled_length)
 
@@ -144,11 +149,11 @@ def print_progressbar(
         with redirect_stdout(f):
             print(
                 terminal.move_y(screen_position_y)
-                + f"{prefix} |{terminal.color_rgb(r, g, b)}{bar}{terminal.normal}| {percent}% "
+                + f"{prefix} |{terminal.color_rgb(r, g, b)}{bar}{terminal.normal}| {percentage}% "
                 f"{suffix} {round(duration, 2)}s"
             )
             print(
-                f"time left: {round(((duration / float(percent)) * 100) - duration, 2)}s                              "
+                f"time left: {round(((duration / percent) * 100) - duration, 2)}s                              "
             )
             if len(values) > 1:
                 print(
@@ -162,7 +167,8 @@ def print_progressbar(
                 print(f"success: {terminal.green}{success}{terminal.normal}      ")
                 print(f"failure: {terminal.red}{failure}{terminal.normal}        ")
         report = f.getvalue()
-        logger.info(f"\n{report}")
+        sys.stderr.write(f"\n{report}\n")
+        sys.stderr.flush()
 
 
 def probe_query():

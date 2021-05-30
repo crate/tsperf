@@ -104,9 +104,7 @@ performance_options = cloup.option_group(
         "--concurrency",
         envvar="CONCURRENCY",
         type=click.INT,
-        # default=2,
-        help="Worker threads for executing queries in parallel. "
-        "Default: 2. Recommended: 1-4",
+        help="Number of worker threads for executing queries in parallel. Recommended: 1-4",
     ),
 )
 

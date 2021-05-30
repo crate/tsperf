@@ -32,6 +32,9 @@ from tsperf.write.model import IngestMode
 @dataclasses.dataclass
 class DataGeneratorConfig(DatabaseConnectionConfiguration):
 
+    # The concurrency level.
+    concurrency: int = 2
+
     # Describing how the Timeseries Datagenerator (TSDG) behaves
     id_start: int = 1
     id_end: int = 500

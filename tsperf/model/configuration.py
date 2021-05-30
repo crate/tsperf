@@ -21,10 +21,11 @@ class DatabaseConnectionConfiguration:
     password: str = None
     db_name: str = None
     table_name: str = None
+
     partition: str = None
 
     # The concurrency level.
-    concurrency: int = 2
+    concurrency: int = 1
 
     # Configuration variables for CrateDB.
     shards: int = 4

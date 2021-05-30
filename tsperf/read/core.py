@@ -129,7 +129,7 @@ def print_progressbar(
         fill        - Optional  : bar fill character (Str)
     """
 
-    screen_position_y = 25
+    screen_position_y = 30
 
     duration = time.time() - start_time
     percentage = ("{0:." + str(decimals) + "f}").format(

@@ -72,6 +72,9 @@ class MongoDbAdapter(DatabaseInterfaceBase):
 
     @timed_function()
     def execute_query(self, query: str) -> list:
+        return self.run_query(query)
+
+    def run_query(self, query: str) -> list:
         cursor = self.collection.find(query, cursor_type=CursorType.EXHAUST)
         return list(cursor)
 

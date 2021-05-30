@@ -95,6 +95,9 @@ ts_{self.partition} TIMESTAMP NOT NULL,
 
     @timed_function()
     def execute_query(self, query: str) -> list:
+        return self.run_query(query)
+
+    def run_query(self, query: str) -> list:
         self.cursor.execute(query)
         return self.cursor.fetchall()
 

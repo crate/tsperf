@@ -69,6 +69,20 @@ adapter_options = cloup.option_group(
         help="Database address (DSN URI, hostname:port) according to the database client requirements",
     ),
     click.option(
+        "--influxdb-organization",
+        envvar="INFLUXDB_ORGANIZATION",
+        type=click.STRING,
+        help="Organization name for InfluxDB V2. "
+        "See also: https://v2.docs.influxdata.com/v2.0/organizations/.",
+    ),
+    click.option(
+        "--influxdb-token",
+        envvar="INFLUXDB_TOKEN",
+        type=click.STRING,
+        help="Authentication token for InfluxDB V2. "
+        "See also https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/.",
+    ),
+    click.option(
         "--shards",
         envvar="SHARDS",
         type=click.INT,

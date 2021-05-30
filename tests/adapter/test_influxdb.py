@@ -1,15 +1,29 @@
 from unittest import mock
 
+import pytest
 from dotmap import DotMap
 from influxdb_client import Bucket
 from influxdb_client.client.write_api import Point
 
 from tests.write.schema import test_schema1
 from tsperf.adapter.influxdb import InfluxDbAdapter
+from tsperf.model.configuration import DatabaseConnectionConfiguration
+from tsperf.model.interface import DatabaseInterfaceType
+
+
+@pytest.fixture
+def config():
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.InfluxDB,
+        address="localhost",
+        influxdb_organization="acme",
+        influxdb_token="token",
+    )
+    return config
 
 
 @mock.patch("tsperf.adapter.influxdb.InfluxDBClient", autospec=True)
-def test_close_connection(mock_client):
+def test_close_connection(mock_client, config):
     """
     This function tests if the .close_connection() function of InfluxDbAdapter calls the close() function of self.client
 
@@ -26,7 +40,7 @@ def test_close_connection(mock_client):
     # Pre Condition:
     client = mock.Mock()
     mock_client.return_value = client
-    db_writer = InfluxDbAdapter("localhost", "token", "org", test_schema1)
+    db_writer = InfluxDbAdapter(config=config, schema=test_schema1)
     mock_client.assert_called_with("localhost", token="token")
     # Test Case 1
     db_writer.close_connection()
@@ -34,7 +48,7 @@ def test_close_connection(mock_client):
 
 
 @mock.patch("tsperf.adapter.influxdb.InfluxDBClient", autospec=True)
-def test_prepare_database_bucket_exists(mock_client):
+def test_prepare_database_bucket_exists(mock_client, config):
     """
     This function tests if the .prepare_database() function of InfluxDbAdapter loads the correct bucket
 
@@ -55,8 +69,8 @@ def test_prepare_database_bucket_exists(mock_client):
     buckets_api = mock.Mock()
     client.buckets_api.return_value = buckets_api
     mock_client.return_value = client
-    db_writer = InfluxDbAdapter("localhost", "token1", "org1", test_schema1)
-    mock_client.assert_called_with("localhost", token="token1")
+    db_writer = InfluxDbAdapter(config=config, schema=test_schema1)
+    mock_client.assert_called_with("localhost", token="token")
     bucket_list = DotMap()
     bucket_list.buckets = [
         Bucket(name="", retention_rules=[]),
@@ -69,7 +83,7 @@ def test_prepare_database_bucket_exists(mock_client):
 
 
 @mock.patch("tsperf.adapter.influxdb.InfluxDBClient", autospec=True)
-def test_prepare_database_bucket_not_exists(mock_client):
+def test_prepare_database_bucket_not_exists(mock_client, config):
     """
     This function tests if the .prepare_database() function of InfluxDbAdapter loads the correct bucket
 
@@ -90,8 +104,8 @@ def test_prepare_database_bucket_not_exists(mock_client):
     buckets_api = mock.Mock()
     client.buckets_api.return_value = buckets_api
     mock_client.return_value = client
-    db_writer = InfluxDbAdapter("localhost", "token2", "org2", test_schema1)
-    mock_client.assert_called_with("localhost", token="token2")
+    db_writer = InfluxDbAdapter(config=config, schema=test_schema1)
+    mock_client.assert_called_with("localhost", token="token")
     bucket_list = DotMap()
     bucket_list.buckets = [
         Bucket(name="x", retention_rules=[]),
@@ -104,7 +118,7 @@ def test_prepare_database_bucket_not_exists(mock_client):
 
 
 @mock.patch("tsperf.adapter.influxdb.InfluxDBClient", autospec=True)
-def test_insert_stmt(mock_client):
+def test_insert_stmt(mock_client, config):
     """
     This function tests if the .insert_stmt() function of InfluxDbAdapter uses the correct arguments for write_api.write
 
@@ -114,7 +128,7 @@ def test_insert_stmt(mock_client):
 
     Test Case 1:
     calling InfluxDbAdapter.insert_stmt() with one timestamp and one batch and check write parameters
-    -> org is "org"
+    -> org is "acme"
     -> data is of type list
     -> data is of length 1
     -> element in data is of type influxdb_client.Point
@@ -126,7 +140,7 @@ def test_insert_stmt(mock_client):
     write_api = mock.Mock()
     mock_client.return_value = client
     client.write_api.return_value = write_api
-    db_writer = InfluxDbAdapter("localhost", "token", "org", test_schema1)
+    db_writer = InfluxDbAdapter(config=config, schema=test_schema1)
     # Test Case 1:
     db_writer.insert_stmt(
         [1586327807000],
@@ -135,14 +149,14 @@ def test_insert_stmt(mock_client):
     call_arguments = write_api.write.call_args[1]
     org = call_arguments["org"]
     data = call_arguments["record"]
-    assert org == "org"
+    assert org == "acme"
     assert isinstance(data, list)
     assert len(data) == 1
     assert isinstance(data[0], Point)
 
 
 @mock.patch("tsperf.adapter.influxdb.InfluxDBClient", autospec=True)
-def test_execute_query(mock_client):
+def test_execute_query(mock_client, config):
     """
     This function tests if the .execute_query() function of InfluxDbAdapter uses the correct arguments
 
@@ -160,6 +174,6 @@ def test_execute_query(mock_client):
     query_api = mock.Mock()
     mock_client.return_value = client
     client.query_api.return_value = query_api
-    db_writer = InfluxDbAdapter("localhost", "token", "org", test_schema1)
+    db_writer = InfluxDbAdapter(config=config, schema=test_schema1)
     db_writer.execute_query("SELECT * FROM temperature;")
-    query_api.query.assert_called_with("SELECT * FROM temperature;")
+    query_api.query.assert_called_with("SELECT * FROM temperature;", org="acme")

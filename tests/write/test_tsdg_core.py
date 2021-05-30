@@ -24,6 +24,7 @@ def start_engine(config, adapter):
     config.adapter = adapter
     engine = TsPerfEngine(config=config)
     engine.bootstrap()
+    engine.create_adapter()
 
 
 @mock.patch("tsperf.adapter.AdapterManager.create", autospec=True)
@@ -53,9 +54,7 @@ def test_get_database_adapter(factory_mock, adapter, config):
 
     if adapter in [
         DatabaseInterfaceType.MongoDB,
-        DatabaseInterfaceType.PostgreSQL,
         DatabaseInterfaceType.TimeStream,
-        DatabaseInterfaceType.MsSQL,
     ]:
         raise pytest.skip(f"Database adapter {adapter} not implemented yet")
 
@@ -182,7 +181,7 @@ def test_get_insert_values():
 
 
 @mock.patch("tsperf.write.core.engine", autospec=True)
-def test_insert_routine_auto_batch_mode(mock_get_database_adapter):
+def test_insert_routine_auto_batch_mode(mock_engine):
 
     # Immediately signal stop to not run indefinitely.
     dg.stop_queue.put(True)
@@ -196,10 +195,7 @@ def test_insert_routine_auto_batch_mode(mock_get_database_adapter):
     dg.config = config
 
     mock_db_writer = mock.MagicMock()
-    mock_get_database_adapter.return_value = mock_db_writer
-
-    dg.engine = TsPerfEngine(config=config)
-    dg.engine.adapter = mock_db_writer
+    mock_engine.create_adapter.return_value = mock_db_writer
 
     # populate current values
     for _ in range(0, 10000):
@@ -211,20 +207,18 @@ def test_insert_routine_auto_batch_mode(mock_get_database_adapter):
 
 
 @mock.patch("tsperf.write.core.engine", autospec=True)
-def test_insert_routine_fixed_batch_mode(mock_get_database_adapter, config):
+def test_insert_routine_fixed_batch_mode(mock_engine, config):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
-
-    dg.config = config
 
     dg.config.batch_size = 5
     dg.config.ingest_mode = 1
     dg.config.id_start = 0
     dg.config.id_end = 0  # only a single channel
-    mock_db_writer = mock.MagicMock()
-    mock_get_database_adapter.return_value = mock_db_writer
 
-    dg.engine = TsPerfEngine(config=config)
-    dg.engine.adapter = mock_db_writer
+    dg.config = config
+
+    mock_db_writer = mock.MagicMock()
+    mock_engine.create_adapter.return_value = mock_db_writer
 
     # populate current values
     dg.current_values_queue.put({"timestamps": [1], "batch": [1]})
@@ -236,9 +230,7 @@ def test_insert_routine_fixed_batch_mode(mock_get_database_adapter, config):
 
 @mock.patch("tsperf.write.core.engine", autospec=True)
 @mock.patch("tsperf.write.core.current_values_queue", autospec=True)
-def test_insert_routine_empty_batch(
-    mock_current_values_queue, mock_get_database_adapter, config
-):
+def test_insert_routine_empty_batch(mock_current_values_queue, mock_engine, config):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
     mock_current_values_queue.empty.side_effect = [False, True]
     mock_current_values_queue.get_nowait.side_effect = Empty()
@@ -251,8 +243,7 @@ def test_insert_routine_empty_batch(
     dg.config = config
 
     mock_db_writer = mock.MagicMock()
-    mock_get_database_adapter.return_value = mock_db_writer
-    dg.engine.adapter = mock_db_writer
+    mock_engine.create_adapter.return_value = mock_db_writer
 
     dg.insert_routine()
     mock_db_writer.insert_stmt.assert_not_called()
@@ -262,9 +253,7 @@ def test_insert_routine_empty_batch(
 
 @mock.patch("tsperf.write.core.engine", autospec=True)
 @mock.patch("tsperf.write.core.current_values_queue", autospec=True)
-def test_consecutive_insert_queue_empty(
-    mock_current_values_queue, mock_get_database_adapter, config
-):
+def test_consecutive_insert_queue_empty(mock_current_values_queue, mock_engine, config):
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
     mock_current_values_queue.empty.side_effect = [False, True]
     mock_current_values_queue.get_nowait.side_effect = Empty()
@@ -276,8 +265,7 @@ def test_consecutive_insert_queue_empty(
     dg.config = config
 
     mock_db_writer = mock.MagicMock()
-    mock_get_database_adapter.return_value = mock_db_writer
-    dg.engine.adapter = mock_db_writer
+    mock_engine.create_adapter.return_value = mock_db_writer
 
     dg.consecutive_insert()
     mock_db_writer.insert_stmt.assert_not_called()
@@ -287,7 +275,7 @@ def test_consecutive_insert_queue_empty(
 
 
 @mock.patch("tsperf.write.core.engine", autospec=True)
-def test_consecutive_insert(mock_get_database_adapter, config):
+def test_consecutive_insert(mock_engine, config):
 
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
 
@@ -298,8 +286,7 @@ def test_consecutive_insert(mock_get_database_adapter, config):
     dg.config = config
 
     mock_db_writer = mock.MagicMock()
-    mock_get_database_adapter.return_value = mock_db_writer
-    dg.engine.adapter = mock_db_writer
+    mock_engine.create_adapter.return_value = mock_db_writer
 
     # populate current values
     dg.current_values_queue.put({"timestamps": [1], "batch": [1]})

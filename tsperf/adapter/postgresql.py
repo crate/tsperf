@@ -20,6 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 from datetime import datetime
+from typing import Dict, Optional, Union
 
 import psycopg2
 import psycopg2.extras
@@ -27,31 +28,38 @@ from datetime_truncate import truncate
 
 from tsperf.adapter import AdapterManager, DatabaseInterfaceMixin
 from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceType
+from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import timed_function
+from tsperf.write.config import DataGeneratorConfig
 
 
 class PostgreSQLAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
+
+    default_address = "localhost:5432"
+    default_username = "postgres"
+    default_query = "SELECT 1;"
+
     def __init__(
         self,
-        host: str,
-        port: int,
-        username: str,
-        password: str,
-        db_name: str,
-        schema: dict,
-        table_name: str = None,
-        partition: str = "week",
+        config: Union[DataGeneratorConfig, QueryTimerConfig],
+        schema: Optional[Dict] = None,
     ):
+        DatabaseInterfaceMixin.__init__(self, config=config)
         super().__init__()
+
         self.conn = psycopg2.connect(
-            dbname=db_name, user=username, password=password, host=host, port=port
+            dbname=config.db_name,
+            user=self.username,
+            password=config.password,
+            host=self.host,
+            port=self.port,
         )
         self.cursor = self.conn.cursor()
         self.schema = schema
-        self.table_name = (table_name, self._get_schema_table_name())[
-            table_name is None or table_name == ""
+        self.table_name = (config.table_name, self._get_schema_table_name())[
+            config.table_name is None or config.table_name == ""
         ]
-        self.partition = partition
+        self.partition = config.partition
 
     def close_connection(self):
         self.cursor.close()
@@ -99,10 +107,17 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         return self.run_query(query)
 
     def run_query(self, query: str) -> list:
+        # print("query:", query)
         self.cursor.execute(query)
+        # self.conn.commit()
         return self.cursor.fetchall()
 
     def _get_schema_table_name(self) -> str:
         for key in self.schema.keys():
             if key != "description":
                 return key
+
+
+AdapterManager.register(
+    interface=DatabaseInterfaceType.PostgreSQL, factory=PostgreSQLAdapter
+)

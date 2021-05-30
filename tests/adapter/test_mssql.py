@@ -1,13 +1,25 @@
 from unittest import mock
 
 import pyodbc
+import pytest
 
-from tests.write.schema import test_schema1, test_schema2, test_schema3
+from tests.write.schema import test_schema1, test_schema3
 from tsperf.adapter.mssql import MsSQLDbAdapter
+from tsperf.model.configuration import DatabaseConnectionConfiguration
+from tsperf.model.interface import DatabaseInterfaceType
+
+
+@pytest.fixture
+def config():
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.MsSQL,
+        address="localhost:1433",
+    )
+    return config
 
 
 @mock.patch.object(pyodbc, "connect", autospec=True)
-def test_prepare_database1(mock_connect):
+def test_prepare_database1(mock_connect, config):
     """
     This function tests if the .prepare_database() function uses the correct statement to create the database table
 
@@ -26,12 +38,22 @@ def test_prepare_database1(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = MsSQLDbAdapter("localhost", "mssql", "password", "test", test_schema1)
+
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.MsSQL,
+        address="localhost:1433",
+        username="foobar",
+        password="bazqux",
+        db_name="testdrive",
+        schema=test_schema1,
+    )
+    db_writer = MsSQLDbAdapter(config=config, schema=test_schema1)
+
     connection_string = (
         "DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost,1433;"
-        "DATABASE=test;UID=mssql;PWD=password;CONNECTION TIMEOUT=170000;"
+        "DATABASE=testdrive;UID=foobar;PWD=bazqux;CONNECTION TIMEOUT=10;"
     )
-    mock_connect.assert_called_with(connection_string)
+    mock_connect.assert_called_with(connection_string, timeout=15)
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
@@ -40,7 +62,7 @@ def test_prepare_database1(mock_connect):
 
 
 @mock.patch.object(pyodbc, "connect", autospec=True)
-def test_prepare_database2(mock_connect):
+def test_prepare_database2(mock_connect, config):
     """
     This function tests if the .prepare_database() function uses the correct statment to create the database table
 
@@ -59,19 +81,20 @@ def test_prepare_database2(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = MsSQLDbAdapter(
-        "localhost", "timescale2", "password2", "test", test_schema2, 1444, "table_name"
-    )
+
+    config.table_name = "foobar"
+    db_writer = MsSQLDbAdapter(config=config, schema=test_schema1)
+
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
     # table name is in stmt
-    assert "table_name" in stmt
+    assert "foobar" in stmt
     conn.commit.assert_called()
 
 
 @mock.patch.object(pyodbc, "connect", autospec=True)
-def test_prepare_database3(mock_connect):
+def test_prepare_database3(mock_connect, config):
     """
     This function tests if the .prepare_database() function uses the correct statement to create the database table
 
@@ -90,9 +113,9 @@ def test_prepare_database3(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = MsSQLDbAdapter(
-        "localhost", "timescale2", "password2", "test", test_schema3
-    )
+
+    db_writer = MsSQLDbAdapter(config=config, schema=test_schema3)
+
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
@@ -102,7 +125,7 @@ def test_prepare_database3(mock_connect):
 
 
 @mock.patch.object(pyodbc, "connect", autospec=True)
-def test_insert_stmt(mock_connect):
+def test_insert_stmt(mock_connect, config):
     """
     This function tests if the .insert_stmt() function uses the correct statement to insert values
 
@@ -125,7 +148,9 @@ def test_insert_stmt(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = MsSQLDbAdapter("localhost", "mssql", "password", "test", test_schema1)
+
+    db_writer = MsSQLDbAdapter(config=config, schema=test_schema1)
+
     # Test Case 1:
     db_writer.insert_stmt(
         [1586327807000],
@@ -143,7 +168,7 @@ def test_insert_stmt(mock_connect):
 
 
 @mock.patch.object(pyodbc, "connect", autospec=True)
-def test_execute_query(mock_connect):
+def test_execute_query(mock_connect, config):
     """
     This function tests if the .execute_query() function uses the given query
 
@@ -162,7 +187,9 @@ def test_execute_query(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = MsSQLDbAdapter("localhost", "mssql", "password", "test", test_schema1)
+
+    db_writer = MsSQLDbAdapter(config=config, schema=test_schema1)
+
     db_writer.execute_query("SELECT * FROM temperature;")
     cursor.execute.assert_called_with("SELECT * FROM temperature;")
     cursor.fetchall.assert_called()

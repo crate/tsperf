@@ -18,39 +18,48 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
+import logging
 from datetime import datetime
-from typing import Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import pyodbc
 
-from tsperf.model.interface import DatabaseInterfaceBase
+from tsperf.adapter import AdapterManager, DatabaseInterfaceMixin
+from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceType
+from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import timed_function
+from tsperf.write.config import DataGeneratorConfig
+
+logger = logging.getLogger(__name__)
 
 
-class MsSQLDbAdapter(DatabaseInterfaceBase):
+class MsSQLDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
+
+    default_address = "127.0.0.1:1433"  # "localhost" does not work here
+    default_username = "sa"
+    default_password = "yayRirr3"  # noqa:-S105
+    default_query = "SELECT 1;"
+
     def __init__(
         self,
-        host: str,
-        username: str,
-        password: str,
-        db_name: str,
-        schema: dict,
-        port: int = 1433,
-        table_name: str = None,
+        config: Union[DataGeneratorConfig, QueryTimerConfig],
+        schema: Optional[Dict] = None,
     ):
+        DatabaseInterfaceMixin.__init__(self, config=config)
         super().__init__()
+
         driver = "{ODBC Driver 17 for SQL Server}"
         connection_string = (
-            f"DRIVER={driver};SERVER={host},{port};DATABASE={db_name};"
-            f"UID={username};PWD={password};CONNECTION TIMEOUT=170000;"
+            f"DRIVER={driver};SERVER={self.host},{self.port};DATABASE={config.db_name};"
+            f"UID={self.username};PWD={self.password};CONNECTION TIMEOUT=10;"
         )
-        self.conn = pyodbc.connect(connection_string)
+        logger.info(f"Connecting with »{connection_string}«")
+        self.conn = pyodbc.connect(connection_string, timeout=15)
         self.cursor = self.conn.cursor()
         self.cursor.fast_executemany = True
         self.schema = schema
-        self.table_name = (table_name, self._get_schema_table_name())[
-            table_name is None or table_name == ""
+        self.table_name = (config.table_name, self._get_schema_table_name())[
+            config.table_name is None or config.table_name == ""
         ]
 
     def prepare_database(self):
@@ -136,3 +145,6 @@ ts DATETIME NOT NULL,
 
     def close_connection(self):
         self.conn.close()
+
+
+AdapterManager.register(interface=DatabaseInterfaceType.MsSQL, factory=MsSQLDbAdapter)

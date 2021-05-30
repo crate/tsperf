@@ -24,28 +24,10 @@ from tsperf.write.cli import TSPERF_WRITE_README_URL
 from .config import QueryTimerConfig
 
 args_info = {
-    "username": {
-        "help": "username of user used for authentication against the database. Used with CrateDB, TimescaleDB, "
-        "MongoDB, Postgresql, MSSQL",
-        "type": str,
-    },
-    "password": {
-        "help": "password of user used for authentication against the database. used with CrateDB, TimescaleDB, "
-        "MongoDB, Postgresql, MSSQL.",
-        "type": str,
-    },
     "db_name": {
         "help": "Name of the database where query will be executed. Used with InfluxDB, TimescaleDB, MongoDB, "
         "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
         f"{TSPERF_WRITE_README_URL}#db_name",
-        "type": str,
-    },
-    "token": {
-        "help": "token gotten from InfluxDB V2: https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/",
-        "type": str,
-    },
-    "organization": {
-        "help": "org_id gotten from InfluxDB V2: https://v2.docs.influxdata.com/v2.0/organizations/",
         "type": str,
     },
     "aws_access_key_id": {

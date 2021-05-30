@@ -69,6 +69,18 @@ adapter_options = cloup.option_group(
         help="Database address (DSN URI, hostname:port) according to the database client requirements",
     ),
     click.option(
+        "--username",
+        envvar="USERNAME",
+        type=click.STRING,
+        help="User name for authentication against the database",
+    ),
+    click.option(
+        "--password",
+        envvar="PASSWORD",
+        type=click.STRING,
+        help="Password for authentication against the database",
+    ),
+    click.option(
         "--influxdb-organization",
         envvar="INFLUXDB_ORGANIZATION",
         type=click.STRING,
@@ -81,6 +93,22 @@ adapter_options = cloup.option_group(
         type=click.STRING,
         help="Authentication token for InfluxDB V2. "
         "See also https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/.",
+    ),
+    cloup.option(
+        "--timescaledb-distributed",
+        envvar="TIMESCALEDB_DISTRIBUTED",
+        type=click.BOOL,
+        is_flag=True,
+        default=False,
+        help="Use distributed hypertables with TimescaleDB",
+    ),
+    cloup.option(
+        "--timescaledb-pgcopy",
+        envvar="TIMESCALEDB_PGCOPY",
+        type=click.BOOL,
+        is_flag=True,
+        default=False,
+        help="Use pgcopy with TimescaleDB",
     ),
     click.option(
         "--shards",
@@ -165,6 +193,7 @@ write_options = cloup.option_group(
         "--prometheus-enable",
         envvar="PROMETHEUS_ENABLE",
         type=click.BOOL,
+        is_flag=True,
         default=False,
         help="Whether to start the Prometheus HTTP server for exposing metrics",
     ),

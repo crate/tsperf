@@ -18,45 +18,61 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
+import logging
 from datetime import datetime
+from typing import Dict, Optional, Union
 
 import psycopg2
 import psycopg2.extras
 from datetime_truncate import truncate
 from pgcopy import CopyManager
 
-from tsperf.adapter import AdapterManager
-from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
+from tsperf.adapter import AdapterManager, DatabaseInterfaceMixin
+from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceType
+from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import timed_function
+from tsperf.write.config import DataGeneratorConfig
+
+logger = logging.getLogger(__name__)
 
 
-class TimescaleDbAdapter(DatabaseInterfaceBase):
+class TimescaleDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
+
+    default_address = "localhost:5432"
+    default_username = "postgres"
+    default_query = "SELECT 1;"
+
     def __init__(
         self,
-        host: str,
-        port: int,
-        username: str,
-        password: str,
-        ts_db_name: str,
-        schema: dict,
-        table_name: str = None,
-        partition: str = "week",
-        copy: bool = False,
-        distributed: bool = False,
+        config: Union[DataGeneratorConfig, QueryTimerConfig],
+        schema: Optional[Dict] = None,
     ):
+        DatabaseInterfaceMixin.__init__(self, config=config)
         super().__init__()
+
         self.conn = psycopg2.connect(
-            dbname=ts_db_name, user=username, password=password, host=host, port=port
+            dbname=config.db_name,
+            user=self.username,
+            password=config.password,
+            host=self.host,
+            port=self.port,
         )
         self.cursor = self.conn.cursor()
         self.schema = schema
-        self.table_name = (table_name, self._get_schema_table_name())[
-            table_name is None or table_name == ""
+        self.table_name = (config.table_name, self._get_schema_table_name())[
+            config.table_name is None or config.table_name == ""
         ]
-        self.partition = partition
-        self.copy = copy
-        self.distributed = distributed
+        self.partition = config.partition
+
+        self.distributed = config.timescaledb_distributed
+        self.use_pgcopy = (
+            config.timescaledb_pgcopy is not None and config.timescaledb_pgcopy or False
+        )
+
+        if self.use_pgcopy:
+            logger.info("Using strategy »pgcopy«")
+        else:
+            logger.info("Using strategy »INSERT«")
 
     def close_connection(self):
         self.cursor.close()
@@ -75,9 +91,11 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         self.cursor.execute(stmt)
         self.conn.commit()
         if self.distributed:
+            logger.info("Using variant »distributed hypertable«")
             tag = self._get_partition_tag()
             stmt = f"SELECT create_distributed_hypertable('{self.table_name}', 'ts', '{tag}', if_not_exists => true);"
         else:
+            logger.info("Using variant »regular hypertable«")
             stmt = (
                 f"SELECT create_hypertable('{self.table_name}', 'ts', 'ts_{self.partition}', 10, "
                 f"if_not_exists => true);"
@@ -87,7 +105,7 @@ ts_{self.partition} TIMESTAMP NOT NULL,
 
     @timed_function()
     def insert_stmt(self, timestamps: list, batch: list):
-        if self.copy:
+        if self.use_pgcopy:
             self._prepare_copy(timestamps, batch)
         else:
             stmt = self._prepare_timescale_stmt(timestamps, batch)

@@ -1,11 +1,21 @@
 from unittest import mock
 
+import pytest
 from crate import client
 
 from tests.write.schema import test_schema1, test_schema2
 from tsperf.adapter.cratedb import CrateDbAdapter
 from tsperf.model.configuration import DatabaseConnectionConfiguration
 from tsperf.model.interface import DatabaseInterfaceType
+
+
+@pytest.fixture
+def config():
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.CrateDB,
+        address="localhost:4200",
+    )
+    return config
 
 
 @mock.patch.object(client, "connect", autospec=True)
@@ -72,14 +82,14 @@ def test_prepare_database1(mock_connect):
 
     config = DatabaseConnectionConfiguration(
         adapter=DatabaseInterfaceType.CrateDB,
-        address="localhost:4200",
+        address="localhost:8200",
         username="crate2",
         password="password2",
     )
     db_writer = CrateDbAdapter(config=config, schema=test_schema1)
 
     mock_connect.assert_called_with(
-        "localhost:4200", username="crate2", password="password2"
+        "localhost:8200", username="crate2", password="password2"
     )
     # Test Case 1:
     db_writer.prepare_database()
@@ -95,7 +105,7 @@ def test_prepare_database1(mock_connect):
 
 
 @mock.patch.object(client, "connect", autospec=True)
-def test_prepare_database2(mock_connect):
+def test_prepare_database2(mock_connect, config):
     """
     This function tests if the .prepare_database() functions of the adapter uses the correct values when
         creating the the database tables
@@ -120,23 +130,17 @@ def test_prepare_database2(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
 
-    config = DatabaseConnectionConfiguration(
-        adapter=DatabaseInterfaceType.CrateDB,
-        address="localhost:4200",
-        username="crate3",
-        password="password3",
-        table_name="table_name",
-        shards=3,
-        replicas=0,
-        partition="day",
-    )
+    config.table_name = "foobar"
+    config.shards = 3
+    config.replicas = 0
+    config.partition = "day"
     db_writer = CrateDbAdapter(config=config, schema=test_schema2)
 
     db_writer.prepare_database()
     # Test Case 1:
     stmt = cursor.execute.call_args.args[0]
     # table name is in stmt
-    assert "table_name" in stmt
+    assert "foobar" in stmt
     # partition is default
     assert "g_ts_day" in stmt
     # shards is default
@@ -146,7 +150,7 @@ def test_prepare_database2(mock_connect):
 
 
 @mock.patch.object(client, "connect", autospec=True)
-def test_insert_stmt(mock_connect):
+def test_insert_stmt(mock_connect, config):
     """
     This function tests if the .insert_stmt() functions of CrateDbAdapter uses the correct table name and arguments
 
@@ -167,12 +171,6 @@ def test_insert_stmt(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
 
-    config = DatabaseConnectionConfiguration(
-        adapter=DatabaseInterfaceType.CrateDB,
-        address="localhost:4200",
-        username="crate2",
-        password="password2",
-    )
     db_writer = CrateDbAdapter(config=config, schema=test_schema1)
 
     # Test Case 1:
@@ -194,7 +192,7 @@ def test_insert_stmt(mock_connect):
 
 
 @mock.patch.object(client, "connect", autospec=True)
-def test_execute_query(mock_connect):
+def test_execute_query(mock_connect, config):
     """
     This function tests if the .execute_query() functions of CrateDbAdapter uses the correct query
 
@@ -215,12 +213,6 @@ def test_execute_query(mock_connect):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
 
-    config = DatabaseConnectionConfiguration(
-        adapter=DatabaseInterfaceType.CrateDB,
-        address="localhost:4200",
-        username="crate2",
-        password="password2",
-    )
     db_writer = CrateDbAdapter(config=config, schema=test_schema1)
 
     # Test Case 1:

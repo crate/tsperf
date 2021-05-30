@@ -35,14 +35,16 @@ class DatabaseConnectionConfiguration:
     influxdb_organization: str = None
     influxdb_token: str = None
 
+    # Configuration variables for TimescaleDB.
+    timescaledb_distributed: bool = False
+    timescaledb_pgcopy: bool = False
+
     @classmethod
     def create(cls, **options):
         options = enrich_options(options)
         return cls(**options)
 
     def __post_init__(self):
-        self.username = self.username or os.getenv("USERNAME", None)
-        self.password = self.password or os.getenv("PASSWORD", None)
         self.db_name = self.db_name or os.getenv("DB_NAME", "")
         self.table_name = self.table_name or os.getenv("TABLE_NAME", "")
         self.partition = self.partition or os.getenv("PARTITION", "week")

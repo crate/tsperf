@@ -20,15 +20,14 @@ def test_get_database_adapter(factory_mock, adapter, config):
 
     if adapter in [
         DatabaseInterfaceType.MongoDB,
-        DatabaseInterfaceType.PostgreSQL,
         DatabaseInterfaceType.TimeStream,
-        DatabaseInterfaceType.MsSQL,
     ]:
         raise pytest.skip(f"Database adapter {adapter} not implemented yet")
 
     config.adapter = adapter
     engine = TsPerfEngine(config=config)
     engine.bootstrap()
+    engine.create_adapter()
 
     factory_mock.assert_called_once()
     factory_mock.assert_called_with(
@@ -58,17 +57,14 @@ def test_percentage_to_rgb():
 
 
 @mock.patch("tsperf.read.core.engine", autospec=True)
-def test_start_query_run(mock_get_db_writer, config):
+def test_start_query_run(mock_engine, config):
+
     mock_db_writer = mock.MagicMock()
     mock_db_writer.execute_query.side_effect = [[1, 2, 3], Exception("mocked failure")]
-    mock_get_db_writer.return_value = mock_db_writer
-
-    engine = TsPerfEngine(config=config)
-    engine.adapter = mock_db_writer
+    mock_engine.create_adapter.return_value = mock_db_writer
 
     # FIXME: This uses variables in the module scope. Get rid of it.
-    qt.engine = engine
-    qt.config = engine.config
+    qt.config = config
 
     qt.config.iterations = 2
     qt.start_query_run()

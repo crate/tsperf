@@ -20,7 +20,7 @@ Prio 2
 - [o] Automatically derive read query from schema
 - [o] MongoDB adapter needs some love
 - [o] Add database service to Docker Compose files?
-- [o] Parallelize using dash
+- [o] Parallelize using Dask
 - [o] Add more databases like CitusDB, PolarDB, CockroachDB, QuestDB, Yugabyte, Clickhouse, MontyDB
 
 

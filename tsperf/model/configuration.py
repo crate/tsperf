@@ -30,6 +30,10 @@ class DatabaseConnectionConfiguration:
     shards: int = 4
     replicas: int = 1
 
+    # Configuration variables for InfluxDB.
+    influxdb_organization: str = None
+    influxdb_token: str = None
+
     @classmethod
     def create(cls, **options):
         options = enrich_options(options)

@@ -107,6 +107,9 @@ class TimeStreamAdapter(DatabaseInterfaceBase):
 
     @timed_function()
     def execute_query(self, query: str, retry: bool = True) -> list:
+        return self.run_query(query)
+
+    def run_query(self, query: str, retry: bool = True) -> list:
         result = []
         try:
             paginator = self.query_client.get_paginator("query")

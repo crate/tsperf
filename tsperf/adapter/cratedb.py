@@ -19,7 +19,7 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 import logging
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from crate import client
 
@@ -34,19 +34,21 @@ logger = logging.getLogger(__name__)
 
 class CrateDbAdapter(DatabaseInterfaceBase):
 
-    default_port = 4200
-    default_select_query = "SELECT 1;"
+    default_address = "localhost:4200"
+    default_query = "SELECT 1;"
 
     def __init__(
         self,
         config: Union[DataGeneratorConfig, QueryTimerConfig],
-        schema: Dict,
+        schema: Optional[Dict] = None,
     ):
         super().__init__()
-        if ":" not in config.host:
-            config.host = f"{config.host}:{self.default_port}"
+
+        if ":" not in config.address:
+            config.address = f"{config.address}:{self.default_port}"
+
         self.conn = client.connect(
-            config.host, username=config.username, password=config.password
+            config.address, username=config.username, password=config.password
         )
         self.cursor = self.conn.cursor()
         self.schema = schema
@@ -81,6 +83,9 @@ class CrateDbAdapter(DatabaseInterfaceBase):
 
     @timed_function()
     def execute_query(self, query: str) -> list:
+        return self.run_query(query)
+
+    def run_query(self, query: str) -> list:
         self.cursor.execute(query)
         return self.cursor.fetchall()
 

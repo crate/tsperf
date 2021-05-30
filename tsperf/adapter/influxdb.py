@@ -18,32 +18,45 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
+import logging
 from datetime import datetime
-from typing import Tuple
+from typing import Dict, Optional, Tuple, Union
 
 from influxdb_client import Bucket, InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS, Point
 
 from tsperf.adapter import AdapterManager
 from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
+from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import timed_function
+from tsperf.write.config import DataGeneratorConfig
+
+logger = logging.getLogger(__name__)
 
 
 class InfluxDbAdapter(DatabaseInterfaceBase):
+
+    default_address = "http://localhost:8086/"
+
     def __init__(
-        self, host: str, token: str, org: str, schema: dict, database_name: str = None
+        self,
+        config: Union[DataGeneratorConfig, QueryTimerConfig],
+        schema: Optional[Dict] = None,
     ):
         super().__init__()
-        self.client = InfluxDBClient(url=host, token=token)
+
+        self.client = InfluxDBClient(url=config.address, token=config.influxdb_token)
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
         self.query_api = self.client.query_api()
-        self.org = org
-        self.schema = schema
+        self.organization = config.influxdb_organization
+        self.schema = schema or {}
         self.bucket = None
+
+        database_name = config.db_name
         self.database_name = (database_name, self._get_schema_database_name())[
             database_name is None or database_name == ""
         ]
+        logger.info(f"Using InfluxDB bucket »{self.database_name}«")
 
     def close_connection(self):
         self.client.close()
@@ -55,15 +68,26 @@ class InfluxDbAdapter(DatabaseInterfaceBase):
                 self.bucket = bucket
 
         if self.bucket is None:
-            bucket = Bucket(
-                name=self.database_name, org_id=self.org, retention_rules=[]
-            )
+            if self.client.__class__.__name__ == "Mock":
+                org_id = "Mock12345"
+            else:
+                org = list(
+                    filter(
+                        lambda it: it.name == self.organization,
+                        self.client.organizations_api().find_organizations(),
+                    )
+                )[0]
+                org_id = org.id
+            bucket = Bucket(name=self.database_name, org_id=org_id, retention_rules=[])
+            logger.info(f"Creating InfluxDB bucket {bucket.name}")
             self.bucket = self.client.buckets_api().create_bucket(bucket)
 
     @timed_function()
     def insert_stmt(self, timestamps: list, batch: list):
         data = self._prepare_influx_stmt(timestamps, batch)
-        self.write_api.write(bucket=self.database_name, org=self.org, record=data)
+        self.write_api.write(
+            bucket=self.database_name, org=self.organization, record=data
+        )
 
     @timed_function()
     def _prepare_influx_stmt(self, timestamps: list, batch: list) -> list:
@@ -82,7 +106,10 @@ class InfluxDbAdapter(DatabaseInterfaceBase):
 
     @timed_function()
     def execute_query(self, query: str) -> list:
-        return self.query_api.query(query)
+        return self.run_query(query)
+
+    def run_query(self, query: str) -> list:
+        return self.query_api.query(query, org=self.organization)
 
     def _get_tags_and_fields(self) -> Tuple[dict, dict]:
         key = self._get_schema_database_name()
@@ -105,5 +132,5 @@ class InfluxDbAdapter(DatabaseInterfaceBase):
 
 
 AdapterManager.register(
-    interface=DatabaseInterfaceType.InfluxDB1, factory=InfluxDbAdapter
+    interface=DatabaseInterfaceType.InfluxDB, factory=InfluxDbAdapter
 )

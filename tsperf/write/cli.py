@@ -38,16 +38,6 @@ args_info = {
         "help": "Interval in seconds to emit statistic outputs to the log",
         "type": float,
     },
-    "username": {
-        "help": "User name of user used for authentication against the database. Used with CrateDB, TimescaleDB, "
-        "MongoDB, Postgresql, MSSQL",
-        "type": str,
-    },
-    "password": {
-        "help": "Password of user used for authentication against the database. used with CrateDB, TimescaleDB, "
-        "MongoDB, Postgresql, MSSQL.",
-        "type": str,
-    },
     "db_name": {
         "help": "Name of the database where table will be created. Used with InfluxDB, TimescaleDB, MongoDB, "
         "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
@@ -70,28 +60,6 @@ args_info = {
             "quarter",
             "year",
         ],
-        "type": str,
-    },
-    "copy": {
-        "help": "Used to toggle between pgcopy and psycopg2 library with TimescaleDB. When set to True pgcopy is used "
-        "for inserts",
-        "choices": [True, False],
-        "type": bool,
-    },
-    "distributed": {
-        "help": "Defines if Timescale is used with distributed hypertables or not. Must only be set to True when "
-        "Timescale > v2.0 in distributed mode is run.",
-        "choices": [True, False],
-        "type": bool,
-    },
-    "token": {
-        "help": "Authentication token for InfluxDB V2. See also:"
-        "https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/",
-        "type": str,
-    },
-    "organization": {
-        "help": "Organization ID for InfluxDB V2. See also:"
-        "https://v2.docs.influxdata.com/v2.0/organizations/",
         "type": str,
     },
     "aws_access_key_id": {

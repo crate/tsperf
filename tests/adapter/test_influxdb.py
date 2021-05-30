@@ -15,7 +15,7 @@ from tsperf.model.interface import DatabaseInterfaceType
 def config():
     config = DatabaseConnectionConfiguration(
         adapter=DatabaseInterfaceType.InfluxDB,
-        address="localhost",
+        address="http://localhost:8086/",
         influxdb_organization="acme",
         influxdb_token="token",
     )
@@ -41,7 +41,7 @@ def test_close_connection(mock_client, config):
     client = mock.Mock()
     mock_client.return_value = client
     db_writer = InfluxDbAdapter(config=config, schema=test_schema1)
-    mock_client.assert_called_with("localhost", token="token")
+    mock_client.assert_called_with("http://localhost:8086/", token="token")
     # Test Case 1
     db_writer.close_connection()
     client.close.assert_called()
@@ -70,7 +70,6 @@ def test_prepare_database_bucket_exists(mock_client, config):
     client.buckets_api.return_value = buckets_api
     mock_client.return_value = client
     db_writer = InfluxDbAdapter(config=config, schema=test_schema1)
-    mock_client.assert_called_with("localhost", token="token")
     bucket_list = DotMap()
     bucket_list.buckets = [
         Bucket(name="", retention_rules=[]),
@@ -105,7 +104,6 @@ def test_prepare_database_bucket_not_exists(mock_client, config):
     client.buckets_api.return_value = buckets_api
     mock_client.return_value = client
     db_writer = InfluxDbAdapter(config=config, schema=test_schema1)
-    mock_client.assert_called_with("localhost", token="token")
     bucket_list = DotMap()
     bucket_list.buckets = [
         Bucket(name="x", retention_rules=[]),

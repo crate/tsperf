@@ -74,3 +74,57 @@ tsperf write --schema=tsperf.schema.basic:environment.json
 # Query data from InfluxDB bucket.
 tsperf read --query='from(bucket:"environment") |> range(start:-2h, stop:2h) |> limit(n: 10)'
 ```
+
+
+### MSSQL
+```shell
+# Run Microsoft SQL Server
+docker run -it --rm --publish=1433:1433 --env="ACCEPT_EULA=Y" --env="SA_PASSWORD=yayRirr3" mcr.microsoft.com/mssql/server:2019-latest
+docker exec -it aeba7fdd4d73 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P yayRirr3 -Q "select @@Version"
+
+# Install the Microsoft ODBC driver for SQL Server
+- Visit: https://docs.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server
+
+# Configure tsperf
+export ADAPTER=mssql
+
+# Feed data into MSSQL table.
+tsperf write --schema=tsperf.schema.basic:environment.json
+
+# Query data from MSSQL table.
+tsperf read --iterations=3000 --query="SELECT TOP 10 * FROM environment;"
+```
+
+
+### PostgreSQL
+```shell
+# Run PostgreSQL
+docker run -it --rm --env="POSTGRES_HOST_AUTH_METHOD=trust" --publish=5432:5432 postgres:13.3
+
+# Configure tsperf
+export ADAPTER=postgresql
+
+# Feed data into PostgreSQL table.
+tsperf write --schema=tsperf.schema.basic:environment.json
+
+# Query data from PostgreSQL table.
+tsperf read --iterations=3000 --query="SELECT * FROM environment LIMIT 10;"
+```
+
+
+### TimescaleDB
+```shell
+# Run PostgreSQL
+docker run -it --rm --env="POSTGRES_HOST_AUTH_METHOD=trust" --publish=5432:5432 timescale/timescaledb:latest-pg12
+
+# Configure tsperf
+export ADAPTER=timescaledb
+
+# Feed data into TimescaleDB hypertable.
+tsperf write --schema=tsperf.schema.basic:environment.json
+tsperf write --schema=tsperf.schema.basic:environment.json --timescaledb-distributed
+tsperf write --schema=tsperf.schema.basic:environment.json --timescaledb-pgcopy
+
+# Query data from TimescaleDB hypertable.
+tsperf read --iterations=3000 --query="SELECT * FROM environment LIMIT 10;"
+```

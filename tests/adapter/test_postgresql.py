@@ -1,9 +1,21 @@
 from unittest import mock
 
 import psycopg2.extras
+import pytest
 
-from tests.write.schema import test_schema1, test_schema2, test_schema3
-from tsperf.adapter.postgresql import PostgresDbAdapter
+from tests.write.schema import test_schema1, test_schema3
+from tsperf.adapter.postgresql import PostgreSQLAdapter
+from tsperf.model.configuration import DatabaseConnectionConfiguration
+from tsperf.model.interface import DatabaseInterfaceType
+
+
+@pytest.fixture
+def config():
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.PostgreSQL,
+        address="localhost:5432",
+    )
+    return config
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
@@ -26,15 +38,22 @@ def test_close_connection(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbAdapter(
-        "localhost", 4200, "timescale", "password", "test", test_schema1
+
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.PostgreSQL,
+        address="localhost:5432",
+        username="foobar",
+        password=None,
+        db_name="test",
     )
+    db_writer = PostgreSQLAdapter(config=config, schema=test_schema1)
+
     mock_connect.assert_called_with(
-        dbname="test",
-        user="timescale",
-        password="password",
         host="localhost",
-        port=4200,
+        port=5432,
+        user="foobar",
+        password=None,
+        dbname="test",
     )
     # Test Case 1:
     db_writer.close_connection()
@@ -63,15 +82,22 @@ def test_prepare_database1(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbAdapter(
-        "localhost", 4200, "timescale", "password2", "test", test_schema1
+
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.PostgreSQL,
+        address="localhost:5432",
+        username="foobar",
+        password="bazqux",
+        db_name="test",
     )
+    db_writer = PostgreSQLAdapter(config=config, schema=test_schema1)
+
     mock_connect.assert_called_with(
-        dbname="test",
-        user="timescale",
-        password="password2",
         host="localhost",
-        port=4200,
+        port=5432,
+        user="foobar",
+        password="bazqux",
+        dbname="test",
     )
     # Test Case 1:
     db_writer.prepare_database()
@@ -83,7 +109,7 @@ def test_prepare_database1(mock_connect):
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-def test_prepare_database2(mock_connect):
+def test_prepare_database2(mock_connect, config):
     """
     This function tests if the .prepare_database() function uses the correct statment to create the database table
 
@@ -103,16 +129,11 @@ def test_prepare_database2(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbAdapter(
-        "localhost",
-        4200,
-        "timescale3",
-        "password3",
-        "test",
-        test_schema2,
-        "table_name",
-        "day",
-    )
+
+    config.table_name = "table_name"
+    config.partition = "day"
+    db_writer = PostgreSQLAdapter(config=config, schema=test_schema1)
+
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
@@ -124,7 +145,7 @@ def test_prepare_database2(mock_connect):
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-def test_prepare_database3(mock_connect):
+def test_prepare_database3(mock_connect, config):
     """
     This function tests if the .prepare_database() function uses the correct statment to create the database table
 
@@ -143,9 +164,9 @@ def test_prepare_database3(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbAdapter(
-        "localhost", 4200, "timescale3", "password3", "test", test_schema3
-    )
+
+    db_writer = PostgreSQLAdapter(config=config, schema=test_schema3)
+
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
@@ -155,7 +176,7 @@ def test_prepare_database3(mock_connect):
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-def test_insert_stmt(mock_connect):
+def test_insert_stmt(mock_connect, config):
     """
     This function tests if the .insert_stmt() function uses the correct statement to insert values
 
@@ -178,9 +199,9 @@ def test_insert_stmt(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbAdapter(
-        "localhost", 4200, "timescale", "password", "test", test_schema1
-    )
+
+    db_writer = PostgreSQLAdapter(config=config, schema=test_schema1)
+
     # Test Case 1:
     db_writer.insert_stmt(
         [1586327807000],
@@ -198,7 +219,7 @@ def test_insert_stmt(mock_connect):
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-def test_execute_query(mock_connect):
+def test_execute_query(mock_connect, config):
     """
     This function tests if the .execute_query() function uses the given query
 
@@ -217,9 +238,9 @@ def test_execute_query(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = PostgresDbAdapter(
-        "localhost", 4200, "timescale", "password", "test", test_schema1
-    )
+
+    db_writer = PostgreSQLAdapter(config=config, schema=test_schema1)
+
     db_writer.execute_query("SELECT * FROM temperature;")
     cursor.execute.assert_called_with("SELECT * FROM temperature;")
     cursor.fetchall.assert_called()

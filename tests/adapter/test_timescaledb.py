@@ -2,10 +2,22 @@ from datetime import datetime
 from unittest import mock
 
 import psycopg2.extras
+import pytest
 from datetime_truncate import truncate
 
 from tests.write.schema import test_schema1, test_schema2, test_schema3
 from tsperf.adapter.timescaledb import TimescaleDbAdapter
+from tsperf.model.configuration import DatabaseConnectionConfiguration
+from tsperf.model.interface import DatabaseInterfaceType
+
+
+@pytest.fixture
+def config():
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.TimescaleDB,
+        address="localhost:5432",
+    )
+    return config
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
@@ -28,15 +40,23 @@ def test_close_connection(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale", "password", "test", test_schema1
+
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.TimescaleDB,
+        address="localhost:5432",
+        username="foobar",
+        password=None,
+        db_name="test",
+        schema=test_schema1,
     )
+    db_writer = TimescaleDbAdapter(config=config, schema=test_schema1)
+
     mock_connect.assert_called_with(
-        dbname="test",
-        user="timescale",
-        password="password",
         host="localhost",
-        port=4200,
+        port=5432,
+        user="foobar",
+        password=None,
+        dbname="test",
     )
     # Test Case 1:
     db_writer.close_connection()
@@ -45,7 +65,7 @@ def test_close_connection(mock_connect):
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-def test_prepare_database1(mock_connect):
+def test_prepare_database_auth(mock_connect, config):
     """
     This function tests if the .prepare_database() function uses the correct statment to create the database table
 
@@ -65,16 +85,17 @@ def test_prepare_database1(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale", "password2", "test", test_schema1
-    )
+
+    db_writer = TimescaleDbAdapter(config=config, schema=test_schema1)
+
     mock_connect.assert_called_with(
-        dbname="test",
-        user="timescale",
-        password="password2",
         host="localhost",
-        port=4200,
+        port=5432,
+        user="postgres",
+        password=None,
+        dbname="",
     )
+
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
@@ -85,9 +106,9 @@ def test_prepare_database1(mock_connect):
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-def test_prepare_database2(mock_connect):
+def test_prepare_database_table_name_partition(mock_connect, config):
     """
-    This function tests if the .prepare_database() function uses the correct statment to create the database table
+    This function tests if the .prepare_database() function uses the correct statement to create the database table
 
     Pre Condition: psycopg2.client.connect() returns a Mock Object conn which returns a Mock Object
         cursor when its .cursor() function is called.
@@ -105,28 +126,23 @@ def test_prepare_database2(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbAdapter(
-        "localhost",
-        4200,
-        "timescale3",
-        "password3",
-        "test",
-        test_schema2,
-        "table_name",
-        "day",
-    )
+
+    config.table_name = "foobar"
+    config.partition = "day"
+    db_writer = TimescaleDbAdapter(config=config, schema=test_schema2)
+
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
     # table name is in stmt
-    assert "table_name" in stmt
+    assert "foobar" in stmt
     # partition is correctly set
     assert "ts_day" in stmt
     conn.commit.assert_called()
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-def test_prepare_database3(mock_connect):
+def test_prepare_database_distributed(mock_connect, config):
     """
     This function tests if the .prepare_database() function uses the correct statement to create the database table
 
@@ -145,18 +161,12 @@ def test_prepare_database3(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbAdapter(
-        "localhost",
-        4200,
-        "timescale3",
-        "password3",
-        "test",
-        test_schema2,
-        "table_name",
-        "day",
-        True,
-        True,
-    )
+
+    config.partition = "day"
+    config.timescaledb_distributed = True
+
+    db_writer = TimescaleDbAdapter(config=config, schema=test_schema2)
+
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
@@ -166,9 +176,9 @@ def test_prepare_database3(mock_connect):
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-def test_prepare_database4(mock_connect):
+def test_prepare_database_test_schema(mock_connect, config):
     """
-    This function tests if the .prepare_database() function uses the correct statment to create the database table
+    This function tests if the .prepare_database() function uses the correct statement to create the database table
 
     Pre Condition: psycopg2.client.connect() returns a Mock Object conn which returns a Mock Object
         cursor when its .cursor() function is called.
@@ -185,9 +195,9 @@ def test_prepare_database4(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale3", "password3", "test", test_schema3
-    )
+
+    db_writer = TimescaleDbAdapter(config=config, schema=test_schema3)
+
     # Test Case 1:
     db_writer.prepare_database()
     stmt = str(cursor.execute.call_args_list[0])
@@ -197,7 +207,7 @@ def test_prepare_database4(mock_connect):
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-def test_insert_stmt(mock_connect):
+def test_insert_vanilla(mock_connect, config):
     """
     This function tests if the .insert_stmt() function uses the correct statement to insert values
 
@@ -220,9 +230,9 @@ def test_insert_stmt(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale", "password", "test", test_schema1
-    )
+
+    db_writer = TimescaleDbAdapter(config=config, schema=test_schema1)
+
     # Test Case 1:
     db_writer.insert_stmt(
         [1586327807000],
@@ -241,7 +251,7 @@ def test_insert_stmt(mock_connect):
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
 @mock.patch("tsperf.adapter.timescaledb.CopyManager", autospec=True)
-def test_insert_stmt_copy(mock_copy_manager, mock_connect):
+def test_insert_pgcopy(mock_copy_manager, mock_connect, config):
     """
     This function tests if the the copy_manager is called correctly if timescale is used with
     copy insert method
@@ -265,9 +275,9 @@ def test_insert_stmt_copy(mock_copy_manager, mock_connect):
     cursor = mock.MagicMock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale", "password", "test", test_schema1, copy=True
-    )
+
+    config.timescaledb_pgcopy = True
+    db_writer = TimescaleDbAdapter(config=config, schema=test_schema1)
 
     copy_manager = mock.MagicMock()
     mock_copy_manager.return_value = copy_manager
@@ -297,7 +307,7 @@ def test_insert_stmt_copy(mock_copy_manager, mock_connect):
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-def test_execute_query(mock_connect):
+def test_execute_query(mock_connect, config):
     """
     This function tests if the .execute_query() function uses the given query
 
@@ -316,9 +326,8 @@ def test_execute_query(mock_connect):
     cursor = mock.Mock()
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
-    db_writer = TimescaleDbAdapter(
-        "localhost", 4200, "timescale", "password", "test", test_schema1
-    )
+
+    db_writer = TimescaleDbAdapter(config=config, schema=test_schema1)
     db_writer.execute_query("SELECT * FROM temperature;")
     cursor.execute.assert_called_with("SELECT * FROM temperature;")
     cursor.fetchall.assert_called()

@@ -44,9 +44,6 @@ class CrateDbAdapter(AbstractDatabaseInterface):
     ):
         super().__init__()
 
-        if ":" not in config.address:
-            config.address = f"{config.address}:{self.default_port}"
-
         self.conn = client.connect(
             config.address, username=config.username, password=config.password
         )

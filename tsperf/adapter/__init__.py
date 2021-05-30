@@ -20,7 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 from typing import Dict
 
-from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
+from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceType
 
 
 class AdapterManager:
@@ -33,16 +33,16 @@ class AdapterManager:
 
     @classmethod
     def get(cls, interface):
-        factory: DatabaseInterfaceBase = cls.registry[interface]
+        factory: AbstractDatabaseInterface = cls.registry[interface]
         return factory
 
     @classmethod
     def create(cls, interface, config, schema=None):
-        factory: DatabaseInterfaceBase = cls.get(interface)
+        factory: AbstractDatabaseInterface = cls.get(interface)
         return factory(config, schema)
 
 
-def load_adapters():
+def load_adapters():  # noqa:-F401
     """
     Importing each adapter module will make the respective adapter
     self-register with the adapter manager.
@@ -55,6 +55,35 @@ def load_adapters():
 
     # from tsperf.adapter.mongodb import MongoDbAdapter
     from tsperf.adapter.mssql import MsSQLDbAdapter
-    from tsperf.adapter.postgresql import PostgresDbAdapter
+    from tsperf.adapter.postgresql import PostgreSQLAdapter
     from tsperf.adapter.timescaledb import TimescaleDbAdapter
     from tsperf.adapter.timestream import TimeStreamAdapter
+
+
+class DatabaseInterfaceMixin:
+    def __init__(self, config):
+        self.config = config
+
+    @property
+    def host(self):
+        host, port = self.config.address.split(":")
+        return host
+
+    @property
+    def port(self):
+        host, port = self.config.address.split(":")
+        return int(port)
+
+    @property
+    def username(self):
+        username = (
+            self.config.username and self.config.username or self.default_username
+        )
+        return username
+
+    @property
+    def password(self):
+        username = (
+            self.config.password and self.config.password or self.default_password
+        )
+        return username

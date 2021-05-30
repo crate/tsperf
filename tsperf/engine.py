@@ -42,7 +42,6 @@ class TsPerfEngine:
     ):
         self.config = config
         self.schema = schema or {}
-        self.adapter = None
 
     def adapter_factory(self) -> DatabaseInterfaceBase:
         adapter = AdapterManager.create(
@@ -50,6 +49,11 @@ class TsPerfEngine:
             config=self.config,
             schema=self.schema,
         )
+        return adapter
+
+    def create_adapter(self):
+        adapter = self.adapter_factory()
+        logger.info(f"Database adapter »{adapter}« loaded successfully")
         return adapter
 
     def bootstrap(self):
@@ -62,9 +66,6 @@ class TsPerfEngine:
         logger.info(
             f"Connecting to database at »{self.config.address}« using adapter »{self.config.adapter}«"
         )
-
-        self.adapter = self.adapter_factory()
-        logger.info(f"Database adapter »{self.adapter}« loaded successfully")
 
 
 def load_schema(schema_reference: Union[str, Path]):

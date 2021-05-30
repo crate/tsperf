@@ -93,7 +93,7 @@ def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
             config.address, config.username, config.password, config.db_name, schema
         )
     elif config.database == 4:  # postgres
-        adapter = PostgresDbAdapter(
+        adapter = PostgreSQLAdapter(
             config.address,
             config.port,
             config.username,

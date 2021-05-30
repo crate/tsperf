@@ -27,7 +27,7 @@ from typing import Dict, Optional, Union
 import pkg_resources
 
 from tsperf.adapter import AdapterManager
-from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
+from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceType
 from tsperf.read.config import QueryTimerConfig
 from tsperf.write.config import DataGeneratorConfig
 
@@ -43,7 +43,7 @@ class TsPerfEngine:
         self.config = config
         self.schema = schema or {}
 
-    def adapter_factory(self) -> DatabaseInterfaceBase:
+    def adapter_factory(self) -> AbstractDatabaseInterface:
         adapter = AdapterManager.create(
             interface=DatabaseInterfaceType(self.config.adapter),
             config=self.config,

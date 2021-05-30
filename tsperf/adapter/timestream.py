@@ -27,11 +27,11 @@ import boto3
 import numpy
 from botocore.config import Config
 
-from tsperf.model.interface import DatabaseInterfaceBase
+from tsperf.model.interface import AbstractDatabaseInterface
 from tsperf.util.tictrack import timed_function
 
 
-class TimeStreamAdapter(DatabaseInterfaceBase):
+class TimeStreamAdapter(AbstractDatabaseInterface):
     def __init__(
         self,
         aws_access_key_id: str,

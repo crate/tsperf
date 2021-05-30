@@ -13,7 +13,7 @@ def test_write_cli():
         tsperf.cli.write,
         [
             "--schema=foobar.json",
-            "--adapter=cratedb",
+            "--adapter=dummy",
             "--id-end=3",
             "--ingest-size=3",
         ],
@@ -27,7 +27,7 @@ def test_write_cli_dryrun():
         info_name=None,
         args=[
             "--schema=foobar.json",
-            "--adapter=cratedb",
+            "--adapter=dummy",
             "--id-end=3",
             "--ingest-size=3",
         ],
@@ -36,6 +36,6 @@ def test_write_cli_dryrun():
     config = DataGeneratorConfig.create(**options)
 
     assert config.schema == "foobar.json"
-    assert config.adapter == DatabaseInterfaceType.CrateDB
+    assert config.adapter == DatabaseInterfaceType.Dummy
     assert config.id_end == 3
     assert config.ingest_size == 3

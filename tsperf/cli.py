@@ -38,6 +38,18 @@ logger = logging.getLogger(__name__)
 TSPERF_README_URL = "https://github.com/crate/tsperf"
 
 
+general_options = cloup.option_group(
+    "General options",
+    cloup.option(
+        "--schema",
+        envvar="SCHEMA",
+        type=str,
+        help="A reference to a schema in JSON format. It can either be the name of a Python resource in "
+        "full-qualified dotted `pkg_resources`-compatible notation, or an absolute or relative path.",
+    ),
+)
+
+
 adapter_options = cloup.option_group(
     "Adapter",
     click.option(
@@ -51,11 +63,10 @@ adapter_options = cloup.option_group(
         help="Which database adapter to use",
     ),
     click.option(
-        "--host",
-        envvar="HOST",
+        "--address",
+        envvar="ADDRESS",
         type=click.STRING,
-        default="localhost",
-        help="hostname:port according to the database client requirements",
+        help="Database address (DSN URI, hostname:port) according to the database client requirements",
     ),
     click.option(
         "--shards",
@@ -85,14 +96,6 @@ performance_options = cloup.option_group(
     ),
 )
 
-general_options = cloup.option_group(
-    "General options",
-    click.option(
-        "--debug",
-        envvar="DEBUG",
-        is_flag=True,
-    ),
-)
 
 write_options = cloup.option_group(
     "Write options",
@@ -181,6 +184,16 @@ read_options = cloup.option_group(
 )
 
 
+misc_options = cloup.option_group(
+    "Miscellaneous options",
+    click.option(
+        "--debug",
+        envvar="DEBUG",
+        is_flag=True,
+    ),
+)
+
+
 @cloup.group(
     "tsperf", help=f"See documentation for further details: {TSPERF_README_URL}"
 )
@@ -189,10 +202,11 @@ def main():
 
 
 @main.command("write")
+@general_options
 @adapter_options
 @performance_options
 @write_options
-@general_options
+@misc_options
 def write(**kwargs):
 
     # Run workload.
@@ -203,10 +217,11 @@ def write(**kwargs):
 
 
 @main.command("read")
+@general_options
 @adapter_options
 @performance_options
 @read_options
-@general_options
+@misc_options
 def read(**kwargs):
 
     # Clear screen.

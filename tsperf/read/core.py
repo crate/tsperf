@@ -22,6 +22,7 @@ import io
 import logging
 import shutil
 import statistics
+import sys
 import time
 from contextlib import redirect_stdout
 from queue import Queue
@@ -30,45 +31,32 @@ from threading import Thread
 import numpy
 from blessed import Terminal
 
-from tsperf.adapter import AdapterManager
-from tsperf.adapter.cratedb import CrateDbAdapter
-from tsperf.adapter.influxdb import InfluxDbAdapter
-
-# from tsperf.adapter.mongodb import MongoDbAdapter
-from tsperf.adapter.mssql import MsSQLDbAdapter
-from tsperf.adapter.postgresql import PostgresDbAdapter
-from tsperf.adapter.timescaledb import TimescaleDbAdapter
-from tsperf.adapter.timestream import TimeStreamAdapter
+from tsperf.engine import TsPerfEngine, load_schema
 from tsperf.model.interface import DatabaseInterfaceBase
 from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import tic_toc, timed_function
 
+terminal = Terminal()
+logger = logging.getLogger(__name__)
+
+
+# TODO: Get rid of global variables.
+engine: TsPerfEngine = None
+config: QueryTimerConfig = None
 schema = {"value": "none"}
 start_time = time.time()
 success = 0
 failure = 0
 queries_done = Queue(1)
 
-config: QueryTimerConfig = None
-
-terminal = Terminal()
-
-logger = logging.getLogger(__name__)
-
-
-def get_database_adapter() -> DatabaseInterfaceBase:
-    adapter = AdapterManager.create(
-        interface=config.adapter, config=config, schema=schema
-    )
-    return adapter
-
 
 def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
+    """
     if config.database == 0:
         adapter = CrateDbAdapter(config=config, schema=schema)
     elif config.database == 1:
         adapter = TimescaleDbAdapter(
-            config.host,
+            config.address,
             config.port,
             config.username,
             config.password,
@@ -77,17 +65,17 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
         )
     elif config.database == 2:
         adapter = InfluxDbAdapter(
-            config.host, config.token, config.organization, schema
+            config.address, config.token, config.organization, schema
         )
     elif config.database == 3:
         raise ValueError(
             "MongoDB queries are not supported (but can be manually added to the script - see "
             "read documentation)"
         )
-        # adapter = MongoDbAdapter(config.host, config.username, config.password, config.db_name, schema)
+        # adapter = MongoDbAdapter(config.address, config.username, config.password, config.db_name, schema)
     elif config.database == 4:
         adapter = PostgresDbAdapter(
-            config.host,
+            config.address,
             config.port,
             config.username,
             config.password,
@@ -104,7 +92,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
         )
     elif config.database == 6:
         adapter = MsSQLDbAdapter(
-            config.host,
+            config.address,
             config.username,
             config.password,
             config.db_name,
@@ -115,6 +103,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
         raise ValueError("Unknown database adapter")
 
     return adapter
+    """
 
 
 def percentage_to_rgb(percentage):
@@ -177,9 +166,8 @@ def print_progressbar(
 
 
 def probe_query():
-    adapter = get_database_adapter()
     try:
-        adapter.cursor.execute(config.query)
+        engine.adapter.run_query(config.query)
         return True
     except Exception:
         logger.exception(f"Failure executing query '{config.query}'")
@@ -188,10 +176,9 @@ def probe_query():
 
 def start_query_run():
     global success, failure
-    adapter = get_database_adapter()
     for _ in range(0, config.iterations):
         try:
-            adapter.execute_query(config.query)
+            engine.adapter.execute_query(config.query)
             success += 1
         except Exception:
             failure += 1
@@ -214,7 +201,7 @@ def print_progress_thread():
 
 def run_qt():
 
-    logger.info(f"Starting query timer with {config} and schema {schema}")
+    logger.info(f"Starting query timer with {config} and schema {config.schema}")
     global start_time
     start_time = time.time()
 
@@ -240,21 +227,17 @@ def run_qt():
 
 
 def start(configuration: QueryTimerConfig):
-    global config
-    config = configuration
+    global engine, schema, config
 
-    # Load configuration an set everything up.
-    adapter = get_database_adapter()
-    logger.info(f"Using database adapter {adapter}")
-    valid_config = config.validate_config(adapter=adapter)
-
-    if not valid_config:
-        logger.error(f"Invalid configuration: {config.invalid_configs}")
-        exit(-1)
+    # TODO: Move schema loading to engine.
+    schema = load_schema(configuration.schema)
+    engine = TsPerfEngine(config=configuration, schema=schema)
+    engine.bootstrap()
+    config = engine.config
 
     logger.info(f"Probing query »{config.query}«")
     if not probe_query():
-        raise RuntimeError(f"Query »{config.query}« considered invalid")
+        raise RuntimeError("Error probing database. Not starting machinery.")
 
     logger.info(
         f"Running {config.iterations} iterations with concurrency {config.concurrency}"

@@ -8,7 +8,7 @@ services:
     environment:
       ID_START: 1
       ID_END: 500
-      HOST: "host.docker.internal:4200"
+      ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       INGEST_DELTA: 1
@@ -22,7 +22,7 @@ services:
     environment:
       ID_START: 501
       ID_END: 1000
-      HOST: "host.docker.internal:4200"
+      ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       INGEST_DELTA: 1
@@ -36,7 +36,7 @@ services:
     environment:
       ID_START: 1001
       ID_END: 1100
-      HOST: "host.docker.internal:4200"
+      ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 100
       INGEST_DELTA: 10
@@ -50,7 +50,7 @@ services:
     environment:
       ID_START: 1101
       ID_END: 1200
-      HOST: "host.docker.internal:4200"
+      ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 100
       INGEST_DELTA: 10

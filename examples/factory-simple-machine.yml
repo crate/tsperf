@@ -8,7 +8,7 @@ services:
     environment:
       ID_START: 1
       ID_END: 100
-      HOST: "host.docker.internal:4200"
+      ADDRESS: "address.docker.internal:4200"
       # USERNAME: ""
       # PASSWORD: ""
       INGEST_MODE: 0

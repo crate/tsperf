@@ -5,40 +5,70 @@ from unittest import mock
 import pytest
 
 import tsperf
-from tsperf.adapter.cratedb import CrateDbAdapter
+from tsperf.adapter import AdapterManager
 from tsperf.model.interface import DatabaseInterfaceType
 from tsperf.read.config import QueryTimerConfig
+from tsperf.util.common import to_list
 
 
-def test_config_vanilla():
-    config = QueryTimerConfig(adapter=DatabaseInterfaceType.CrateDB)
-    assert config.adapter == DatabaseInterfaceType.CrateDB
-    assert config.concurrency == 10
-    assert config.iterations == 100
-    assert config.quantiles == ["50", "60", "75", "90", "99"]
-    assert config.refresh_rate == 0.1
-
-    assert config.host == "localhost"
-    assert config.username is None
-    assert config.password is None
-    assert config.db_name == ""
-
-    assert config.token == ""
-    assert config.organization == ""
-
-    assert config.query is None
-
-
-def mkconfig(*more_args):
+def mkconfig(cli_more_args=None):
+    cli_more_args = cli_more_args or []
     ctx = tsperf.cli.read.make_context(
-        info_name=None, args=["--adapter=cratedb"] + list(more_args)
+        info_name=None,
+        args=["--adapter=dummy"] + cli_more_args,
     )
     config = QueryTimerConfig.create(**ctx.params)
     return config
 
 
+@pytest.fixture(scope="function")
+def config_cmdline(cli_args):
+    cli_args = to_list(cli_args)
+    return mkconfig(cli_args)
+
+
+@pytest.fixture(scope="function")
+def config_environ(env_vars):
+    env_vars = to_list(env_vars)
+    names = []
+    for env_var in env_vars:
+        name, value = env_var.split("=")
+        names.append(name)
+        os.environ[name] = value
+    yield mkconfig()
+    for name in names:
+        del os.environ[name]
+
+
+def test_config_vanilla():
+    config = QueryTimerConfig(adapter=DatabaseInterfaceType.Dummy)
+    assert config.adapter == DatabaseInterfaceType.Dummy
+    assert config.concurrency == 4
+    assert config.iterations == 100
+    assert config.quantiles == ["50", "60", "75", "90", "99"]
+    assert config.refresh_rate == 0.1
+
+    assert config.address is None
+    assert config.username is None
+    assert config.password is None
+    assert config.db_name == ""
+
+    assert config.influxdb_organization is None
+    assert config.influxdb_token is None
+
+    assert config.query is None
+
+
+def test_config_real():
+    config = mkconfig()
+    _ = AdapterManager.create(interface=config.adapter, config=config)
+    config.validate_config()
+
+    assert config.address == "localhost:12345"
+
+
 def test_config_adapter_environ():
-    test_adapter = DatabaseInterfaceType.InfluxDB2
+    test_adapter = DatabaseInterfaceType.InfluxDB
     os.environ["ADAPTER"] = test_adapter.name.lower()
 
     ctx = tsperf.cli.read.make_context(info_name=None, args=[])
@@ -48,104 +78,38 @@ def test_config_adapter_environ():
     del os.environ["ADAPTER"]
 
 
-def test_config_concurrency_environ():
-    test_concurrency = 3
-    os.environ["CONCURRENCY"] = str(test_concurrency)
-    config = mkconfig()
-    assert config.concurrency == test_concurrency
-    del os.environ["CONCURRENCY"]
+@pytest.mark.parametrize("env_vars", ["CONCURRENCY=7"])
+def test_config_concurrency_environ(config_environ):
+    assert config_environ.concurrency == 7
 
 
-def test_config_iterations_environ():
-    test_iterations = 3
-    os.environ["ITERATIONS"] = str(test_iterations)
-    config = mkconfig()
-    assert config.iterations == test_iterations
-    del os.environ["ITERATIONS"]
+@pytest.mark.parametrize("env_vars", ["ITERATIONS=3"])
+def test_config_iterations_environ(config_environ):
+    assert config_environ.iterations == 3
 
 
-def test_config_env_quantiles_set():
-    test_quantiles = "1,2,3,4,5"
-    os.environ["QUANTILES"] = test_quantiles
-    config = mkconfig()
-    assert config.quantiles == ["1", "2", "3", "4", "5"]
-    del os.environ["QUANTILES"]
+@pytest.mark.parametrize("env_vars", ["QUANTILES=1,2,3,4,5"])
+def test_config_quantiles_environ(config_environ):
+    assert config_environ.quantiles == ["1", "2", "3", "4", "5"]
 
 
-def test_config_env_refresh_rate_set():
-    test_refresh_rate = 3
-    os.environ["REFRESH_RATE"] = str(test_refresh_rate)
-    config = mkconfig()
-    assert config.refresh_rate == test_refresh_rate
-    del os.environ["REFRESH_RATE"]
+@pytest.mark.parametrize("env_vars", ["REFRESH_RATE=9"])
+def test_config_refresh_rate_environ(config_environ):
+    assert config_environ.refresh_rate == 9
 
 
-def test_config_query_environ():
-    test_query = "SELECT * FROM test"
-    os.environ["QUERY"] = test_query
-    config = mkconfig()
-    assert config.query == test_query
-    del os.environ["QUERY"]
+@pytest.mark.parametrize("env_vars", ["QUERY=SELECT * FROM test"])
+def test_config_query_environ(config_environ):
+    assert config_environ.query == "SELECT * FROM test"
 
 
-def test_config_env_host_set():
-    test_host = "test/host"
-    os.environ["HOST"] = test_host
-    config = mkconfig()
-    assert config.host == test_host
-    del os.environ["HOST"]
-
-
-def test_config_env_username_set():
-    test_username = "testUsername"
-    os.environ["USERNAME"] = test_username
-    config = mkconfig()
-    assert config.username == test_username
-    del os.environ["USERNAME"]
-
-
-def test_config_env_password_set():
-    test_password = "password"
-    os.environ["PASSWORD"] = test_password
-    config = mkconfig()
-    assert config.password == test_password
-    del os.environ["PASSWORD"]
-
-
-def test_config_env_db_name_set():
-    test_db_name = "dbName"
-    os.environ["DB_NAME"] = test_db_name
-    config = mkconfig()
-    assert config.db_name == test_db_name
-    del os.environ["DB_NAME"]
-
-
-def test_config_env_port_set():
-    test_port = "1234"
-    os.environ["PORT"] = test_port
-    config = mkconfig()
-    assert config.port == test_port
-    del os.environ["PORT"]
-
-
-def test_config_env_token_set():
-    test_token = "testToken"
-    os.environ["TOKEN"] = test_token
-    config = mkconfig()
-    assert config.token == test_token
-    del os.environ["TOKEN"]
-
-
-def test_config_env_organization_set():
-    test_organization = "testOrganization"
-    os.environ["ORG"] = test_organization
-    config = mkconfig()
-    assert config.organization == test_organization
-    del os.environ["ORG"]
+@pytest.mark.parametrize("env_vars", ["ADDRESS=test/address"])
+def test_config_address_environ(config_environ):
+    assert config_environ.address == "test/address"
 
 
 def test_validate_default_valid():
-    config = QueryTimerConfig(adapter=DatabaseInterfaceType.CrateDB)
+    config = QueryTimerConfig(adapter=DatabaseInterfaceType.Dummy)
     assert config.validate_config()
 
 
@@ -161,15 +125,6 @@ def test_validate_adapter_invalid(mock_isfile):
     ex.match("-1 is not a valid DatabaseInterfaceType")
 
 
-def test_validate_port_invalid():
-    test_port = "0"
-    config = mkconfig()
-    config.port = test_port
-    assert not config.validate_config()
-    assert len(config.invalid_configs) == 1
-    assert "PORT" in config.invalid_configs[0]
-
-
 def test_not_enough_results():
     config = mkconfig()
     config.iterations = 10
@@ -181,7 +136,7 @@ def test_not_enough_results():
 
 
 @mock.patch("shutil.get_terminal_size", autospec=True)
-def test_terminal_to_small(mock_terminal_size):
+def test_terminal_too_small(mock_terminal_size):
     mock_size = mock.MagicMock()
     mock_terminal_size.return_value = mock_size
     mock_size.lines = 15
@@ -204,16 +159,30 @@ def test_load_args():
 
 
 @mock.patch("os.path.isfile")
-def test_config_default_select_query(mock_isfile):
+def test_config_defaults_dummy(mock_isfile):
     mock_isfile.return_value = True
     config = mkconfig()
-    assert config.validate_config(adapter=CrateDbAdapter)
+    config.adapter = DatabaseInterfaceType.Dummy
+    assert config.validate_config()
+    assert config.address == "localhost:12345"
+    assert config.query == "SELECT 42;"
+
+
+@mock.patch("os.path.isfile")
+def test_config_defaults_cratedb(mock_isfile):
+    mock_isfile.return_value = True
+    config = mkconfig()
+    config.adapter = DatabaseInterfaceType.CrateDB
+    assert config.validate_config()
+    assert config.address == "localhost:4200"
     assert config.query == "SELECT 1;"
 
 
 @mock.patch("os.path.isfile")
-def test_config_default_port_cratedb(mock_isfile):
+def test_config_defaults_influxdb(mock_isfile):
     mock_isfile.return_value = True
     config = mkconfig()
-    assert config.validate_config(adapter=CrateDbAdapter)
-    assert config.port == 4200
+    config.adapter = DatabaseInterfaceType.InfluxDB
+    assert config.validate_config()
+    assert config.address == "http://localhost:8086/"
+    assert config.query is None

@@ -32,6 +32,29 @@ class AdapterManager:
         cls.registry[interface] = factory
 
     @classmethod
-    def create(cls, interface, config, schema):
+    def get(cls, interface):
         factory: DatabaseInterfaceBase = cls.registry[interface]
+        return factory
+
+    @classmethod
+    def create(cls, interface, config, schema=None):
+        factory: DatabaseInterfaceBase = cls.get(interface)
         return factory(config, schema)
+
+
+def load_adapters():
+    """
+    Importing each adapter module will make the respective adapter
+    self-register with the adapter manager.
+
+    TODO: Load specific adapter on demand.
+    """
+    from tsperf.adapter.cratedb import CrateDbAdapter
+    from tsperf.adapter.dummy import DummyDbAdapter
+    from tsperf.adapter.influxdb import InfluxDbAdapter
+
+    # from tsperf.adapter.mongodb import MongoDbAdapter
+    from tsperf.adapter.mssql import MsSQLDbAdapter
+    from tsperf.adapter.postgresql import PostgresDbAdapter
+    from tsperf.adapter.timescaledb import TimescaleDbAdapter
+    from tsperf.adapter.timestream import TimeStreamAdapter

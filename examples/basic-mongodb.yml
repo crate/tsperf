@@ -12,7 +12,7 @@ services:
     environment:
       ID_START: 1
       ID_END: 500
-      HOST: "host.docker.internal"
+      ADDRESS: "address.docker.internal"
       USERNAME: ""
       PASSWORD: ""
       DB_NAME: "temperature"
@@ -28,7 +28,7 @@ services:
     environment:
       ID_START: 501
       ID_END: 1000
-      HOST: "host.docker.internal"
+      ADDRESS: "address.docker.internal"
       USERNAME: ""
       PASSWORD: ""
       DB_NAME: "temperature"

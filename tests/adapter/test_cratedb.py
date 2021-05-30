@@ -30,7 +30,7 @@ def test_close_connection(mock_connect):
     conn.cursor.return_value = cursor
     config = DatabaseConnectionConfiguration(
         adapter=DatabaseInterfaceType.CrateDB,
-        host="localhost:4200",
+        address="localhost:4200",
         username="crate",
         password="password",
     )
@@ -72,7 +72,7 @@ def test_prepare_database1(mock_connect):
 
     config = DatabaseConnectionConfiguration(
         adapter=DatabaseInterfaceType.CrateDB,
-        host="localhost:4200",
+        address="localhost:4200",
         username="crate2",
         password="password2",
     )
@@ -122,7 +122,7 @@ def test_prepare_database2(mock_connect):
 
     config = DatabaseConnectionConfiguration(
         adapter=DatabaseInterfaceType.CrateDB,
-        host="localhost:4200",
+        address="localhost:4200",
         username="crate3",
         password="password3",
         table_name="table_name",
@@ -169,7 +169,7 @@ def test_insert_stmt(mock_connect):
 
     config = DatabaseConnectionConfiguration(
         adapter=DatabaseInterfaceType.CrateDB,
-        host="localhost:4200",
+        address="localhost:4200",
         username="crate2",
         password="password2",
     )
@@ -217,7 +217,7 @@ def test_execute_query(mock_connect):
 
     config = DatabaseConnectionConfiguration(
         adapter=DatabaseInterfaceType.CrateDB,
-        host="localhost:4200",
+        address="localhost:4200",
         username="crate2",
         password="password2",
     )

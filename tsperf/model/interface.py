@@ -23,6 +23,7 @@ from enum import Enum
 
 
 class DatabaseInterfaceType(Enum):
+    Dummy = "dummy"
     CrateDB = "cratedb"
     TimescaleDB = "timescaledb"
     InfluxDB1 = "influxdb1"
@@ -35,8 +36,8 @@ class DatabaseInterfaceType(Enum):
 
 class DatabaseInterfaceBase:
 
-    default_port = None
-    default_select_query = None
+    default_address = None
+    default_query = None
 
     @abstractmethod
     def __init__(self):

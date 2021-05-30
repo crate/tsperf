@@ -26,7 +26,7 @@ from influxdb_client import Bucket, InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS, Point
 
 from tsperf.adapter import AdapterManager
-from tsperf.model.interface import DatabaseInterfaceBase, DatabaseInterfaceType
+from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceType
 from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import timed_function
 from tsperf.write.config import DataGeneratorConfig
@@ -34,7 +34,7 @@ from tsperf.write.config import DataGeneratorConfig
 logger = logging.getLogger(__name__)
 
 
-class InfluxDbAdapter(DatabaseInterfaceBase):
+class InfluxDbAdapter(AbstractDatabaseInterface):
 
     default_address = "http://localhost:8086/"
 

@@ -32,7 +32,7 @@ import numpy
 from blessed import Terminal
 
 from tsperf.engine import TsPerfEngine, load_schema
-from tsperf.model.interface import DatabaseInterfaceBase
+from tsperf.model.interface import AbstractDatabaseInterface
 from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import tic_toc, timed_function
 
@@ -50,7 +50,7 @@ failure = 0
 queries_done = Queue(1)
 
 
-def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
+def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
     """
     if config.database == 0:
         adapter = CrateDbAdapter(config=config, schema=schema)
@@ -74,7 +74,7 @@ def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
         )
         # adapter = MongoDbAdapter(config.address, config.username, config.password, config.db_name, schema)
     elif config.database == 4:
-        adapter = PostgresDbAdapter(
+        adapter = PostgreSQLAdapter(
             config.address,
             config.port,
             config.username,

@@ -33,7 +33,7 @@ class DatabaseInterfaceType(Enum):
     MsSQL = "mssql"
 
 
-class DatabaseInterfaceBase:
+class AbstractDatabaseInterface:
 
     default_address = None
     default_query = None

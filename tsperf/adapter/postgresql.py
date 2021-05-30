@@ -25,11 +25,12 @@ import psycopg2
 import psycopg2.extras
 from datetime_truncate import truncate
 
-from tsperf.model.interface import DatabaseInterfaceBase
+from tsperf.adapter import AdapterManager, DatabaseInterfaceMixin
+from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceType
 from tsperf.util.tictrack import timed_function
 
 
-class PostgresDbAdapter(DatabaseInterfaceBase):
+class PostgreSQLAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
     def __init__(
         self,
         host: str,

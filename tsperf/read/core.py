@@ -173,7 +173,7 @@ def print_progressbar(
 
 def probe_query():
     try:
-        engine.adapter.run_query(config.query)
+        engine.create_adapter().run_query(config.query)
         return True
     except Exception:
         logger.exception(f"Failure executing query '{config.query}'")
@@ -182,9 +182,10 @@ def probe_query():
 
 def start_query_run():
     global success, failure
+    adapter = engine.create_adapter()
     for _ in range(0, config.iterations):
         try:
-            engine.adapter.execute_query(config.query)
+            adapter.execute_query(config.query)
             success += 1
         except Exception:
             failure += 1

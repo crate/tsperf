@@ -28,7 +28,7 @@ from prometheus_client import start_http_server
 from tqdm import tqdm
 
 from tsperf.engine import TsPerfEngine, load_schema
-from tsperf.model.interface import DatabaseInterfaceBase
+from tsperf.model.interface import AbstractDatabaseInterface
 from tsperf.util import tictrack
 from tsperf.util.batch_size_automator import BatchSizeAutomator
 from tsperf.write.config import DataGeneratorConfig
@@ -64,7 +64,7 @@ insert_finished_queue = Queue(1)
 insert_exceptions = Queue()
 
 
-def get_database_adapter_old() -> DatabaseInterfaceBase:  # pragma: no cover
+def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
     """
     if config.database == 0:  # crate
         adapter = CrateDbAdapter(config=config, schema=schema)
@@ -244,6 +244,7 @@ def insert_routine():
         data_batch_size=data_batch_size,
     )
 
+    adapter = engine.create_adapter()
     while not current_values_queue.empty() or not stop_process():
         local_batch_size = insert_bsa.get_next_batch_size()
         if insert_bsa.auto_batch_mode:
@@ -253,7 +254,7 @@ def insert_routine():
 
         if len(batch) > 0:
             start = time.time()
-            do_insert(engine.adapter, timestamps, batch)
+            do_insert(adapter, timestamps, batch)
 
             if insert_bsa.auto_batch_mode and len(batch) == local_batch_size:
                 duration = time.time() - start
@@ -267,7 +268,7 @@ def insert_routine():
                 )
                 insert_bsa.insert_batch_time(duration)
 
-    engine.adapter.close_connection()
+    adapter.close_connection()
 
     return True
 
@@ -300,7 +301,9 @@ def fast_insert():
 def consecutive_insert():
     global last_ts
     logger.info("Starting single database writer thread")
-    engine.adapter.prepare_database()
+    adapter = engine.create_adapter()
+
+    adapter.prepare_database()
     last_insert = config.ingest_ts
     last_stat_ts_local = time.time()
     while not current_values_queue.empty() or not stop_process():
@@ -322,13 +325,13 @@ def consecutive_insert():
                 ingest_ts_factor = 1 / config.ingest_delta
                 last_insert = round(ts * ingest_ts_factor) / ingest_ts_factor
                 timestamps = [int(last_insert * 1000)] * len(batch)
-                do_insert(engine.adapter, timestamps, batch)
+                do_insert(adapter, timestamps, batch)
             except Empty:
                 c_values_queue_was_empty.inc()
 
         else:
             time.sleep(config.ingest_delta - insert_delta)
-    engine.adapter.close_connection()
+    adapter.close_connection()
 
     # Signal the Prometheus thread that insert is finished.
     insert_finished_queue.put_nowait(True)
@@ -362,10 +365,10 @@ def run_dg():
 
     logger.info("Starting database writer subsystem")
     if config.ingest_mode == IngestMode.CONSECUTIVE:
-        logger.info("Using consecutive insert mode")
+        logger.info("Using insert mode »consecutive«")
         adapter_thread = Thread(target=consecutive_insert, name="ConsecutiveInsert")
     else:
-        logger.info("Using fast insert mode")
+        logger.info("Using insert mode »fast«")
         adapter_thread = Thread(target=fast_insert, name="ParallelInsert")
     adapter_thread.start()
 

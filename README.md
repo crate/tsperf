@@ -61,8 +61,15 @@ See [generate data sets using mkjson] for an example how to use `cr8` together w
 
 
 ## Install
+
+### Python package
 ```shell
 pip install --user tsperf
+```
+
+### Docker image
+```shell
+docker run -it --rm --network=host tsperf tsperf write --help
 ```
 
 
@@ -86,6 +93,9 @@ docker run -it --rm --publish=4200:4200 --publish=5432:5432 crate:4.5.1
 # Feed data into CrateDB table.
 tsperf write --adapter=cratedb --schema=tsperf.schema.basic:environment.json
 tsperf write --schema=tsperf.schema.basic:environment.json --adapter=cratedb --address=cratedb.example.org:4200
+
+# Use Docker.
+docker run -it --rm --network=host tsperf tsperf write --schema=tsperf.schema.basic:environment.json --adapter=cratedb
 
 # Query data from CrateDB table.
 tsperf read --adapter=cratedb --query="SELECT * FROM environment LIMIT 10;"

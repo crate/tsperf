@@ -10,7 +10,6 @@ Backlog
 
 Prio 1
 ======
-- [o] Fix Docker-related stuff
 - [o] Adjust documentation
 - [o] Python PyPI & Docker image release recipes for GHA
 - [o] Implement fixed set of queries per use case
@@ -45,3 +44,4 @@ Done
 - [x] Migrate all remaining command line parameters
 - [x] CrateDB over PostgreSQL protocol
 - [x] List schemas: ``tsperf schema --list``
+- [x] Fix Docker-related stuff

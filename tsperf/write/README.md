@@ -96,7 +96,7 @@ The *Time Series Data Generator* `tsperf` package and can be installed using `pi
 Another way to use the Data Generator is to build the Docker Image:
 
 + navigate to root directory of this repository
-+ build docker image with `docker build -t data_gen -f Dockerfile .`
++ build docker image with `docker build -t tsperf -f Dockerfile .`
 + Adapt one of the example docker-compose files in the [example folder](examples)
 + start (e.g. crate example) with `docker-compose -f examples/basic-cratedb.yml up`
 
@@ -108,7 +108,7 @@ For example use cases see [Example use cases](#example-use-cases)
 + Look at the default configuration of the Data Generator by executing `tsperf write --help` in a terminal.
 + Run the Data Generator with the desired configuration values by executing `tsperf write` in a terminal.
 
-To look at example configurations navigate to the [example folder](examples). Each environment variable can be
+To look at example configurations navigate to the [example folder](../../examples). Each environment variable can be
 overwritten by using the corresponding command line argument.
 
 ### Supported Databases
@@ -249,7 +249,7 @@ Insert is done in batches.
 + Insert of multiple schemas into a single table is not possible as the table schema is only created once.
 + psycopg2 does not have the best insert performance for TimescaleDB (see [here](https://docs.timescale.com/latest/tutorials/quickstart-python#insert_rows))
   to insert a lot of data points, it is advised to split [IDs](#id_start) over multiple data-generator instances.
-+ TimescaleDB can be used with distributed hypertables. To test the data_generator on hypertables, the
++ TimescaleDB can be used with distributed hypertables. To test the data generator on hypertables, the
   `TIMESCALE_DISTRIBUTED` environment variable must be set to `True`.
 
 #### MongoDB
@@ -1070,7 +1070,7 @@ set the following environment variables:
 + ID_END: 100
 
 As we want to use CrateDB running on localhost we set the following environment variables:
-+ ADAPTER: cratedb
++ ADAPTER: "cratedb"
 + ADDRESS: "host.docker.internal:4200" (this is the host when trying to access localhost from inside a docker container)
 + USERNAME: "aValidUsername"
 + PASSWORD: "PasswordForTheValidUsername"
@@ -1089,20 +1089,22 @@ The resulting yml file could look like this:
 version: "2.3"
 services:
   datagen:
-    image: data_gen
+    image: tsperf
     ports:
       - 8000:8000
     environment:
       ID_START: 1
       ID_END: 100
-      ADDRESS: "address.docker.internal:4200"
-      USERNAME: ""
-      PASSWORD: ""
+
       INGEST_MODE: 0
       INGEST_SIZE: 720
       TIMESTAMP_DELTA: 5
-      SCHEMA: "tsperf.schema.factory.simple:machine.json"
+
       ADAPTER: cratedb
+      ADDRESS: "host.docker.internal:4200"
+      #USERNAME: ""
+      #PASSWORD: ""
+      SCHEMA: "tsperf.schema.factory.simple:machine.json"
 ```
 
 #### Running the example
@@ -1110,7 +1112,7 @@ services:
 To run this example follow the following steps:
 
 + navigate to root directory of this repository
-+ build docker image with `docker build -t data_gen -f Dockerfile .`
++ build docker image with `docker build -t tsperf -f Dockerfile .`
 + start an instance of CrateDB on localhost with `docker run -p "4200:4200" crate`
 + Enter USERNAME and PASSWORD in the [docker-compose file](../../examples/factory-simple-machine.yml)
     + If no user was created you can just delete both environment variables (crate will use a default user)
@@ -1149,7 +1151,7 @@ this can obviously be adjusted to create a bigger dataset.**
 To run this example follow the following steps:
 
 + navigate to root directory of this repository
-+ build docker image with `docker build -t data_gen -f Dockerfile .`
++ build docker image with `docker build -t tsperf -f Dockerfile .`
 + start an instance of CrateDB on localhost with `docker run -p "4200:4200" crate`
 + Add USERNAME and PASSWORD in the [docker-compose file](../../examples/factory-complex-scenario.yml)
     + If no user was created you can just ignore both environment variables (crate will use a default user)

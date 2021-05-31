@@ -6,13 +6,14 @@ version: "2.3"
 services:
 
   datagen1:
-    image: data_gen
+    image: tsperf
+    command: [ "tsperf", "write" ]
     ports:
       - 8000:8000
     environment:
       ID_START: 1
       ID_END: 500
-      ADDRESS: "address.docker.internal"
+      ADDRESS: "host.docker.internal:27017"
       USERNAME: ""
       PASSWORD: ""
       DATABASE: "temperature"
@@ -22,13 +23,14 @@ services:
       ADAPTER: mongodb
 
   datagen2:
-    image: data_gen
+    image: tsperf
+    command: [ "tsperf", "write" ]
     ports:
       - 8001:8000
     environment:
       ID_START: 501
       ID_END: 1000
-      ADDRESS: "address.docker.internal"
+      ADDRESS: "host.docker.internal:27017"
       USERNAME: ""
       PASSWORD: ""
       DATABASE: "temperature"

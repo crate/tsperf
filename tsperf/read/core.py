@@ -194,7 +194,7 @@ def start_query_run():
 
 def print_progress_thread():
     while queries_done.empty():
-        time.sleep(config.refresh_rate)
+        time.sleep(config.refresh_interval)
         total_queries = success + failure
         terminal_size = shutil.get_terminal_size()
         print_progressbar(

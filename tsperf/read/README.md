@@ -220,7 +220,7 @@ Values: list of Floats between 0 and 100 split by `,`
 
 Default: "50,60,75,90,99"
 
-#### REFRESH_RATE
+#### REFRESH_INTERVAL
 
 The time in seconds between updates of the output
 

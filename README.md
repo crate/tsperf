@@ -72,6 +72,10 @@ This section outlines the usage of `tsperf` on different databases. Please note 
 here is just for demonstration purposes. In reality, you will want to run the database workload
 against a database instance running on a decently powered machine.
 
+- For increasing concurrency, try `--concurrency=8`.
+- For enabling Prometheus metrics export, try `--prometheus-enable=true` and maybe `--prometheus-listen=0.0.0.0:8000`.
+- For increasing concurrency and number of iterations when querying, try `--concurrency=10 --iterations=2000`.
+
 
 ### CrateDB
 ```shell
@@ -80,26 +84,11 @@ docker run -it --rm --publish=4200:4200 --publish=5432:5432 crate:4.5.1
 
 # Feed data into CrateDB table.
 tsperf write --adapter=cratedb --schema=tsperf.schema.basic:environment.json
+tsperf write --schema=tsperf.schema.basic:environment.json --adapter=cratedb --address=cratedb.example.org:4200
 
 # Query data from CrateDB table.
 tsperf read --adapter=cratedb --query="SELECT * FROM environment LIMIT 10;"
 ```
-
-```shell
-# Increase concurrency
-tsperf write --schema=tsperf.schema.basic:environment.json --adapter=cratedb --concurrency=8
-
-# Feed data into CrateDB running on a remote address
-tsperf write --schema=tsperf.schema.basic:environment.json --adapter=cratedb --address=cratedb.example.org:4200
-
-# Feed data and expose metrics in Prometheus format
-tsperf write --schema=tsperf.schema.basic:environment.json --adapter=cratedb --prometheus-enable=true
-tsperf write --schema=tsperf.schema.basic:environment.json --adapter=cratedb --prometheus-enable=true --prometheus-listen=0.0.0.0:8000
-
-# Increase concurrency and number of iterations when querying.
-tsperf read --adapter=cratedb --concurrency=10 --iterations=2000
-```
-
 
 ### InfluxDB
 ```shell

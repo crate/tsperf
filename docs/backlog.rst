@@ -10,10 +10,6 @@ Backlog
 
 Prio 1
 ======
-- [o] Consolidate names: sensor, device, machine, edge, factory, plant
-- [o] Rename "db_name" to "database" and "table_name" to "table"?
-- [o] Migrate all remaining command line parameters
-- [o] Add "humidity" to "environment.json" schema
 - [o] CrateDB over PostgreSQL protocol
 - [o] List schemas: ``tsperf schema list``
 - [o] Probe connectivity on Amazon Timestream before running job
@@ -22,6 +18,7 @@ Prio 1
 - [o] Python PyPI & Docker image release recipes for GHA
 - [o] Implement fixed set of queries per use case
 - [o] Improve report output
+- [o] Validation with Pydantic
 
 
 Prio 2
@@ -31,6 +28,7 @@ Prio 2
 - [o] Parallelize using Dask
 - [o] Add more databases like CitusDB, PolarDB, CockroachDB, QuestDB(+PostgreSQL,InfluxDB), Yugabyte, Clickhouse, MontyDB
 - [o] Emit data to message brokers like MQTT, RabbitMQ, Azure IoTHub
+- [o] Consolidate names: sensor, device, machine, edge, factory, plant
 
 
 ****
@@ -42,3 +40,6 @@ Done
       A "channel" might map to a physical item like a "machine" or "device".
 - [x] Make it possible to use built-in schemas.
 - [x] MongoDB adapter needs some love
+- [x] Add "humidity" to "environment.json" schema
+- [x] Rename "db_name" to "database" and "table_name" to "table"
+- [x] Migrate all remaining command line parameters

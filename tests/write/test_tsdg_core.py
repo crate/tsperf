@@ -38,11 +38,12 @@ def test_get_database_adapter_dummy(adapter_mock, config):
             address="localhost:12345",
             username=None,
             password=None,
-            database="",
-            table="",
+            database=None,
+            table=None,
             partition="week",
             shards=4,
             replicas=1,
+            timestamp_start=mock.ANY,
         ),
         schema={},
     )
@@ -60,6 +61,7 @@ def test_get_database_adapter(factory_mock, adapter, config):
         config=DataGeneratorConfig(
             adapter=adapter,
             address=mock.ANY,
+            timestamp_start=mock.ANY,
         ),
         schema={},
     )
@@ -124,17 +126,17 @@ def test_get_next_value_continuous():
 
 @mock.patch("tsperf.write.core.tictrack", autospec=True)
 @mock.patch("tsperf.write.core.logger", autospec=True)
-def test_log_stat_delta(mock_log, mock_tictrack):
+def test_log_statistics_interval(mock_log, mock_tictrack):
     # delta not reached no output
-    dg.config.stat_delta = 1
-    dg.log_stat_delta(time.time())
+    dg.config.statistics_interval = 1
+    dg.statistics_logger(time.time())
     mock_log.info.assert_not_called()
     # no values in tic_toc_delta no output
-    dg.log_stat_delta(time.time() - 2)
+    dg.statistics_logger(time.time() - 2)
     mock_log.info.assert_not_called()
     # output when everything is ok
     mock_tictrack.tic_toc_delta = {"foo": [1, 2, 3, 4, 5]}
-    dg.log_stat_delta(time.time() - 2)
+    dg.statistics_logger(time.time() - 2)
     mock_log.info.assert_called()
 
 

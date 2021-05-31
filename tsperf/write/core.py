@@ -135,7 +135,7 @@ def create_channels() -> dict:
     id_start = config.id_start
     id_end = config.id_end + 1
     count = id_end - id_start
-    logger.info(f"Creating {count} objects [{id_start}, {id_end}]")
+    logger.info(f"Creating {count} channels [{id_start}, {id_end}]")
     channels = {}
     for i in tqdm(range(config.id_start, config.id_end + 1)):
         channels[i] = Channel(i, get_sub_element("tags"), get_sub_element("fields"))
@@ -165,9 +165,9 @@ def get_next_value(channels: dict):
     if len(channel_values) > 0:
         c_generated_values.inc(len(channel_values))
         if config.ingest_mode == IngestMode.FAST:
-            ts = last_ts + config.ingest_delta
-            ingest_ts_factor = 1 / config.ingest_delta
-            last_ts = round(ts * ingest_ts_factor) / ingest_ts_factor
+            ts = last_ts + config.timestamp_delta
+            timestamp_factor = 1 / config.timestamp_delta
+            last_ts = round(ts * timestamp_factor) / timestamp_factor
             timestamps = [int(last_ts * 1000)] * len(channel_values)
             current_values_queue.put(
                 {"timestamps": timestamps, "batch": channel_values}
@@ -176,24 +176,24 @@ def get_next_value(channels: dict):
             current_values_queue.put(channel_values)
 
 
-def log_stat_delta(last_stat_ts_local: float) -> float:
-    if time.time() - last_stat_ts_local >= config.stat_delta:
+def statistics_logger(last_stat_ts_local: float) -> float:
+    if time.time() - last_stat_ts_local >= config.statistics_interval:
         for key, value in tictrack.tic_toc_delta.items():
             logger.info(f"Average time for {key}: {(sum(value) / len(value))}")
         tictrack.tic_toc_delta = {}
     return time.time()
 
 
-def stat_delta_thread_function():
-    logger.info("Starting statistics delta computation thread")
+def statistics_thread():
+    logger.info("Starting statistics thread")
     last_stat_ts_local = time.time()
     while not stop_process():
-        if time.time() - last_stat_ts_local >= config.stat_delta:
-            last_stat_ts_local = log_stat_delta(last_stat_ts_local)
+        if time.time() - last_stat_ts_local >= config.statistics_interval:
+            last_stat_ts_local = statistics_logger(last_stat_ts_local)
         else:
             # we could calculate the exact time to sleep until next output but this would block the
             # the thread until it happens, this would mean at the end the whole data generator could
-            # sleep for another `config.stat_delta` seconds before finishing
+            # sleep for another `config.statistics_interval` seconds before finishing
             time.sleep(1)
 
 
@@ -291,7 +291,7 @@ def spawn_insert_threads():
 def fast_insert():
     fast_insert_threads = [
         Thread(target=spawn_insert_threads, name="InsertThreadSpawner"),
-        Thread(target=stat_delta_thread_function, name="StatDeltaThread"),
+        Thread(target=statistics_thread, name="StatisticsThread"),
     ]
     for thread in fast_insert_threads:
         thread.start()
@@ -305,33 +305,33 @@ def consecutive_insert():
     adapter = engine.create_adapter()
 
     adapter.prepare_database()
-    last_insert = config.ingest_ts
+    last_insert = config.timestamp_start
     last_stat_ts_local = time.time()
     while not current_values_queue.empty() or not stop_process():
         # we calculate the time delta from the last insert to the current timestamp
         insert_delta = time.time() - last_insert
-        # delta needs to be bigger than ingest_delta
-        # if delta is smaller than ingest_delta the time difference is waited (as we want an insert
-        # every `config.ingest_delta` second
-        if insert_delta > config.ingest_delta:
-            last_stat_ts_local = log_stat_delta(last_stat_ts_local)
+        # delta needs to be bigger than timestamp_delta
+        # if delta is smaller than timestamp_delta the time difference is waited (as we want an insert
+        # every `config.timestamp_delta` second
+        if insert_delta > config.timestamp_delta:
+            last_stat_ts_local = statistics_logger(last_stat_ts_local)
             c_inserted_values.inc(config.id_end - config.id_start + 1)
             try:
                 batch = current_values_queue.get_nowait()
                 ts = time.time()
                 # we want the same timestamp for each value this timestamp should be the same
                 # even if the write runs in multiple containers therefore we round the
-                # timestamp to match ingest_delta this is done by multiplying
-                # by ingest_delta and then dividing the result by ingest_delta
-                ingest_ts_factor = 1 / config.ingest_delta
-                last_insert = round(ts * ingest_ts_factor) / ingest_ts_factor
+                # timestamp to match timestamp_delta this is done by multiplying
+                # by timestamp_delta and then dividing the result by timestamp_delta
+                timestamp_factor = 1 / config.timestamp_delta
+                last_insert = round(ts * timestamp_factor) / timestamp_factor
                 timestamps = [int(last_insert * 1000)] * len(batch)
                 do_insert(adapter, timestamps, batch)
             except Empty:
                 c_values_queue_was_empty.inc()
 
         else:
-            time.sleep(config.ingest_delta - insert_delta)
+            time.sleep(config.timestamp_delta - insert_delta)
     adapter.close_connection()
 
     # Signal the Prometheus thread that insert is finished.
@@ -362,7 +362,9 @@ def prometheus_insert_percentage():
 
 @tictrack.timed_function()
 def run_dg():
-    logger.info(f"Starting data generator with {config} and schema {config.schema}")
+    logger.info(
+        f"Starting data generator with config »{config}« and schema »{config.schema}«"
+    )
 
     logger.info("Starting database writer subsystem")
     if config.ingest_mode == IngestMode.CONSECUTIVE:
@@ -457,7 +459,7 @@ def start(configuration: DataGeneratorConfig):
         start_http_server(config.prometheus_port, addr=config.prometheus_host)
 
     data_batch_size = config.id_end - config.id_start + 1
-    last_ts = config.ingest_ts
+    last_ts = config.timestamp_start
 
     # start the write logic
     run_dg()

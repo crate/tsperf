@@ -36,9 +36,9 @@ class DatabaseInterfaceType(Enum):
 class AbstractDatabaseInterface:
 
     default_address = None
-    default_query = None
     default_username = None
     default_database = None
+    default_query = None
 
     @abstractmethod
     def __init__(self):

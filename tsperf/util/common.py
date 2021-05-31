@@ -18,10 +18,8 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-import argparse
 import logging
 import sys
-from typing import Dict
 
 import urllib3
 
@@ -33,42 +31,6 @@ def setup_logging(level=logging.INFO) -> None:
     logging.basicConfig(format=log_format, stream=sys.stderr, level=level)
 
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-
-def read_configuration(config: object, args_info: Dict, description: str):
-
-    parser = argparse.ArgumentParser(
-        description=description,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-
-    for element in vars(config):
-        if element in args_info:
-            kwargs = {}
-
-            if "action" in args_info[element]:
-                kwargs["action"] = args_info[element]["action"]
-            if "required" in args_info[element]:
-                kwargs["required"] = args_info[element]["required"]
-            if "default" in args_info[element]:
-                kwargs["default"] = args_info[element]["default"]
-            else:
-                kwargs["default"] = getattr(config, element)
-
-            if "choices" in args_info[element]:
-                kwargs["choices"] = args_info[element]["choices"]
-            if "type" in args_info[element]:
-                kwargs["type"] = args_info[element]["type"]
-
-            parser.add_argument(
-                f"--{element}",
-                help=args_info[element]["help"],
-                **kwargs,
-            )
-
-    arguments = parser.parse_args()
-    config.load_args(vars(arguments))
-    return config
 
 
 def to_list(obj):

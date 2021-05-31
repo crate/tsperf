@@ -66,7 +66,20 @@ adapter_options = cloup.option_group(
         "--address",
         envvar="ADDRESS",
         type=click.STRING,
-        help="Database address (DSN URI, hostname:port) according to the database client requirements",
+        help="Database address (DSN URI, hostname:port) according to the database client requirements. "
+        "When left empty, the default will be to connect to the respective database on localhost.",
+    ),
+    click.option(
+        "--database",
+        envvar="DATABASE",
+        type=click.STRING,
+        help="Name of the database. Applies to specific databases only.",
+    ),
+    click.option(
+        "--table",
+        envvar="TABLE",
+        type=click.STRING,
+        help="Name of the table. Applies to specific databases only.",
     ),
 )
 
@@ -128,6 +141,25 @@ performance_options = cloup.option_group(
         help="Number of worker threads for executing queries in parallel. Recommended: 1-4",
     ),
     click.option(
+        "--partition",
+        envvar="PARTITION",
+        type=click.Choice(
+            [
+                "second",
+                "minute",
+                "hour",
+                "day",
+                "week",
+                "month",
+                "quarter",
+                "year",
+            ],
+            case_sensitive=False,
+        ),
+        default="week",
+        help="Is used to partition table by a specified value. Used with CrateDB, Postgresql and TimescaleDB.",
+    ),
+    click.option(
         "--shards",
         envvar="SHARDS",
         type=click.INT,
@@ -183,6 +215,20 @@ write_options = cloup.option_group(
         type=click.INT,
         default=500,
         help="The Data Generator will create `(id_end + 1) - id_start` channels. Must be bigger or equal to id_start.",
+    ),
+    cloup.option(
+        "--timestamp-start",
+        envvar="TIMESTAMP_START",
+        type=click.FLOAT,
+        help="The start Unix timestamp of the generated data. If not provided, it will use the current time.",
+    ),
+    cloup.option(
+        "--timestamp-delta",
+        envvar="TIMESTAMP_DELTA",
+        type=click.FLOAT,
+        default=0.5,
+        help="A positive number to define the interval between timestamps of generated values. "
+        "With `ingest_mode = False`, this is the actual time between inserts.",
     ),
     cloup.option(
         "--ingest-mode",
@@ -245,6 +291,13 @@ read_options = cloup.option_group(
         default=None,
         help="How many times each thread executes the query",
     ),
+    click.option(
+        "--quantiles",
+        envvar="QUANTILES",
+        type=click.STRING,
+        default="50,60,75,90,99",
+        help="Which quantiles should be displayed at the end of the run. Values are separated by ','",
+    ),
 )
 
 
@@ -271,6 +324,13 @@ def main():
 @authentication_options
 @performance_options
 @write_options
+@click.option(
+    "--statistics-interval",
+    envvar="STATISTICS_INTERVAL",
+    type=click.FLOAT,
+    default=30,
+    help="Interval in seconds to emit statistic outputs to the log",
+)
 @misc_options
 def write(**kwargs):
 
@@ -287,6 +347,13 @@ def write(**kwargs):
 @authentication_options
 @performance_options
 @read_options
+@click.option(
+    "--refresh-interval",
+    envvar="REFRESH_INTERVAL",
+    type=click.FLOAT,
+    default=0.1,
+    help="Output refresh interval in seconds",
+)
 @misc_options
 def read(**kwargs):
 

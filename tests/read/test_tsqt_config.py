@@ -46,12 +46,12 @@ def test_config_vanilla():
     assert config.concurrency == 4
     assert config.iterations == 1000
     assert config.quantiles == ["50", "60", "75", "90", "99"]
-    assert config.refresh_rate == 0.1
+    assert config.refresh_interval == 0.1
 
     assert config.address is None
     assert config.username is None
     assert config.password is None
-    assert config.database == ""
+    assert config.database is None
 
     assert config.influxdb_organization is None
     assert config.influxdb_token is None
@@ -93,9 +93,9 @@ def test_config_quantiles_environ(config_environ):
     assert config_environ.quantiles == ["1", "2", "3", "4", "5"]
 
 
-@pytest.mark.parametrize("env_vars", ["REFRESH_RATE=9"])
-def test_config_refresh_rate_environ(config_environ):
-    assert config_environ.refresh_rate == 9
+@pytest.mark.parametrize("env_vars", ["REFRESH_INTERVAL=9"])
+def test_config_refresh_interval_environ(config_environ):
+    assert config_environ.refresh_interval == 9
 
 
 @pytest.mark.parametrize("env_vars", ["QUERY=SELECT * FROM test"])

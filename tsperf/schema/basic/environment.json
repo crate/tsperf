@@ -10,7 +10,7 @@
         "fields": {
             "description": "fields contain all measured values associated with a tag",
             "temperature": {
-                "description": "temperature measured in a fridge",
+                "description": "temperature measured",
                 "key": {
                     "description": "key used in the database to store this measurement",
                     "value": "value"
@@ -49,6 +49,39 @@
                 "error_length": {
                     "value": 1.08,
                     "description": "the average consecutive values that are outside the stdev"
+                }
+            },
+            "humidity": {
+                "description": "humidity measured",
+                "key": {
+                    "value": "value"
+                },
+                "type": {
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 35.0,
+                    "unit": "%"
+                },
+                "max": {
+                    "value": 60.0,
+                    "unit": "%"
+                },
+                "mean": {
+                    "value": 45.3,
+                    "unit": "%"
+                },
+                "stdev": {
+                    "value": 5.0
+                },
+                "variance": {
+                    "value": 0.10
+                },
+                "error_rate": {
+                    "value": 0.005
+                },
+                "error_length": {
+                    "value": 1.08
                 }
             }
         }

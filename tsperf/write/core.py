@@ -469,7 +469,7 @@ def start(configuration: DataGeneratorConfig):
             run = sum(v) / len(v)
         logger.info(f"Average time for {k}: {(sum(v) / len(v))}")
 
-    logger.info(f"Records per second: {data_batch_size * config.ingest_size / run}")
     logger.info(
-        f"Readings per second: {data_batch_size * config.ingest_size * len(get_sub_element('fields').keys()) / run}"
+        f"Values per second: {data_batch_size * config.ingest_size * len(get_sub_element('fields').keys()) / run}"
     )
+    logger.info(f"Records per second: {data_batch_size * config.ingest_size / run}")

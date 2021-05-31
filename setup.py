@@ -42,7 +42,7 @@ setuptools.setup(
     version=__version__,
     author="Crate.io",
     author_email="office@crate.at",
-    description="A tool to test performance of different time-series databases",
+    description="A tool to test performance of time-series databases",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/crate/tsperf",

@@ -6,7 +6,7 @@ This chapter cover general information about the Query Timer, e.g. supported dat
 
 ### About
 
-The Query Timer is a tool to run queries against different databases and determine how fast the query is.
+The Query Timer is a tool to invoke queries against databases and measure its responsiveness.
 
 ### How To
 

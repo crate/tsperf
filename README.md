@@ -141,3 +141,25 @@ tsperf write --schema=tsperf.schema.basic:environment.json --timescaledb-pgcopy
 # Query data from TimescaleDB hypertable.
 tsperf read --iterations=3000 --query="SELECT * FROM environment LIMIT 10;"
 ```
+
+
+### Timestream
+```shell
+# Run Timestream
+
+# There is no way to run Amazon Timestream on premises.
+# - https://aws.amazon.com/timestream/
+# - https://docs.aws.amazon.com/timestream/
+
+# Configure tsperf
+export ADAPTER=timestream
+export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+export AWS_REGION_NAME=us-west-2
+
+# Feed data into Timestream table.
+tsperf write --schema=tsperf.schema.basic:environment.json
+
+# Query data from Timestream table.
+tsperf read --iterations=3000 --query="SELECT * FROM environment LIMIT 10;"
+```

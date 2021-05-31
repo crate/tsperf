@@ -24,6 +24,7 @@ from enum import Enum
 
 class DatabaseInterfaceType(Enum):
     CrateDB = "cratedb"
+    CrateDBpg = "cratedbpg"
     Dummy = "dummy"
     InfluxDB = "influxdb"
     MicrosoftSQL = "mssql"

@@ -84,7 +84,7 @@ To connect with TimescaleDB the following environment variables must be set:
 + [ADDRESS](#address): hostname
 + [USERNAME](#username): username of TimescaleDB user
 + [PASSWORD](#password): password of TimescaleDB user
-+ [DB_NAME](#db_name): the database name with which to connect
++ [DATABASE](#database): the database name with which to connect
 
 #### MongoDB
 
@@ -98,7 +98,7 @@ To connect with MongoDB the following environment variables must be set:
 + [ADDRESS](#address): hostname (can include port if not standard MongoDB port is used)
 + [USERNAME](#username): username of TimescaleDB user
 + [PASSWORD](#password): password of TimescaleDB user
-+ [DB_NAME](#db_name): The name of the MongoDB database that will be used
++ [DATABASE](#database): The name of the MongoDB database that will be used
 
 ##### Specifics
 
@@ -116,7 +116,7 @@ To connect with PostgreSQL the following environment variables must be set:
 + [ADDRESS](#address): hostname
 + [USERNAME](#username): username of TimescaleDB user
 + [PASSWORD](#password): password of TimescaleDB user
-+ [DB_NAME](#db_name): the database name with which to connect
++ [DATABASE](#database): the database name with which to connect
 
 #### AWS Timestream
 
@@ -129,7 +129,7 @@ To connect with AWS Timestream the following environment variables must be set:
 + [AWS_ACCESS_KEY_ID](#aws_access_key_id): AWS Access Key ID
 + [AWS_SECRET_ACCESS_KEY](#aws_secret_access_key): AWS Secret Access Key
 + [AWS_REGION_NAME](#aws_region_name): AWS Region
-+ [DB_NAME](#db_name): the database name to connect to or create
++ [DATABASE](#database): the database name to connect to or create
 
 ##### Specifics
 
@@ -148,7 +148,7 @@ To connect with Microsoft SQL Server the following environment variables must be
 + [ADDRESS](#address): the host where Microsoft SQL Server is running in this [format](https://www.connectionstrings.com/azure-sql-database/)
 + [USERNAME](#username): Database user
 + [PASSWORD](#password): Password of the database user
-+ [DB_NAME](#db_name): the database name to connect to or create
++ [DATABASE](#database): the database name to connect to or create
 
 ### Using MongoDB
 
@@ -280,7 +280,7 @@ Default: None
 
 used with CrateDB, TimescaleDB, MongoDB, Postgresql, MSSQL.
 
-#### DB_NAME
+#### DATABASE
 
 Type: String
 
@@ -291,14 +291,14 @@ Default: empty string
 used with TimescaleDB, MongoDB, AWS Timestream, Postgresql, MSSQL.
 
 **TimescaleDB, Postgresql, MSSQL:**
-The value of `DB_NAME` is used when connecting to TimescaleDB. This database must already exist in your TimescaleDB
+The value of `DATABASE` is used when connecting to TimescaleDB. This database must already exist in your TimescaleDB
 instance and must have already been initialized with `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;`.
 
 **MongoDB:**
-The value of `DB_NAME` is used as the database parameter of MongoDB.
+The value of `DATABASE` is used as the database parameter of MongoDB.
 
 **AWS Timestream:**
-The value of `DB_NAME` is used as the database parameter of AWS Timestream.
+The value of `DATABASE` is used as the database parameter of AWS Timestream.
 
 ### Environment variables used to configure InfluxDB
 

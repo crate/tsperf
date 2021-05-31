@@ -52,7 +52,7 @@ class InfluxDbAdapter(AbstractDatabaseInterface):
         self.schema = schema or {}
         self.bucket = None
 
-        database_name = config.db_name
+        database_name = config.database
         self.database_name = (database_name, self._get_schema_database_name())[
             database_name is None or database_name == ""
         ]

@@ -15,7 +15,7 @@ services:
       ADDRESS: "address.docker.internal"
       USERNAME: ""
       PASSWORD: ""
-      DB_NAME: "temperature"
+      DATABASE: "temperature"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       SCHEMA: "tsperf.schema.basic:environment.json"
@@ -31,7 +31,7 @@ services:
       ADDRESS: "address.docker.internal"
       USERNAME: ""
       PASSWORD: ""
-      DB_NAME: "temperature"
+      DATABASE: "temperature"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       SCHEMA: "tsperf.schema.basic:environment.json"

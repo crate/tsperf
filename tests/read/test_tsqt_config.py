@@ -51,7 +51,7 @@ def test_config_vanilla():
     assert config.address is None
     assert config.username is None
     assert config.password is None
-    assert config.db_name == ""
+    assert config.database == ""
 
     assert config.influxdb_organization is None
     assert config.influxdb_token is None

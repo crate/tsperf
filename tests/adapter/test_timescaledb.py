@@ -46,7 +46,7 @@ def test_close_connection(mock_connect):
         address="localhost:5432",
         username="foobar",
         password=None,
-        db_name="test",
+        database="test",
         schema=test_schema1,
     )
     db_writer = TimescaleDbAdapter(config=config, schema=test_schema1)
@@ -106,7 +106,7 @@ def test_prepare_database_auth(mock_connect, config):
 
 
 @mock.patch.object(psycopg2, "connect", autospec=True)
-def test_prepare_database_table_name_partition(mock_connect, config):
+def test_prepare_database_table_partition(mock_connect, config):
     """
     This function tests if the .prepare_database() function uses the correct statement to create the database table
 
@@ -115,7 +115,7 @@ def test_prepare_database_table_name_partition(mock_connect, config):
         TimescaleDbAdapter is called.
 
     Test Case 1: calling TimescaleDbAdapter.prepare_database() with default values overwritten by constructor arguments
-    -> "table_name" is in stmt (table name)
+    -> "table" is in stmt (table name)
     -> "ts_day is in stmt (partitioning of hyper_table)
     -> conn.commit function has been called
 
@@ -127,7 +127,7 @@ def test_prepare_database_table_name_partition(mock_connect, config):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
 
-    config.table_name = "foobar"
+    config.table = "foobar"
     config.partition = "day"
     db_writer = TimescaleDbAdapter(config=config, schema=test_schema2)
 

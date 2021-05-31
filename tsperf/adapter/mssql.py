@@ -50,7 +50,7 @@ class MsSQLDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
 
         driver = "{ODBC Driver 17 for SQL Server}"
         connection_string = (
-            f"DRIVER={driver};SERVER={self.host},{self.port};DATABASE={config.db_name};"
+            f"DRIVER={driver};SERVER={self.host},{self.port};DATABASE={config.database};"
             f"UID={self.username};PWD={self.password};CONNECTION TIMEOUT=10;"
         )
         logger.info(f"Connecting with »{connection_string}«")
@@ -58,8 +58,8 @@ class MsSQLDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         self.cursor = self.conn.cursor()
         self.cursor.fast_executemany = True
         self.schema = schema
-        self.table_name = (config.table_name, self._get_schema_table_name())[
-            config.table_name is None or config.table_name == ""
+        self.table_name = (config.table, self._get_schema_table_name())[
+            config.table is None or config.table == ""
         ]
 
     def prepare_database(self):

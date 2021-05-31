@@ -77,20 +77,20 @@ def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
             config.port,
             config.username,
             config.password,
-            config.db_name,
+            config.database,
             schema,
-            config.table_name,
+            config.table,
             config.partition,
             config.copy,
             config.distributed,
         )
     elif config.database == 2:  # influx
         adapter = InfluxDbAdapter(
-            config.address, config.token, config.organization, schema, config.db_name
+            config.address, config.token, config.organization, schema, config.database
         )
     elif config.database == 3:  # mongo
         adapter = MongoDbAdapter(
-            config.address, config.username, config.password, config.db_name, schema
+            config.address, config.username, config.password, config.database, schema
         )
     elif config.database == 4:  # postgres
         adapter = PostgreSQLAdapter(
@@ -98,9 +98,9 @@ def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
             config.port,
             config.username,
             config.password,
-            config.db_name,
+            config.database,
             schema,
-            config.table_name,
+            config.table,
             config.partition,
         )
     elif config.database == 5:  # timestream
@@ -108,7 +108,7 @@ def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
             config.aws_access_key_id,
             config.aws_secret_access_key,
             config.aws_region_name,
-            config.db_name,
+            config.database,
             schema,
         )
     elif config.database == 6:  # ms_sql
@@ -116,10 +116,10 @@ def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
             config.address,
             config.username,
             config.password,
-            config.db_name,
+            config.database,
             schema,
             port=config.port,
-            table_name=config.table_name,
+            table=config.table,
         )
     else:
         adapter = None

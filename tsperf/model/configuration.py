@@ -19,8 +19,8 @@ class DatabaseConnectionConfiguration:
     address: str = None
     username: str = None
     password: str = None
-    db_name: str = None
-    table_name: str = None
+    database: str = None
+    table: str = None
 
     partition: str = None
 
@@ -50,8 +50,8 @@ class DatabaseConnectionConfiguration:
         return cls(**options)
 
     def __post_init__(self):
-        self.db_name = self.db_name or os.getenv("DB_NAME", "")
-        self.table_name = self.table_name or os.getenv("TABLE_NAME", "")
+        self.database = self.database or os.getenv("DATABASE", "")
+        self.table = self.table or os.getenv("TABLE", "")
         self.partition = self.partition or os.getenv("PARTITION", "week")
 
     def validate(self):

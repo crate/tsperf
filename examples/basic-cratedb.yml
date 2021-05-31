@@ -11,12 +11,12 @@ services:
     environment:
       ID_START: 1
       ID_END: 500
-      ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
-      TABLE_NAME: "timeseries"
-      SCHEMA: "tsperf.schema.basic:environment.json"
       ADAPTER: cratedb
+      ADDRESS: "address.docker.internal:4200"
+      TABLE: "timeseries"
+      SCHEMA: "tsperf.schema.basic:environment.json"
 
   datagen2:
     image: data_gen
@@ -25,9 +25,9 @@ services:
     environment:
       ID_START: 501
       ID_END: 1000
-      ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
-      TABLE_NAME: "timeseries"
-      SCHEMA: "tsperf.schema.basic:environment.json"
       ADAPTER: cratedb
+      ADDRESS: "address.docker.internal:4200"
+      TABLE: "timeseries"
+      SCHEMA: "tsperf.schema.basic:environment.json"

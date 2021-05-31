@@ -41,4 +41,4 @@ test: virtualenv-dev
 	$(pytest) -vvv tests
 
 coverage: virtualenv-dev
-	$(pytest) --cov=tsperf --cov-fail-under=95 --cov-branch --cov-report=term tests
+	$(pytest) --cov=tsperf --cov-fail-under=80 --cov-branch --cov-report=term tests

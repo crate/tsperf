@@ -44,7 +44,7 @@ def test_prepare_database1(mock_connect, config):
         address="localhost:1433",
         username="foobar",
         password="bazqux",
-        db_name="testdrive",
+        database="testdrive",
         schema=test_schema1,
     )
     db_writer = MsSQLDbAdapter(config=config, schema=test_schema1)
@@ -71,7 +71,7 @@ def test_prepare_database2(mock_connect, config):
         MsSQLDbAdapter is called.
 
     Test Case 1: calling MsSQLDbAdapter.prepare_database() with default values overwritten by constructor arguments
-    -> "table_name" is in stmt (table name)
+    -> "table" is in stmt (table name)
     -> conn.commit function has been called
 
     :param mock_connect: mocked function call from psycopg2.client.connect()
@@ -82,7 +82,7 @@ def test_prepare_database2(mock_connect, config):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
 
-    config.table_name = "foobar"
+    config.table = "foobar"
     db_writer = MsSQLDbAdapter(config=config, schema=test_schema1)
 
     # Test Case 1:

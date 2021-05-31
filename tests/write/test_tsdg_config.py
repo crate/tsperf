@@ -57,8 +57,8 @@ def test_config_default():
     assert config.address is None
     assert config.username is None
     assert config.password is None
-    assert config.db_name == ""
-    assert config.table_name == ""
+    assert config.database == ""
+    assert config.table == ""
     assert config.partition == "week"
 
     assert config.shards == 4
@@ -159,14 +159,14 @@ def test_config_password_environ(config_environ):
     assert config_environ.password == "password"
 
 
-@pytest.mark.parametrize("env_vars", ["DB_NAME=dbName"])
-def test_config_dbname_environ(config_environ):
-    assert config_environ.db_name == "dbName"
+@pytest.mark.parametrize("env_vars", ["DATABASE=dbName"])
+def test_config_database_environ(config_environ):
+    assert config_environ.database == "dbName"
 
 
-@pytest.mark.parametrize("env_vars", ["TABLE_NAME=testTableName"])
-def test_config_tablename_environ(config_environ):
-    assert config_environ.table_name == "testTableName"
+@pytest.mark.parametrize("env_vars", ["TABLE=testTableName"])
+def test_config_table_environ(config_environ):
+    assert config_environ.table == "testTableName"
 
 
 @pytest.mark.parametrize("env_vars", ["PARTITION=day"])

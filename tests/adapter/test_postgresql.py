@@ -44,7 +44,7 @@ def test_close_connection(mock_connect):
         address="localhost:5432",
         username="foobar",
         password=None,
-        db_name="test",
+        database="test",
     )
     db_writer = PostgreSQLAdapter(config=config, schema=test_schema1)
 
@@ -88,7 +88,7 @@ def test_prepare_database1(mock_connect):
         address="localhost:5432",
         username="foobar",
         password="bazqux",
-        db_name="test",
+        database="test",
     )
     db_writer = PostgreSQLAdapter(config=config, schema=test_schema1)
 
@@ -118,7 +118,7 @@ def test_prepare_database2(mock_connect, config):
         TimescaleDbAdapter is called.
 
     Test Case 1: calling TimescaleDbAdapter.prepare_database() with default values overwritten by constructor arguments
-    -> "table_name" is in stmt (table name)
+    -> "table" is in stmt (table name)
     -> "ts_day is in stmt (partitioning of hyper_table)
     -> conn.commit function has been called
 
@@ -130,7 +130,7 @@ def test_prepare_database2(mock_connect, config):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
 
-    config.table_name = "table_name"
+    config.table = "table"
     config.partition = "day"
     db_writer = PostgreSQLAdapter(config=config, schema=test_schema1)
 
@@ -138,7 +138,7 @@ def test_prepare_database2(mock_connect, config):
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
     # table name is in stmt
-    assert "table_name" in stmt
+    assert "table" in stmt
     # partition is correctly set
     assert "ts_day" in stmt
     conn.commit.assert_called()

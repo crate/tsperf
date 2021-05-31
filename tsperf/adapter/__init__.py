@@ -89,5 +89,7 @@ class DatabaseInterfaceMixin:
 
     @property
     def database(self):
-        username = self.config.db_name and self.config.db_name or self.default_database
+        username = (
+            self.config.database and self.config.database or self.default_database
+        )
         return username

@@ -39,8 +39,8 @@ Data Generator can be setup and the functionality as well as explain different e
       - [ADDRESS](#address)
       - [USERNAME](#username)
       - [PASSWORD](#password)
-      - [DB_NAME](#db_name)
-      - [TABLE_NAME](#table_name)
+      - [DATABASE](#database)
+      - [TABLE](#table)
       - [PARTITION](#partition)
     + [Environment variables used to configure CrateDB](#environment-variables-used-to-configure-cratedb)
       - [SHARDS](#shards)
@@ -141,7 +141,7 @@ environment variables must be set:
 ##### Table Setup
 
 A table gets it's name either from the provided [schema](#data-generator-schemas) or from the environment variable
-[table_name](#table_name)
+[TABLE](#table)
 
 A table for CrateDB has three columns:
 
@@ -184,7 +184,7 @@ supports InfluxDB V2. To connect to InfluxDB the following environment variables
 ##### Bucket Setup
 
 A bucket gets it's name either from the provided [schema](#data-generator-schemas) or from the environment variable
-[table_name](#table_name)
+[TABLE](#table)
 
 If a bucket with the same name already exists on the given host this bucket is used to insert data otherwise a new
 bucket is created without retention rules (data is saved indefinitely)
@@ -219,12 +219,12 @@ To connect with TimescaleDB the following environment variables must be set:
 + [ADDRESS](#address): Database address
 + [USERNAME](#username): username of TimescaleDB user
 + [PASSWORD](#password): password of TimescaleDB user
-+ [DB_NAME](#db_name): the database name with which to connect
++ [DATABASE](#database): the database name with which to connect
 
 ##### Table Setup
 
 A table gets it's name either from the provided [schema](#data-generator-schemas) or from the environment variable
-[table_name](#table_name)
+[TABLE](#table)
 
 A table for TimescaleDB consists of the following columns:
 
@@ -264,7 +264,7 @@ To connect with MongoDB the following environment variables must be set:
 + [ADDRESS](#address): hostname (can include port if not standard MongoDB port is used)
 + [USERNAME](#username): username of TimescaleDB user
 + [PASSWORD](#password): password of TimescaleDB user
-+ [DB_NAME](#db_name): The name of the MongoDB database that will be used
++ [DATABASE](#database): The name of the MongoDB database that will be used
 
 ##### Collection Setup
 
@@ -298,12 +298,12 @@ To connect with PostgreSQL the following environment variables must be set:
 + [ADDRESS](#address): hostname
 + [USERNAME](#username): username of TimescaleDB user
 + [PASSWORD](#password): password of TimescaleDB user
-+ [DB_NAME](#db_name): the database name with which to connect
++ [DATABASE](#database): the database name with which to connect
 
 ##### Table Setup
 
 A table gets it's name either from the provided [schema](#data-generator-schemas) or from the environment variable
-[table_name](#table_name).
+[TABLE](#table).
 
 A table for PostgreSQL consists of the following columns:
 
@@ -336,7 +336,7 @@ To connect with AWS Timestream the following environment variables must be set:
 + [AWS_ACCESS_KEY_ID](#aws_access_key_id): AWS Access Key ID
 + [AWS_SECRET_ACCESS_KEY](#aws_secret_access_key): AWS Secret Access Key
 + [AWS_REGION_NAME](#aws_region_name): AWS Region
-+ [DB_NAME](#db_name): the database name to connect to or create
++ [DATABASE](#database): the database name to connect to or create
 
 ##### Table Setup
 
@@ -374,7 +374,7 @@ To connect with Microsoft SQL Server the following environment variables must be
 + [ADDRESS](#address): the host where Microsoft SQL Server is running in this [format](https://www.connectionstrings.com/azure-sql-database/)
 + [USERNAME](#username): Database user
 + [PASSWORD](#password): Password of the database user
-+ [DB_NAME](#db_name): the database name to connect to or create
++ [DATABASE](#database): the database name to connect to or create
 
 ##### Table Setup
 
@@ -631,7 +631,7 @@ Default: None
 
 used with CrateDB, TimescaleDB, MongoDB, Postgresql, MSSQL.
 
-#### DB_NAME
+#### DATABASE
 
 Type: String
 
@@ -643,20 +643,20 @@ used with InfluxDB, TimescaleDB, MongoDB, AWS Timestream, Postgresql, MSSQL.
 
 **InfluxDB:**
 This is an optional parameter for InfluxDB. In case it is set the Bucket where the values are inserted will use the
-value of `DB_NAME` as name. If `DB_NAME` is empty string than the name of the schema (see
+value of `DATABASE` as name. If `DATABASE` is empty string than the name of the schema (see
 [Data Generator Schemas](#data-generator-schemas) for more information) will be used as Bucket name.
 
 **TimescaleDB, Postgresql, MSSQL:**
-The value of `DB_NAME` is used when connecting to TimescaleDB. This database must already exist in your TimescaleDB
+The value of `DATABASE` is used when connecting to TimescaleDB. This database must already exist in your TimescaleDB
 instance and must have already been initialized with `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;`.
 
 **MongoDB:**
-The value of `DB_NAME` is used as the database parameter of MongoDB.
+The value of `DATABASE` is used as the database parameter of MongoDB.
 
 **AWS Timestream:**
-The value of `DB_NAME` is used as the database parameter of AWS Timestream.
+The value of `DATABASE` is used as the database parameter of AWS Timestream.
 
-#### TABLE_NAME
+#### TABLE
 
 Type: String
 
@@ -664,7 +664,7 @@ Values: Name of the table where values are stored
 
 Default: empty string
 
-used with CrateDB, Postgresql, MSSQL and TimescaleDB. It is an optional parameter to overwrite the default table_name
+used with CrateDB, Postgresql, MSSQL and TimescaleDB. It is an optional parameter to overwrite the default table name
 defined in the schema (see [Data Generator Schemas](#data-generator-schemas)).
 
 #### PARTITION
@@ -789,7 +789,7 @@ schemas based on examples.
 ### Structure
 
 A Data Generator Schema is a JSON-file which must contain one object (a second key `description` can be used to explain
-the schema). The key for this object will be the default value of [TABLE_NAME](#table_name). For example the following
+the schema). The key for this object will be the default value of [TABLE](#table). For example the following
 JSON Object would contain a schema called `button_sensor`.
 
 ```JSON

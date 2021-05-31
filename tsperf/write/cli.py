@@ -38,13 +38,13 @@ args_info = {
         "help": "Interval in seconds to emit statistic outputs to the log",
         "type": float,
     },
-    "db_name": {
+    "database": {
         "help": "Name of the database where table will be created. Used with InfluxDB, TimescaleDB, MongoDB, "
         "AWS Timestream, Postgresql, MSSQL. See the documentation for more details: "
         f"{TSPERF_WRITE_README_URL}#db-name",
         "type": str,
     },
-    "table_name": {
+    "table": {
         "help": "Name of the table where values are stored. Used with CrateDB, Postgresql, MSSQL and TimescaleDB.",
         "type": str,
     },

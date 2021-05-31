@@ -49,8 +49,8 @@ class CrateDbAdapter(AbstractDatabaseInterface):
         )
         self.cursor = self.conn.cursor()
         self.schema = schema
-        self.table_name = (config.table_name, self._get_schema_table_name())[
-            config.table_name is None or config.table_name == ""
+        self.table_name = (config.table, self._get_schema_table_name())[
+            config.table is None or config.table == ""
         ]
         self.partition = config.partition
 

@@ -60,7 +60,7 @@ def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
             config.port,
             config.username,
             config.password,
-            config.db_name,
+            config.database,
             schema,
         )
     elif config.database == 2:
@@ -72,14 +72,14 @@ def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
             "MongoDB queries are not supported (but can be manually added to the script - see "
             "read documentation)"
         )
-        # adapter = MongoDbAdapter(config.address, config.username, config.password, config.db_name, schema)
+        # adapter = MongoDbAdapter(config.address, config.username, config.password, config.database, schema)
     elif config.database == 4:
         adapter = PostgreSQLAdapter(
             config.address,
             config.port,
             config.username,
             config.password,
-            config.db_name,
+            config.database,
             schema,
         )
     elif config.database == 5:
@@ -87,7 +87,7 @@ def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
             config.aws_access_key_id,
             config.aws_secret_access_key,
             config.aws_region_name,
-            config.db_name,
+            config.database,
             schema,
         )
     elif config.database == 6:
@@ -95,7 +95,7 @@ def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
             config.address,
             config.username,
             config.password,
-            config.db_name,
+            config.database,
             schema,
             port=config.port,
         )

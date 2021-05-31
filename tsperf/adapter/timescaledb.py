@@ -51,7 +51,7 @@ class TimescaleDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         super().__init__()
 
         self.conn = psycopg2.connect(
-            dbname=config.db_name,
+            dbname=config.database,
             user=self.username,
             password=config.password,
             host=self.host,
@@ -59,8 +59,8 @@ class TimescaleDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         )
         self.cursor = self.conn.cursor()
         self.schema = schema
-        self.table_name = (config.table_name, self._get_schema_table_name())[
-            config.table_name is None or config.table_name == ""
+        self.table_name = (config.table, self._get_schema_table_name())[
+            config.table is None or config.table == ""
         ]
         self.partition = config.partition
 

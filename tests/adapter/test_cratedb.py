@@ -117,7 +117,7 @@ def test_prepare_database2(mock_connect, config):
 
     Test Case 1:
     A new CrateDbAdapter is initialized that overwrites default values used in prepare_database()
-    -> "table_name" is used in stmt as table name
+    -> "table" is used in stmt as table name
     -> "g_ts_day" is used as partitioning column
     -> "3 SHARDS" are configured for table
     -> "number_of_replicas = 0" is set for table
@@ -130,7 +130,7 @@ def test_prepare_database2(mock_connect, config):
     mock_connect.return_value = conn
     conn.cursor.return_value = cursor
 
-    config.table_name = "foobar"
+    config.table = "foobar"
     config.shards = 3
     config.replicas = 0
     config.partition = "day"

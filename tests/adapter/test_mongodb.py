@@ -14,7 +14,7 @@ def config():
     config = DatabaseConnectionConfiguration(
         adapter=DatabaseInterfaceType.MongoDB,
         address="localhost:27017",
-        db_name="foobar",
+        database="foobar",
     )
     return config
 

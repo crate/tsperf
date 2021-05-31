@@ -1,0 +1,6 @@
+*
+!tsperf
+!setup.py
+!MANIFEST.in
+!pyproject.toml
+!*.md

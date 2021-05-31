@@ -5,7 +5,8 @@ version: "2.3"
 services:
 
   datagen1:
-    image: data_gen
+    image: tsperf
+    command: [ "tsperf", "write" ]
     ports:
       - 8000:8000
     environment:
@@ -14,12 +15,13 @@ services:
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       ADAPTER: cratedb
-      ADDRESS: "address.docker.internal:4200"
+      ADDRESS: "host.docker.internal:4200"
       TABLE: "timeseries"
       SCHEMA: "tsperf.schema.basic:environment.json"
 
   datagen2:
-    image: data_gen
+    image: tsperf
+    command: [ "tsperf", "write" ]
     ports:
       - 8001:8000
     environment:
@@ -28,6 +30,6 @@ services:
       INGEST_MODE: 1
       INGEST_SIZE: 1000
       ADAPTER: cratedb
-      ADDRESS: "address.docker.internal:4200"
+      ADDRESS: "host.docker.internal:4200"
       TABLE: "timeseries"
       SCHEMA: "tsperf.schema.basic:environment.json"

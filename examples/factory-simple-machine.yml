@@ -2,17 +2,21 @@ version: "2.3"
 services:
 
   datagen:
-    image: data_gen
+    image: tsperf
+    command: [ "tsperf", "write" ]
     ports:
       - 8000:8000
+
     environment:
       ID_START: 1
       ID_END: 100
-      ADDRESS: "address.docker.internal:4200"
-      # USERNAME: ""
-      # PASSWORD: ""
-      INGEST_MODE: 0
+
+      INGEST_MODE: consecutive
       INGEST_SIZE: 720
       TIMESTAMP_DELTA: 5
-      SCHEMA: "tsperf.schema.factory.simple:machine.json"
+
       ADAPTER: cratedb
+      ADDRESS: "host.docker.internal:4200"
+      # USERNAME: ""
+      # PASSWORD: ""
+      SCHEMA: "tsperf.schema.factory.simple:machine.json"

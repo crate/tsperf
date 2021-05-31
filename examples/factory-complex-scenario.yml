@@ -2,56 +2,60 @@ version: "2.3"
 services:
 
   datagen_base1:
-    image: data_gen
+    image: tsperf
+    command: [ "tsperf", "write" ]
     ports:
       - 8000:8000
     environment:
       ID_START: 1
       ID_END: 500
-      ADDRESS: "address.docker.internal:4200"
-      INGEST_MODE: 1
+      ADDRESS: "host.docker.internal:4200"
+      INGEST_MODE: fast
       INGEST_SIZE: 1000
       TIMESTAMP_DELTA: 1
       SCHEMA: "tsperf.schema.factory.complex:base1.json"
       ADAPTER: cratedb
 
   datagen_base2:
-    image: data_gen
+    image: tsperf
+    command: [ "tsperf", "write" ]
     ports:
       - 8001:8000
     environment:
       ID_START: 501
       ID_END: 1000
-      ADDRESS: "address.docker.internal:4200"
-      INGEST_MODE: 1
+      ADDRESS: "host.docker.internal:4200"
+      INGEST_MODE: fast
       INGEST_SIZE: 1000
       TIMESTAMP_DELTA: 1
       SCHEMA: "tsperf.schema.factory.complex:base2.json"
       ADAPTER: cratedb
 
   datagen_upper:
-    image: data_gen
+    image: tsperf
+    command: [ "tsperf", "write" ]
     ports:
       - 8002:8000
     environment:
       ID_START: 1001
       ID_END: 1100
-      ADDRESS: "address.docker.internal:4200"
-      INGEST_MODE: 1
+      ADDRESS: "host.docker.internal:4200"
+      INGEST_MODE: fast
       INGEST_SIZE: 100
       TIMESTAMP_DELTA: 10
       SCHEMA: "tsperf.schema.factory.complex:upper.json"
       ADAPTER: cratedb
 
   datagen_lower:
-    image: data_gen
+    image: tsperf
+    command: [ "tsperf", "write" ]
     ports:
       - 8003:8000
     environment:
       ID_START: 1101
       ID_END: 1200
-      ADDRESS: "address.docker.internal:4200"
-      INGEST_MODE: 1
+      ADDRESS: "host.docker.internal:4200"
+      INGEST_MODE: fast
       INGEST_SIZE: 100
       TIMESTAMP_DELTA: 10
       SCHEMA: "tsperf.schema.factory.complex:lower.json"

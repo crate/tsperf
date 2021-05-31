@@ -52,12 +52,11 @@ def load_adapters():  # noqa:-F401
     from tsperf.adapter.cratedb import CrateDbAdapter
     from tsperf.adapter.dummy import DummyDbAdapter
     from tsperf.adapter.influxdb import InfluxDbAdapter
-
-    # from tsperf.adapter.mongodb import MongoDbAdapter
+    from tsperf.adapter.mongodb import MongoDbAdapter
     from tsperf.adapter.mssql import MsSQLDbAdapter
     from tsperf.adapter.postgresql import PostgreSQLAdapter
     from tsperf.adapter.timescaledb import TimescaleDbAdapter
-    from tsperf.adapter.timestream import TimeStreamAdapter
+    from tsperf.adapter.timestream import AmazonTimestreamAdapter
 
 
 class DatabaseInterfaceMixin:
@@ -86,4 +85,9 @@ class DatabaseInterfaceMixin:
         username = (
             self.config.password and self.config.password or self.default_password
         )
+        return username
+
+    @property
+    def database(self):
+        username = self.config.db_name and self.config.db_name or self.default_database
         return username

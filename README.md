@@ -15,25 +15,25 @@ How to achieve this using Kubernetes is documented within [KUBERNETES.md](KUBERN
 ```shell
 git clone https://github.com/crate/tsperf
 cd tsperf
-python3 -m venv .venv
+make test
 source .venv/bin/activate
-pip install --editable=.[testing] --upgrade
-pytest -vvv tests
 ```
 
 ## Usage
 
 - Data generator: Generate time series data and feed it into database.
+  Use `tsperf write --help` to explore its options.
 - Query Timer: Probe responsiveness of database on the read path.
+  Use `tsperf read --help` to explore its options.
 
 
 ### CrateDB
 ```shell
 # Run CrateDB
-docker run -it --rm --publish=4200:4200 --publish=5432:5432 crate/crate:4.5.1
+docker run -it --rm --publish=4200:4200 --publish=5432:5432 crate:4.5.1
 
 # Feed data into CrateDB table.
-tsperf write --schema=tsperf.schema.basic:environment.json --adapter=cratedb
+tsperf write --adapter=cratedb --schema=tsperf.schema.basic:environment.json
 
 # Query data from CrateDB table.
 tsperf read --adapter=cratedb --query="SELECT * FROM environment LIMIT 10;"
@@ -76,7 +76,7 @@ tsperf read --query='from(bucket:"environment") |> range(start:-2h, stop:2h) |> 
 ```
 
 
-### MSSQL
+### Microsoft SQL Server
 ```shell
 # Run Microsoft SQL Server
 docker run -it --rm --publish=1433:1433 --env="ACCEPT_EULA=Y" --env="SA_PASSWORD=yayRirr3" mcr.microsoft.com/mssql/server:2019-latest
@@ -93,6 +93,19 @@ tsperf write --schema=tsperf.schema.basic:environment.json
 
 # Query data from MSSQL table.
 tsperf read --iterations=3000 --query="SELECT TOP 10 * FROM environment;"
+```
+
+
+### MongoDB
+```shell
+# Run and configure MongoDB
+docker run -it --rm --publish=27017:27017 mongo:4.4
+
+# Feed data into MongoDB collection.
+tsperf write --adapter=mongodb --schema=tsperf.schema.basic:environment.json
+
+# Query data from MongoDB collection.
+tsperf read --adapter=mongodb --schema=tsperf.schema.basic:environment.json
 ```
 
 
@@ -115,7 +128,7 @@ tsperf read --iterations=3000 --query="SELECT * FROM environment LIMIT 10;"
 ### TimescaleDB
 ```shell
 # Run PostgreSQL
-docker run -it --rm --env="POSTGRES_HOST_AUTH_METHOD=trust" --publish=5432:5432 timescale/timescaledb:latest-pg12
+docker run -it --rm --env="POSTGRES_HOST_AUTH_METHOD=trust" --publish=5432:5432 timescale/timescaledb:2.3.0-pg13
 
 # Configure tsperf
 export ADAPTER=timescaledb

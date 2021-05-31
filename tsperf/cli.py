@@ -68,6 +68,10 @@ adapter_options = cloup.option_group(
         type=click.STRING,
         help="Database address (DSN URI, hostname:port) according to the database client requirements",
     ),
+)
+
+authentication_options = cloup.option_group(
+    "Authentication options",
     click.option(
         "--username",
         envvar="USERNAME",
@@ -94,21 +98,34 @@ adapter_options = cloup.option_group(
         help="Authentication token for InfluxDB V2. "
         "See also https://v2.docs.influxdata.com/v2.0/security/tokens/view-tokens/.",
     ),
-    cloup.option(
-        "--timescaledb-distributed",
-        envvar="TIMESCALEDB_DISTRIBUTED",
-        type=click.BOOL,
-        is_flag=True,
-        default=False,
-        help="Use distributed hypertables with TimescaleDB",
+    click.option(
+        "--aws-access-key-id",
+        envvar="AWS_ACCESS_KEY_ID",
+        type=click.STRING,
+        help="AWS Access Key ID",
     ),
-    cloup.option(
-        "--timescaledb-pgcopy",
-        envvar="TIMESCALEDB_PGCOPY",
-        type=click.BOOL,
-        is_flag=True,
-        default=False,
-        help="Use pgcopy with TimescaleDB",
+    click.option(
+        "--aws-secret-access-key",
+        envvar="AWS_SECRET_ACCESS_KEY",
+        type=click.STRING,
+        help="AWS Secret Access Key",
+    ),
+    click.option(
+        "--aws-region-name",
+        envvar="AWS_REGION_NAME",
+        type=click.STRING,
+        help="AWS region name",
+    ),
+)
+
+
+performance_options = cloup.option_group(
+    "Performance options",
+    click.option(
+        "--concurrency",
+        envvar="CONCURRENCY",
+        type=click.INT,
+        help="Number of worker threads for executing queries in parallel. Recommended: 1-4",
     ),
     click.option(
         "--shards",
@@ -124,15 +141,21 @@ adapter_options = cloup.option_group(
         default=1,
         help="Number of replicas for the CrateDB table",
     ),
-)
-
-performance_options = cloup.option_group(
-    "Performance options",
-    click.option(
-        "--concurrency",
-        envvar="CONCURRENCY",
-        type=click.INT,
-        help="Number of worker threads for executing queries in parallel. Recommended: 1-4",
+    cloup.option(
+        "--timescaledb-distributed",
+        envvar="TIMESCALEDB_DISTRIBUTED",
+        type=click.BOOL,
+        is_flag=True,
+        default=False,
+        help="Use distributed hypertables with TimescaleDB",
+    ),
+    cloup.option(
+        "--timescaledb-pgcopy",
+        envvar="TIMESCALEDB_PGCOPY",
+        type=click.BOOL,
+        is_flag=True,
+        default=False,
+        help="Use pgcopy with TimescaleDB",
     ),
 )
 
@@ -219,7 +242,7 @@ read_options = cloup.option_group(
         "--iterations",
         envvar="ITERATIONS",
         type=click.INT,
-        default=100,
+        default=None,
         help="How many times each thread executes the query",
     ),
 )
@@ -245,6 +268,7 @@ def main():
 @main.command("write")
 @general_options
 @adapter_options
+@authentication_options
 @performance_options
 @write_options
 @misc_options
@@ -260,6 +284,7 @@ def write(**kwargs):
 @main.command("read")
 @general_options
 @adapter_options
+@authentication_options
 @performance_options
 @read_options
 @misc_options

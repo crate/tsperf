@@ -1,12 +1,26 @@
 from datetime import datetime
 from unittest import mock
 
+import pytest
+
 from tests.write.schema import test_schema1
 from tsperf.adapter.mongodb import MongoDbAdapter
+from tsperf.model.configuration import DatabaseConnectionConfiguration
+from tsperf.model.interface import DatabaseInterfaceType
+
+
+@pytest.fixture
+def config():
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.MongoDB,
+        address="localhost:27017",
+        db_name="foobar",
+    )
+    return config
 
 
 @mock.patch("tsperf.adapter.mongodb.MongoClient", autospec=True)
-def test_close_connection(mock_client):
+def test_close_connection(mock_client, config):
     """
     This function tests if the .close_connection() function of MongoDbAdapter calls the close() function of self.client
 
@@ -23,9 +37,11 @@ def test_close_connection(mock_client):
     # Pre Condition:
     client = mock.MagicMock()
     mock_client.return_value = client
-    db_writer = MongoDbAdapter(
-        "localhost", "mongo", "password", "db_name", test_schema1
-    )
+
+    config.username = "mongo"
+    config.password = "password"
+    db_writer = MongoDbAdapter(config=config, schema=test_schema1)
+
     mock_client.assert_called_with("mongodb://mongo:password@localhost")
     # Test Case 1:
     db_writer.close_connection()
@@ -33,7 +49,7 @@ def test_close_connection(mock_client):
 
 
 @mock.patch("tsperf.adapter.mongodb.MongoClient", autospec=True)
-def test_insert_stmt(mock_client):
+def test_insert_stmt(mock_client, config):
     """
     This function tests if the .insert_stmt() function of MongoDbAdapter creates the correct json object
 
@@ -50,8 +66,9 @@ def test_insert_stmt(mock_client):
     """
     client = mock.MagicMock()
     mock_client.return_value = client
-    db_writer = MongoDbAdapter("srvhost", "mongo", "password", "db_name", test_schema1)
-    mock_client.assert_called_with("mongodb+srv://mongo:password@srvhost")
+    config.address = "srvhost:27017"
+    db_writer = MongoDbAdapter(config=config, schema=test_schema1)
+    mock_client.assert_called_with("mongodb+srv://srvhost")
     # Test Case 1:
     db_writer.insert_stmt(
         [1586327807000],
@@ -70,7 +87,7 @@ def test_insert_stmt(mock_client):
 
 
 @mock.patch("tsperf.adapter.mongodb.MongoClient", autospec=True)
-def test_execute_query(mock_client):
+def test_execute_query(mock_client, config):
     """
     This function tests if the .execute_query() function of MongoDbAdapter uses the correct argument
 
@@ -87,7 +104,7 @@ def test_execute_query(mock_client):
     """
     client = mock.MagicMock()
     mock_client.return_value = client
-    db_writer = MongoDbAdapter("srvhost", "mongo", "password", "db_name", test_schema1)
+    db_writer = MongoDbAdapter(config=config, schema=test_schema1)
     # Test Case 1:
     db_writer.execute_query({"plant": 1})
     # [2] because there have be 2 prior function calls on client (getting db and collection)

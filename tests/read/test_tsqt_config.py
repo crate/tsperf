@@ -44,7 +44,7 @@ def test_config_vanilla():
     config = QueryTimerConfig(adapter=DatabaseInterfaceType.Dummy)
     assert config.adapter == DatabaseInterfaceType.Dummy
     assert config.concurrency == 4
-    assert config.iterations == 100
+    assert config.iterations == 1000
     assert config.quantiles == ["50", "60", "75", "90", "99"]
     assert config.refresh_rate == 0.1
 

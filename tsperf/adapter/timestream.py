@@ -21,34 +21,47 @@
 
 import logging
 import math
-from typing import Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import boto3
 import numpy
 from botocore.config import Config
 
-from tsperf.model.interface import AbstractDatabaseInterface
+from tsperf.adapter import AdapterManager, DatabaseInterfaceMixin
+from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceType
+from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import timed_function
+from tsperf.write.config import DataGeneratorConfig
+
+logger = logging.getLogger(__name__)
 
 
-class TimeStreamAdapter(AbstractDatabaseInterface):
+class AmazonTimestreamAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
+
+    default_database = "tsperf"
+
     def __init__(
         self,
-        aws_access_key_id: str,
-        aws_secret_access_key: str,
-        region_name: str,
-        database_name: str,
-        schema: dict,
+        config: Union[DataGeneratorConfig, QueryTimerConfig],
+        schema: Optional[Dict] = None,
     ):
+        DatabaseInterfaceMixin.__init__(self, config=config)
         super().__init__()
+
         self.schema = schema
-        self.database_name = database_name
+        self.database_name = self.database
         self.table_name = self._get_schema_collection_name()
-        self.session = boto3.session.Session(
-            aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
-            region_name=region_name,
+
+        logger.info(
+            f"Connecting to AWS region »{config.aws_region_name}« with key id »{config.aws_access_key_id}«"
         )
+        self.session = boto3.session.Session(
+            config.aws_access_key_id,
+            aws_secret_access_key=config.aws_secret_access_key,
+            region_name=config.aws_region_name,
+        )
+
+        logger.info("Creating database session objects")
         self.write_client = self.session.client(
             "timestream-write",
             config=Config(
@@ -56,6 +69,11 @@ class TimeStreamAdapter(AbstractDatabaseInterface):
             ),
         )
         self.query_client = self.session.client("timestream-query")
+
+        logger.info(
+            f"Connecting to Amazon Timestream at »{config.address}« "
+            f"with database »{self.database_name}« and table »{self.table_name}«"
+        )
 
     @timed_function()
     def insert_stmt(self, timestamps: list, batch: list):
@@ -184,3 +202,8 @@ class TimeStreamAdapter(AbstractDatabaseInterface):
 
     def close_connection(self):
         pass
+
+
+AdapterManager.register(
+    interface=DatabaseInterfaceType.Timestream, factory=AmazonTimestreamAdapter
+)

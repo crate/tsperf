@@ -61,11 +61,6 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
         self.copy = strtobool(os.getenv("TIMESCALE_COPY", "True"))
         self.distributed = strtobool(os.getenv("TIMESCALE_DISTRIBUTED", "False"))
 
-        # environment variable to connect to aws timestream
-        self.aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID", "")
-        self.aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY", "")
-        self.aws_region_name = os.getenv("AWS_REGION_NAME", "")
-
         self.invalid_configs = []
 
     def validate_config(self) -> bool:  # noqa

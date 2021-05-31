@@ -75,6 +75,7 @@ against a database instance running on a decently powered machine.
 - For increasing concurrency, try `--concurrency=8`.
 - For enabling Prometheus metrics export, try `--prometheus-enable=true` and maybe `--prometheus-listen=0.0.0.0:8000`.
 - For increasing concurrency and number of iterations when querying, try `--concurrency=10 --iterations=2000`.
+- For displaying the list of built-in schemas, run `tsperf schema --list`.
 
 
 ### CrateDB

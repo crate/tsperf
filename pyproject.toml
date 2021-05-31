@@ -39,7 +39,7 @@ flake8-isort = ["-I003"]
 flake8-bugbear = ["-B007"]
 
 
-[tool.flakehell.exceptions."tests/**/*.py"]
+[tool.flakehell.exceptions."tests"]
 flake8-bandit = ["-S101", "-S105", "-S106"]
 
 [tool.flakehell.exceptions."tsperf/adapter/__init__.py"]

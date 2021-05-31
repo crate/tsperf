@@ -7,11 +7,11 @@ with open("README.md", "r") as fh:
 
 requires = [
     "blessed==1.18.0",
-    "boto3==1.17.74",
-    "botocore~=1.20.74",
+    "boto3==1.17.84",
+    "botocore~=1.20.84",
     "crate==0.26.0",
     "prometheus_client==0.10.1",
-    "urllib3==1.26.4",
+    "urllib3==1.26.5",
     "datetime_truncate==1.1.1",
     "psycopg2-binary==2.8.6",
     "influxdb_client==1.17.0",
@@ -28,7 +28,7 @@ test_requires = [
     "pytest-cov==2.12.0",
     "dotmap==1.3.23",
     "flakehell==0.9.0",
-    "flake8==3.8.4",
+    "flake8==3.9.2",
     "flake8-black==0.2.1",
     "flake8-bugbear==21.4.3",
     "flake8-bandit==2.1.2",

@@ -544,16 +544,16 @@ size to get the best insert performance.
 
 Type: String
 
-Values: cratedb|timescaledb|influxdb1|influxdb2|mongodb|postgresql|timestream|mssql
+Values: cratedb|timescaledb|influxdb|mongodb|postgresql|timestream|mssql
 
 The value will define which database adapter to use:
++ Amazon Timestream
 + CrateDB
-+ TimescaleDB
 + InfluxDB
++ Microsoft SQL Server
 + MongoDB
 + PostgreSQL
-+ Timestream
-+ Microsoft SQL Server
++ TimescaleDB
 
 #### STAT_DELTA
 

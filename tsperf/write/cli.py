@@ -62,18 +62,6 @@ args_info = {
         ],
         "type": str,
     },
-    "aws_access_key_id": {
-        "help": "AWS Access Key ID",
-        "type": str,
-    },
-    "aws_secret_access_key": {
-        "help": "AWS Secret Access Key",
-        "type": str,
-    },
-    "aws_region_name": {
-        "help": "AWS region name",
-        "type": str,
-    },
 }
 
 

@@ -18,12 +18,6 @@ def config() -> QueryTimerConfig:
 @mock.patch("tsperf.adapter.AdapterManager.create", autospec=True)
 def test_get_database_adapter(factory_mock, adapter, config):
 
-    if adapter in [
-        DatabaseInterfaceType.MongoDB,
-        DatabaseInterfaceType.TimeStream,
-    ]:
-        raise pytest.skip(f"Database adapter {adapter} not implemented yet")
-
     config.adapter = adapter
     engine = TsPerfEngine(config=config)
     engine.bootstrap()

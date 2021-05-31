@@ -104,7 +104,7 @@ def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
             config.partition,
         )
     elif config.database == 5:  # timestream
-        adapter = TimeStreamAdapter(
+        adapter = AmazonTimestreamAdapter(
             config.aws_access_key_id,
             config.aws_secret_access_key,
             config.aws_region_name,
@@ -227,8 +227,9 @@ def get_insert_values(batch_size: int) -> Tuple[list, list]:
 
 
 def probe_insert():
+    logger.info("Probing insert")
     try:
-        engine.adapter.prepare_database()
+        engine.create_adapter().prepare_database()
         return True
     except Exception:
         logger.exception("Failure communicating with or preparing database")
@@ -444,7 +445,6 @@ def start(configuration: DataGeneratorConfig):
     # TODO: Get rid of global variables.
     config = engine.config
 
-    logger.info("Probing insert")
     if not probe_insert():
         raise Exception(
             f"Failure communicating with or preparing database at {config.address}"

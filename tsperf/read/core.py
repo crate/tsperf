@@ -83,7 +83,7 @@ def get_database_adapter_old() -> AbstractDatabaseInterface:  # pragma: no cover
             schema,
         )
     elif config.database == 5:
-        adapter = TimeStreamAdapter(
+        adapter = AmazonTimestreamAdapter(
             config.aws_access_key_id,
             config.aws_secret_access_key,
             config.aws_region_name,
@@ -218,6 +218,7 @@ def run_qt():
 
     logger.info("Starting worker threads")
     threads = []
+    logger.info(f"Invoking query »{config.query}«")
     for i in range(0, config.concurrency):
         thread = Thread(target=start_query_run, name=f"WorkerThread-{i}")
         threads.append(thread)

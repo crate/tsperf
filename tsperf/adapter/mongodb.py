@@ -18,33 +18,70 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
+import json
+import logging
 from datetime import datetime
-from typing import Tuple
+from typing import Dict, Optional, Tuple, Union
 
-from pymongo import CursorType, MongoClient
+from pymongo import MongoClient
 
-from tsperf.model.interface import AbstractDatabaseInterface
+from tsperf.adapter import AdapterManager, DatabaseInterfaceMixin
+from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceType
+from tsperf.read.config import QueryTimerConfig
 from tsperf.util.tictrack import timed_function
+from tsperf.write.config import DataGeneratorConfig
+
+logger = logging.getLogger(__name__)
 
 
-class MongoDbAdapter(AbstractDatabaseInterface):
+class MongoDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
+
+    default_address = "localhost:27017"
+    default_database = "tsperf"
+
     def __init__(
-        self, host: str, username: str, password: str, database_name: str, schema: dict
+        self,
+        config: Union[DataGeneratorConfig, QueryTimerConfig],
+        schema: Optional[Dict] = None,
     ):
+        DatabaseInterfaceMixin.__init__(self, config=config)
         super().__init__()
         self.schema = schema
-        if host == "localhost":
-            connection_string = f"""mongodb://{username}:{password}@{host}"""
-        else:
-            connection_string = f"""mongodb+srv://{username}:{password}@{host}"""
 
+        # Compute credentials.
+        credentials = ""
+        if self.username:
+            credentials += self.username
+            if config.password:
+                credentials += ":" + config.password
+            credentials += "@"
+
+        if self.host == "localhost":
+            connection_string = f"""mongodb://{credentials}{self.host}"""
+        else:
+            connection_string = f"""mongodb+srv://{credentials}{self.host}"""
+
+        self.collection_name = self._get_schema_collection_name()
+
+        logger.info(
+            f"Connecting to MongoDB at »{connection_string}« "
+            f"with database »{self.database}« and collection »{self.collection_name}«"
+        )
         self.client = MongoClient(connection_string)
-        self.db = self.client[database_name]
-        self.collection = self.db[self._get_schema_collection_name()]
+        self.db = self.client[self.database]
+        self.collection = self.db[self.collection_name]
 
     def close_connection(self):
         self.client.close()
+
+    def prepare_database(self):
+        """
+        Communicate with database server.
+
+        https://stackoverflow.com/a/12014215
+        """
+        logger.info("dbstats:   %s", self.db.command("dbstats"))
+        # logger.info("collstats: %s", self.db.command("collstats", self.collection_name))
 
     @timed_function()
     def insert_stmt(self, timestamps: list, batch: list):
@@ -71,11 +108,17 @@ class MongoDbAdapter(AbstractDatabaseInterface):
         return data
 
     @timed_function()
-    def execute_query(self, query: str) -> list:
+    def execute_query(self, query: Dict) -> list:
         return self.run_query(query)
 
-    def run_query(self, query: str) -> list:
-        cursor = self.collection.find(query, cursor_type=CursorType.EXHAUST)
+    def run_query(self, query: Dict) -> list:
+        if query is None:
+            query = {}
+        elif isinstance(query, Dict):
+            pass
+        else:
+            query = json.loads(query)
+        cursor = self.collection.find(query).limit(10)
         return list(cursor)
 
     def _get_tags_and_fields(self) -> Tuple[dict, dict]:
@@ -96,3 +139,6 @@ class MongoDbAdapter(AbstractDatabaseInterface):
         for key in self.schema.keys():
             if key != "description":
                 return key
+
+
+AdapterManager.register(interface=DatabaseInterfaceType.MongoDB, factory=MongoDbAdapter)

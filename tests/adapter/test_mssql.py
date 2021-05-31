@@ -12,7 +12,7 @@ from tsperf.model.interface import DatabaseInterfaceType
 @pytest.fixture
 def config():
     config = DatabaseConnectionConfiguration(
-        adapter=DatabaseInterfaceType.MsSQL,
+        adapter=DatabaseInterfaceType.MicrosoftSQL,
         address="localhost:1433",
     )
     return config
@@ -40,7 +40,7 @@ def test_prepare_database1(mock_connect, config):
     conn.cursor.return_value = cursor
 
     config = DatabaseConnectionConfiguration(
-        adapter=DatabaseInterfaceType.MsSQL,
+        adapter=DatabaseInterfaceType.MicrosoftSQL,
         address="localhost:1433",
         username="foobar",
         password="bazqux",

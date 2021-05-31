@@ -39,6 +39,11 @@ class DatabaseConnectionConfiguration:
     timescaledb_distributed: bool = False
     timescaledb_pgcopy: bool = False
 
+    # Configuration variables for AWS Timestream.
+    aws_access_key_id: str = None
+    aws_secret_access_key: str = None
+    aws_region_name: str = None
+
     @classmethod
     def create(cls, **options):
         options = enrich_options(options)

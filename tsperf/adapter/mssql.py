@@ -147,4 +147,6 @@ ts DATETIME NOT NULL,
         self.conn.close()
 
 
-AdapterManager.register(interface=DatabaseInterfaceType.MsSQL, factory=MsSQLDbAdapter)
+AdapterManager.register(
+    interface=DatabaseInterfaceType.MicrosoftSQL, factory=MsSQLDbAdapter
+)

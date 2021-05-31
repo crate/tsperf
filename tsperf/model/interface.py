@@ -23,28 +23,32 @@ from enum import Enum
 
 
 class DatabaseInterfaceType(Enum):
-    Dummy = "dummy"
     CrateDB = "cratedb"
-    TimescaleDB = "timescaledb"
+    Dummy = "dummy"
     InfluxDB = "influxdb"
+    MicrosoftSQL = "mssql"
     MongoDB = "mongodb"
     PostgreSQL = "postgresql"
-    TimeStream = "timestream"
-    MsSQL = "mssql"
+    TimescaleDB = "timescaledb"
+    Timestream = "timestream"
 
 
 class AbstractDatabaseInterface:
 
     default_address = None
     default_query = None
+    default_username = None
+    default_database = None
 
     @abstractmethod
     def __init__(self):
         pass
 
+    @abstractmethod
     def connect_to_database(self):  # pragma: no cover
         pass
 
+    @abstractmethod
     def prepare_database(self):  # pragma: no cover
         pass
 

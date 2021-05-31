@@ -1,41 +1,61 @@
 from unittest import mock
 
+import pytest
+
 from tests.write.schema import test_schema1
-from tsperf.adapter.timestream import TimeStreamAdapter
+from tsperf.adapter.timestream import AmazonTimestreamAdapter
+from tsperf.model.configuration import DatabaseConnectionConfiguration
+from tsperf.model.interface import DatabaseInterfaceType
+
+
+@pytest.fixture
+def config():
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.Timestream,
+        # address="ingest-cell1.timestream.us-west-2.amazonaws.com",
+    )
+    return config
 
 
 @mock.patch("tsperf.adapter.timestream.boto3", autospec=True)
-def test_close_connection(mock_boto):
+def test_close_connection(mock_boto, config):
     """
-    Test if the .close_connection() function of TimeStreamAdapter calls the close() function of self.client
+    Test if the .close_connection() function of AmazonTimestreamAdapter calls the close() function of self.client
 
     Test Case 1:boto.session.Session() returns a Mock Object session
-        TimeStreamAdapter is called.
-    -> Parameters of TimeStreamAdapter match constructor parameters
+        AmazonTimestreamAdapter is called.
+    -> Parameters of AmazonTimestreamAdapter match constructor parameters
 
     :param mock_boto: mocked boto3 class
     """
     session = mock.MagicMock()
     mock_boto.session.Session.return_value = session
-    _ = TimeStreamAdapter(
-        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_schema1
+
+    config = DatabaseConnectionConfiguration(
+        adapter=DatabaseInterfaceType.Timestream,
+        # address="ingest-cell1.timestream.us-west-2.amazonaws.com",
+        aws_access_key_id="foobar",
+        aws_secret_access_key="bazqux",
+        aws_region_name="us-west-2",
     )
+    _ = AmazonTimestreamAdapter(config=config, schema=test_schema1)
+
     mock_boto.session.Session.assert_called_with(
-        "aws_key_id", aws_secret_access_key="aws_secrete", region_name="aws_region"
+        "foobar", aws_secret_access_key="bazqux", region_name="us-west-2"
     )
 
 
 @mock.patch("tsperf.adapter.timestream.boto3", autospec=True)
-def test_insert_stmt(mock_boto):
+def test_insert_stmt(mock_boto, config):
     """
-    This function tests if the .insert_stmt() function of TimeStreamAdapter creates the correct json object
+    This function tests if the .insert_stmt() function of AmazonTimestreamAdapter creates the correct json object
 
     Pre Condition: boto.session.Session() returns a Mock Object session
-        TimeStreamAdapter is called.
-    -> Parameters of TimeStreamAdapter match constructor parameters
+        AmazonTimestreamAdapter is called.
+    -> Parameters of AmazonTimestreamAdapter match constructor parameters
 
     Test Case 1:
-    calling TimeStreamAdapter.insert_stmt()
+    calling AmazonTimestreamAdapter.insert_stmt()
     -> the function call has on argument
     -> the argument is the same as the record
 
@@ -45,9 +65,9 @@ def test_insert_stmt(mock_boto):
     mock_boto.session.Session.return_value = session
     write_client = mock.MagicMock()
     session.client.return_value = write_client
-    db_writer = TimeStreamAdapter(
-        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_schema1
-    )
+
+    db_writer = AmazonTimestreamAdapter(config=config, schema=test_schema1)
+
     # Test Case 1:
     db_writer.insert_stmt(
         [1586327807000],
@@ -108,15 +128,15 @@ def test_insert_stmt(mock_boto):
 
 
 @mock.patch("tsperf.adapter.timestream.boto3", autospec=True)
-def test_execute_query(mock_boto):
+def test_execute_query(mock_boto, config):
     """
-    This function tests if the .execute_query() function of TimeStreamAdapter uses the correct argument
+    This function tests if the .execute_query() function of AmazonTimestreamAdapter uses the correct argument
 
     Pre Condition: boto.session.Session() returns a Mock Object session
-        TimeStreamAdapter is called.
+        AmazonTimestreamAdapter is called.
 
     Test Case 1:
-    calling TimeStreamAdapter.execute_query()
+    calling AmazonTimestreamAdapter.execute_query()
     -> the function call has on argument
     -> the argument is the same as execute_query argument
 
@@ -128,10 +148,9 @@ def test_execute_query(mock_boto):
     session.client.return_value = query_client
     paginator = mock.MagicMock()
     query_client.get_paginator.return_value = paginator
-    db_writer = TimeStreamAdapter(
-        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_schema1
-    )
+
     # Test Case 1:
+    db_writer = AmazonTimestreamAdapter(config=config, schema=test_schema1)
     query = "SELECT * FROM temperature;"
     db_writer.execute_query(query)
     paginator.paginate.assert_called_once()
@@ -141,15 +160,15 @@ def test_execute_query(mock_boto):
 
 
 @mock.patch("tsperf.adapter.timestream.boto3", autospec=True)
-def test_prepare_database_not_existing_db_and_table(mock_boto):
+def test_prepare_database_not_existing_db_and_table(mock_boto, config):
     """
-    This function tests if the .execute_query() function of TimeStreamAdapter uses the correct argument
+    This function tests if the .execute_query() function of AmazonTimestreamAdapter uses the correct argument
 
     Pre Condition: boto.session.Session() returns a Mock Object session
-        TimeStreamAdapter is called.
+        AmazonTimestreamAdapter is called.
 
     Test Case 1:
-    calling TimeStreamAdapter.prepare_database()
+    calling AmazonTimestreamAdapter.prepare_database()
     -> write_client.create_database is called once
     -> write_client.create_table is called once
 
@@ -159,25 +178,24 @@ def test_prepare_database_not_existing_db_and_table(mock_boto):
     mock_boto.session.Session.return_value = session
     write_client = mock.MagicMock()
     session.client.return_value = write_client
-    db_writer = TimeStreamAdapter(
-        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_schema1
-    )
+
     # Test Case 1:
+    db_writer = AmazonTimestreamAdapter(config=config, schema=test_schema1)
     db_writer.prepare_database()
     write_client.create_database.assert_called_once()
     write_client.create_table.assert_called_once()
 
 
 @mock.patch("tsperf.adapter.timestream.boto3", autospec=True)
-def test_prepare_database_existing_db_and_table(mock_boto):
+def test_prepare_database_existing_db_and_table(mock_boto, config):
     """
-    This function tests if the .execute_query() function of TimeStreamAdapter uses the correct argument
+    This function tests if the .execute_query() function of AmazonTimestreamAdapter uses the correct argument
 
     Pre Condition: boto.session.Session() returns a Mock Object session
-        TimeStreamAdapter is called.
+        AmazonTimestreamAdapter is called.
 
     Test Case 1:
-    calling TimeStreamAdapter.prepare_database()
+    calling AmazonTimestreamAdapter.prepare_database()
     -> write_client.create_database is called once
     -> write_client.create_table is called once
 
@@ -187,10 +205,9 @@ def test_prepare_database_existing_db_and_table(mock_boto):
     mock_boto.session.Session.return_value = session
     write_client = mock.MagicMock()
     session.client.return_value = write_client
-    db_writer = TimeStreamAdapter(
-        "aws_key_id", "aws_secrete", "aws_region", "db_name", test_schema1
-    )
+
     # Test Case 1:
+    db_writer = AmazonTimestreamAdapter(config=config, schema=test_schema1)
     write_client.create_database.side_effect = Exception()
     write_client.create_table.side_effect = Exception()
     db_writer.prepare_database()

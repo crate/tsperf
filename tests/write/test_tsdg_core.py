@@ -52,12 +52,6 @@ def test_get_database_adapter_dummy(adapter_mock, config):
 @mock.patch("tsperf.adapter.AdapterManager.create", autospec=True)
 def test_get_database_adapter(factory_mock, adapter, config):
 
-    if adapter in [
-        DatabaseInterfaceType.MongoDB,
-        DatabaseInterfaceType.TimeStream,
-    ]:
-        raise pytest.skip(f"Database adapter {adapter} not implemented yet")
-
     start_engine(config, adapter)
 
     factory_mock.assert_called_once()

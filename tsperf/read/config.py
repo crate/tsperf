@@ -38,7 +38,7 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
     concurrency: int = 4
 
     # How many times each thread executes the query.
-    iterations: int = 100
+    iterations: int = 1000
 
     invalid_configs: dataclasses.InitVar[List] = None
 
@@ -49,11 +49,6 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
         # environment variables describing how the read behaves
         self.quantiles = os.getenv("QUANTILES", "50,60,75,90,99").split(",")
         self.refresh_rate = float(os.getenv("REFRESH_RATE", 0.1))
-
-        # environment variable to connect to aws timestream
-        self.aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID", "")
-        self.aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY", "")
-        self.aws_region_name = os.getenv("AWS_REGION_NAME", "")
 
         self.invalid_configs = []
 
@@ -72,10 +67,6 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
             if self.address is None or self.address.strip() == "":
                 self.invalid_configs.append(
                     "--address parameter or ADDRESS environment variable required"
-                )
-            if self.query is None or self.query.strip() == "":
-                self.invalid_configs.append(
-                    "--query parameter or QUERY environment variable required"
                 )
 
         if self.concurrency * self.iterations < 100:

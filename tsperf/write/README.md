@@ -84,6 +84,7 @@ statistical model described by a [schema](#data-generator-schemas).
 It can be used for both [populating a database](#ingest_mode) as well as
 having a way to [continuously insert](#ingest_mode) timeseries  data.
 
+
 ### Install
 
 #### PyPI package
@@ -1154,35 +1155,6 @@ To run this example follow the following steps:
 
 You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the raw data of the Data Generator.
 
-## Alternative data generators
-
-### Why use this data generator over the alternatives?
-
-* Generate random data which follows a statistical model to better reflect real world scenarios (real world data is
-  almost never truly random).
-* The "steady load"-mode can simulate a constant load of a defined number of messages per second
-* Ready made to deploy and scale data generators with Docker containers
-* When you need a data generator for one the supported databases
-* Uses Prometheus server to gather metrics
-
-### cr8 + mkjson
-
-`mkjson` combined with `cr8 insert-json` makes it easy to generate random entries into a table. Can only be used on
-databases which are compatible with `cr8`.
-
-See [this blog post](https://zignar.net/2020/05/01/generating-data-sets-using-mkjson/) for an example how to use `cr8`
-with `mkjson`.
-
-### tsbs data generator
-
-The [Time Series Benchmark Suite](https://github.com/timescale/tsbs) includes a data generator but is mainly a single
-client benchmark tool.
-
-The Data Generator has the following advantages compared to tsbs (when used as data generator):
-* Easier to define your own [schema](#data-generator-schemas)
-* Scale out to multiple clients is a core concept
-* Huge sets of data can be inserted without creating files as intermediate storage.
-* Full control on how many values will be inserted
 
 ## Glossary
 

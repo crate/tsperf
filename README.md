@@ -1,30 +1,76 @@
 ![Tests](https://github.com/crate/tsperf/workflows/Tests/badge.svg)
 
-# Data Generator
+# `tsperf` - A tool to test performance of time-series databases
 
-The Data Generator has a dedicated [documentation page](tsperf/write/README.md).
-For the purpose of capacity testing it simulates the generation of time-series
-data, without the need to set up an ingestion chain (which could be Azure IoTHub, RabbitMQ, etc.).
 
-## Maximizing Performance
+## About
 
-To maximize performance, multiple instances of the Data Generator must be run in parallel.
-How to achieve this using Kubernetes is documented within [KUBERNETES.md](KUBERNETES.md).
+The `tsperf` program is a database workload generator including two different domains,
+one for writing data and another one for reading.
 
-## Setup sandbox
+- [Data generator]: Generate time series data and feed it into database.
+  Use `tsperf write --help` to explore its options.
+- [Query timer]: Probe responsiveness of database on the read path.
+  Use `tsperf read --help` to explore its options.
+
+For the purpose of capacity testing, both domains try to simulate the generation and querying of
+time-series data. As the program is easy to use, it provides instant reward without the need to
+set up a whole data ingestion chain.
+
+[Data generator]: tsperf/write/README.md
+[Query timer]: tsperf/read/README.md
+
+
+## Features
+
+* Generate random data which follows a statistical model to better reflect real world scenarios,
+  real world data is almost never truly random.
+* The "steady load"-mode can simulate a constant load of a defined number of messages per second.
+* Ready-made to deploy and scale data generators with Docker containers. In order to maximize
+  performance, multiple instances of the Data Generator can be run in parallel.
+  This can be achieved by [using Kubernetes](KUBERNETES.md).
+* Metrics are exposed for consumption by Prometheus.
+* Data generator features
+  * Easy to define your own [schema](tsperf/write/README.md#data-generator-schemas).
+  * Full control on how many values will be inserted.
+  * Scale out to multiple clients is a core concept.
+  * Huge sets of data can be inserted without creating files as intermediate storage.
+
+### Supported databases
+* CrateDB
+* InfluxDB
+* Microsoft SQL Server
+* MongoDB
+* PostgreSQL
+* TimescaleDB
+* Timestream
+
+
+## Prior art
+
+### TSBS
+The [Time Series Benchmark Suite (TSBS)] is a collection of Go programs that are used to generate
+datasets and then benchmark read and write performance of various databases.
+
+### cr8 + mkjson
+`mkjson` combined with `cr8 insert-json` makes it easy to generate random entries into a table.
+See [generate data sets using mkjson] for an example how to use `cr8` together with `mkjson`.
+
+[generate data sets using mkjson]: https://zignar.net/2020/05/01/generating-data-sets-using-mkjson/
+[Time Series Benchmark Suite (TSBS)]: https://github.com/timescale/tsbs
+
+
+## Install
 ```shell
-git clone https://github.com/crate/tsperf
-cd tsperf
-make test
-source .venv/bin/activate
+pip install --user tsperf
 ```
+
 
 ## Usage
 
-- Data generator: Generate time series data and feed it into database.
-  Use `tsperf write --help` to explore its options.
-- Query Timer: Probe responsiveness of database on the read path.
-  Use `tsperf read --help` to explore its options.
+This section outlines the usage of `tsperf` on different databases. Please note that using Docker
+here is just for demonstration purposes. In reality, you will want to run the database workload
+against a database instance running on a decently powered machine.
 
 
 ### CrateDB
@@ -127,7 +173,7 @@ tsperf read --iterations=3000 --query="SELECT * FROM environment LIMIT 10;"
 
 ### TimescaleDB
 ```shell
-# Run PostgreSQL
+# Run TimescaleDB
 docker run -it --rm --env="POSTGRES_HOST_AUTH_METHOD=trust" --publish=5432:5432 timescale/timescaledb:2.3.0-pg13
 
 # Configure tsperf
@@ -153,6 +199,7 @@ tsperf read --iterations=3000 --query="SELECT * FROM environment LIMIT 10;"
 
 # Configure tsperf
 export ADAPTER=timestream
+export ADDRESS=ingest-cell1.timestream.us-west-2.amazonaws.com
 export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 export AWS_REGION_NAME=us-west-2

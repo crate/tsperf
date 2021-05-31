@@ -18,8 +18,11 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+import glob
+import json
 import logging
 import sys
+from pathlib import Path
 
 import click
 import cloup
@@ -366,3 +369,20 @@ def read(**kwargs):
     logger.info(f"Invoking read workload on time-series database »{adapter}«")
     config = QueryTimerConfig.create(**kwargs)
     tsperf.read.core.start(config)
+
+
+@main.command("schema")
+@click.option(
+    "--list",
+    is_flag=True,
+    default=False,
+    help="List all built-in schemas",
+)
+def schema_list(list: bool):
+    if list:
+        module_path = Path(__file__).parent / "schema"
+        pattern = str(module_path / "**" / "*.json")
+        json_files = glob.glob(pattern, recursive=True)
+        print(json.dumps(json_files, indent=4))
+    else:
+        pass

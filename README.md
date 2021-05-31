@@ -90,6 +90,16 @@ tsperf write --schema=tsperf.schema.basic:environment.json --adapter=cratedb --a
 tsperf read --adapter=cratedb --query="SELECT * FROM environment LIMIT 10;"
 ```
 
+### CrateDB+PostgreSQL
+```shell
+# Run CrateDB workload via PostgreSQL protocol.
+tsperf read --adapter=cratedbpg --iterations=3000 --query="SELECT * FROM environment LIMIT 10;"
+
+# Run PostgreSQL workload on CrateDB.
+tsperf read --adapter=postgresql --username=crate --iterations=3000 --query="SELECT * FROM environment LIMIT 10;"
+```
+
+
 ### InfluxDB
 ```shell
 # Run and configure InfluxDB

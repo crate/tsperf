@@ -10,7 +10,6 @@ Backlog
 
 Prio 1
 ======
-- [o] CrateDB over PostgreSQL protocol
 - [o] List schemas: ``tsperf schema list``
 - [o] Probe connectivity on Amazon Timestream before running job
 - [o] Fix Docker-related stuff
@@ -43,3 +42,4 @@ Done
 - [x] Add "humidity" to "environment.json" schema
 - [x] Rename "db_name" to "database" and "table_name" to "table"
 - [x] Migrate all remaining command line parameters
+- [x] CrateDB over PostgreSQL protocol

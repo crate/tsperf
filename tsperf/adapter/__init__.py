@@ -50,6 +50,7 @@ def load_adapters():  # noqa:-F401
     TODO: Load specific adapter on demand.
     """
     from tsperf.adapter.cratedb import CrateDbAdapter
+    from tsperf.adapter.cratedbpg import CrateDbPgWireAdapter
     from tsperf.adapter.dummy import DummyDbAdapter
     from tsperf.adapter.influxdb import InfluxDbAdapter
     from tsperf.adapter.mongodb import MongoDbAdapter

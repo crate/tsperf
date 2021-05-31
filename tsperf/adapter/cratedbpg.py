@@ -21,20 +21,20 @@
 import logging
 from typing import Dict, Optional, Union
 
-from crate import client
+import psycopg2
 
-from tsperf.adapter import AdapterManager
-from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceType
+from tsperf.adapter import AdapterManager, DatabaseInterfaceMixin
+from tsperf.adapter.cratedb import CrateDbAdapter
+from tsperf.model.interface import DatabaseInterfaceType
 from tsperf.read.config import QueryTimerConfig
-from tsperf.util.tictrack import timed_function
 from tsperf.write.config import DataGeneratorConfig
 
 logger = logging.getLogger(__name__)
 
 
-class CrateDbAdapter(AbstractDatabaseInterface):
+class CrateDbPgWireAdapter(CrateDbAdapter, DatabaseInterfaceMixin):
 
-    default_address = "localhost:4200"
+    default_address = "localhost:5432"
     default_username = "crate"
     default_query = "SELECT 1;"
 
@@ -43,10 +43,14 @@ class CrateDbAdapter(AbstractDatabaseInterface):
         config: Union[DataGeneratorConfig, QueryTimerConfig],
         schema: Optional[Dict] = None,
     ):
-        super().__init__()
+        DatabaseInterfaceMixin.__init__(self, config=config)
 
-        self.conn = client.connect(
-            config.address, username=config.username, password=config.password
+        self.conn = psycopg2.connect(
+            dbname=config.database,
+            user=self.username,
+            password=config.password,
+            host=self.host,
+            port=self.port,
         )
         self.cursor = self.conn.cursor()
         self.schema = schema
@@ -61,36 +65,7 @@ class CrateDbAdapter(AbstractDatabaseInterface):
         self.shards = config.shards
         self.replicas = config.replicas
 
-    def close_connection(self):
-        self.cursor.close()
-        self.conn.close()
 
-    def prepare_database(self):
-        stmt = f"""CREATE TABLE IF NOT EXISTS {self.table_name} ("ts" TIMESTAMP WITH TIME ZONE,
- "g_ts_{self.partition}" TIMESTAMP WITH TIME ZONE GENERATED ALWAYS AS date_trunc('{self.partition}', "ts"),
- "payload" OBJECT(DYNAMIC))
- CLUSTERED INTO {self.shards} SHARDS
- PARTITIONED BY ("g_ts_{self.partition}")
- WITH (number_of_replicas = {self.replicas})"""  # noqa:S608
-        self.cursor.execute(stmt)
-
-    @timed_function()
-    def insert_stmt(self, timestamps: list, batch: list):
-        stmt = f"""INSERT INTO {self.table_name} (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"""  # noqa:S608
-        self.cursor.execute(stmt, (timestamps, batch))
-
-    @timed_function()
-    def execute_query(self, query: str) -> list:
-        return self.run_query(query)
-
-    def run_query(self, query: str) -> list:
-        self.cursor.execute(query)
-        return self.cursor.fetchall()
-
-    def _get_schema_table_name(self) -> str:
-        for key in self.schema.keys():
-            if key != "description":
-                return key
-
-
-AdapterManager.register(interface=DatabaseInterfaceType.CrateDB, factory=CrateDbAdapter)
+AdapterManager.register(
+    interface=DatabaseInterfaceType.CrateDBpg, factory=CrateDbPgWireAdapter
+)

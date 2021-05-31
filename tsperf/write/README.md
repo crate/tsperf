@@ -28,12 +28,12 @@ Data Generator can be setup and the functionality as well as explain different e
         * [INGEST_MODE False](#ingest_mode-false)
         * [INGEST_MODE True](#ingest_mode-true)
       - [INGEST_SIZE](#ingest_size)
-      - [INGEST_TS](#ingest_ts)
-      - [INGEST_DELTA](#ingest_delta)
+      - [TIMESTAMP_START](#timestamp_start)
+      - [TIMESTAMP_DELTA](#timestamp_delta)
       - [SCHEMA](#schema)
       - [BATCH_SIZE](#batch_size)
       - [ADAPTER](#adapter)
-      - [STAT_DELTA](#stat_delta)
+      - [STATISTICS_INTERVAL](#statistics_interval)
       - [PROMETHEUS_PORT](#prometheus_port)
     + [Environment variables used to configure different databases](#environment-variables-used-to-configure-different-databases)
       - [ADDRESS](#address)
@@ -444,10 +444,10 @@ Default: True
 ##### INGEST_MODE False
 
 When `INGEST_MODE` is set to `False` the Data Generator goes into "steady load"-mode. This means for all channels
-controlled by the Data Generator an insert is performed each [INGEST_DELTA](#ingest_delta) seconds.
+controlled by the Data Generator an insert is performed each [TIMESTAMP_DELTA](#timestamp_delta) seconds.
 
 **Note: If too many channels are controlled by one Data Generator instance so an insert cannot be performed in the
-timeframe set by INGEST_DELTA it is advised to split half the IDs to a separate Data Generator instance.
+timeframe set by `TIMESTAMP_DELTA` it is advised to split half the IDs to a separate Data Generator instance.
 For example, one instance uses `ID_START=1, ID_END=500` and the other `ID_START=501, ID_END=1000`**.
 
 With this configuration the [Batch Size Automator](#batch-size-automator) is disabled. Therefore the
@@ -460,9 +460,9 @@ When `INGEST_MODE` is set to `True` the Data Generator goes into "burst insert"-
 many values as possible. This mode is used populate a database and can be used to measure insert performance.
 
 Using this mode results in values inserted into the database at a faster rate than defined by
-[INGEST_DELTA](#ingest_delta) but the timestamp values will still adhere to this value and be in the defined time
-interval. This means that if [INGEST_TS](#ingest_ts) is not set to a specific value timestamps will point to the future.
-By adjusting INGEST_TS to a timestamp in the past in combination with a limited [INGEST_SIZE](#ingest_size) the rang of
+[TIMESTAMP_DELTA](#timestamp_delta) but the timestamp values will still adhere to this value and be in the defined time
+interval. This means that if [TIMESTAMP_START](#timestamp_start) is not set to a specific value timestamps will point to the future.
+By adjusting `TIMESTAMP_START` to a timestamp in the past in combination with a limited [INGEST_SIZE](#ingest_size) the rang of
 timestamps can be controlled.
 
 When [BATCH_SIZE](#batch_size) is set to a value smaller or equal to 0 the [Batch Size Automator](#batch-size-automator)
@@ -492,7 +492,7 @@ We have 500 channels and for each channel 2000 values are generated, therefore w
 **Note: a value contains all the information for a single channel, including the defined `tags` and `fields`. See
 [Data Generator Schemas](#data-generator-schemas) for more information about tags and fields.**
 
-#### INGEST_TS
+#### TIMESTAMP_START
 
 Type: Integer
 
@@ -502,11 +502,13 @@ Default: timestamp at the time the Data Generator was started
 
 This variable defines the first timestamp used for the generated values. When using
 [INGEST_MODE True](#ingest_mode-true) all following timestamps have an interval to the previous timestamp by the value
-of [INGEST_DELTA](#ingest_delta). When using [INGEST_MODE False](#ingest_mode-false) the second insert happens when
-`INGEST_TS + INGEST_DELTA` is equal or bigger than the current timestamp (real life). This means that if INGEST_TS is
-set to the future no inserts will happen until the `INGEST_TS + INGEST_DELTA` timestamp is reached.
+of [TIMESTAMP_DELTA](#timestamp_delta). When using [INGEST_MODE False](#ingest_mode-false) the second insert happens when
+`TIMESTAMP_START + TIMESTAMP_DELTA` is equal or bigger than the current timestamp (real life).
 
-#### INGEST_DELTA
+This means that if `TIMESTAMP_START` is set to the future no inserts will happen until the 
+`TIMESTAMP_START + TIMESTAMP_DELTA` timestamp is reached.
+
+#### TIMESTAMP_DELTA
 
 Type: Float
 
@@ -514,7 +516,7 @@ Values: Any positive number
 
 Default: 0.5
 
-The value of `INGEST_DELTA` defines the interval between timestamps of the generated values.
+The value of `TIMESTAMP_DELTA` defines the interval between timestamps of the generated values.
 
 #### SCHEMA
 
@@ -556,7 +558,7 @@ The value will define which database adapter to use:
 + PostgreSQL
 + TimescaleDB
 
-#### STAT_DELTA
+#### STATISTICS_INTERVAL
 
 Type: Integer
 
@@ -564,7 +566,7 @@ Values: A positive number
 
 Default: 30
 
-Prints statistics of average function execution time every `STAT_DELTA` seconds.
+Prints statistics of average function execution time every `STATISTICS_INTERVAL` seconds.
 
 #### PROMETHEUS_PORT
 
@@ -1076,7 +1078,7 @@ As we want to use CrateDB running on localhost we set the following environment 
 As we want to have a consistent insert every 5 seconds for one hour we set the following environment variables:
 + INGEST_MODE: 0
 + INGEST_SIZE: 720 (an hour has 3600 seconds divided by 5 seconds)
-+ INGEST_DELTA: 5
++ TIMESTAMP_DELTA: 5
 
 And finally we want to signal using the appropriate schema:
 + SCHEMA: "tsperf.schema.factory.simple:machine.json"
@@ -1098,7 +1100,7 @@ services:
       PASSWORD: ""
       INGEST_MODE: 0
       INGEST_SIZE: 720
-      INGEST_DELTA: 5
+      TIMESTAMP_DELTA: 5
       SCHEMA: "tsperf.schema.factory.simple:machine.json"
       ADAPTER: cratedb
 ```

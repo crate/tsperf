@@ -40,15 +40,17 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
     # How many times each thread executes the query.
     iterations: int = 1000
 
+    refresh_interval: float = 0.1
+    quantiles: List[str] = "50,60,75,90,99"
+
     invalid_configs: dataclasses.InitVar[List] = None
 
     def __post_init__(self, invalid_configs):
 
         super().__post_init__()
 
-        # environment variables describing how the read behaves
-        self.quantiles = os.getenv("QUANTILES", "50,60,75,90,99").split(",")
-        self.refresh_rate = float(os.getenv("REFRESH_RATE", 0.1))
+        if isinstance(self.quantiles, str):
+            self.quantiles = self.quantiles.split(",")
 
         self.invalid_configs = []
 

@@ -19,11 +19,8 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 import dataclasses
-import os
-import os.path
 import time
 from argparse import Namespace
-from distutils.util import strtobool
 
 from tsperf.model.configuration import DatabaseConnectionConfiguration
 from tsperf.write.model import IngestMode
@@ -38,6 +35,9 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
     # Describing how the Timeseries Datagenerator (TSDG) behaves
     id_start: int = 1
     id_end: int = 500
+    timestamp_start: int = None
+    timestamp_delta: int = 0.5
+
     ingest_mode: IngestMode = IngestMode.FAST
     ingest_size: int = 1000
     batch_size: int = -1
@@ -48,18 +48,15 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
     prometheus_host: str = None
     prometheus_port: int = None
 
+    statistics_interval: int = 30
+
     def __post_init__(self):
 
         super().__post_init__()
 
-        # environment variables describing how the write behaves
-        self.ingest_ts = float(os.getenv("INGEST_TS", time.time()))
-        self.ingest_delta = float(os.getenv("INGEST_DELTA", 0.5))
-        self.stat_delta = int(os.getenv("STAT_DELTA", 30))
-
-        # environment variables to configure timescaledb
-        self.copy = strtobool(os.getenv("TIMESCALE_COPY", "True"))
-        self.distributed = strtobool(os.getenv("TIMESCALE_DISTRIBUTED", "False"))
+        # How the write behaves.
+        if self.timestamp_start is None:
+            self.timestamp_start = time.time()
 
         self.invalid_configs = []
 
@@ -77,19 +74,22 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
             self.invalid_configs.append(
                 f"ID_START: {self.id_start} > ID_END: {self.id_end}"
             )
+        if self.timestamp_start < 0:
+            self.invalid_configs.append(f"TIMESTAMP_START: {self.timestamp_start} < 0")
+        if self.timestamp_delta <= 0:
+            self.invalid_configs.append(f"TIMESTAMP_DELTA: {self.timestamp_delta} <= 0")
+
         if not IngestMode(self.ingest_mode):
             self.invalid_configs.append(
                 f"INGEST_MODE: {self.ingest_mode} not in {IngestMode}"
             )
         if self.ingest_size < 0:
             self.invalid_configs.append(f"INGEST_SIZE: {self.ingest_size} < 0")
-        if self.ingest_ts < 0:
-            self.invalid_configs.append(f"INGEST_TS: {self.ingest_ts} < 0")
-        if self.ingest_delta <= 0:
-            self.invalid_configs.append(f"INGEST_DELTA: {self.ingest_delta} <= 0")
 
-        if self.stat_delta <= 0:
-            self.invalid_configs.append(f"STAT_DELTA: {self.stat_delta} <= 0")
+        if self.statistics_interval <= 0:
+            self.invalid_configs.append(
+                f"STATISTICS_INTERVAL: {self.statistics_interval} <= 0"
+            )
         if self.partition.lower() not in [
             "second",
             "minute",

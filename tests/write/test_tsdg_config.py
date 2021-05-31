@@ -46,19 +46,19 @@ def test_config_default():
     assert config.adapter == DatabaseInterfaceType.Dummy
     assert config.id_start == 1
     assert config.id_end == 500
+    assert config.timestamp_start == pytest.approx(time.time(), abs=0.3)
     assert config.ingest_mode == IngestMode.FAST
     assert config.ingest_size == 1000
-    assert config.ingest_ts == pytest.approx(time.time(), abs=0.3)
-    assert config.ingest_delta == 0.5
+    assert config.timestamp_delta == 0.5
     assert config.schema is None
     assert config.batch_size == -1
-    assert config.stat_delta == 30
+    assert config.statistics_interval == 30
 
     assert config.address is None
     assert config.username is None
     assert config.password is None
-    assert config.database == ""
-    assert config.table == ""
+    assert config.database is None
+    assert config.table is None
     assert config.partition == "week"
 
     assert config.shards == 4
@@ -121,22 +121,22 @@ def test_config_ingest_size_environ(config_environ):
     assert config_environ.ingest_size == 1000
 
 
-def test_config_ingest_ts_environ():
+def test_config_timestamp_start_environ():
     ts = time.time()
-    os.environ["INGEST_TS"] = str(ts)
+    os.environ["TIMESTAMP_START"] = str(ts)
     config = mkconfig()
-    assert config.ingest_ts == ts
-    del os.environ["INGEST_TS"]
+    assert config.timestamp_start == ts
+    del os.environ["TIMESTAMP_START"]
 
 
-@pytest.mark.parametrize("env_vars", ["INGEST_DELTA=10"])
-def test_config_ingest_delta_environ(config_environ):
-    assert config_environ.ingest_delta == 10
+@pytest.mark.parametrize("env_vars", ["TIMESTAMP_DELTA=10"])
+def test_config_timestamp_delta_environ(config_environ):
+    assert config_environ.timestamp_delta == 10
 
 
-@pytest.mark.parametrize("env_vars", ["STAT_DELTA=60"])
-def test_config_stat_delta_environ(config_environ):
-    assert config_environ.stat_delta == 60
+@pytest.mark.parametrize("env_vars", ["STATISTICS_INTERVAL=60"])
+def test_config_statistics_interval_environ(config_environ):
+    assert config_environ.statistics_interval == 60
 
 
 @pytest.mark.parametrize("env_vars", ["BATCH_SIZE=100"])
@@ -249,25 +249,25 @@ def test_validate_ingest_size_invalid(mock_isfile):
 
 
 @mock.patch("os.path.isfile")
-def test_validate_ingest_ts_invalid(mock_isfile):
+def test_validate_timestamp_start_invalid(mock_isfile):
     mock_isfile.return_value = True
-    test_ingest_ts = -1
+    ts = -1
     config = mkconfig()
-    config.ingest_ts = test_ingest_ts
+    config.timestamp_start = ts
     assert not config.validate_config()
     assert len(config.invalid_configs) == 1
-    assert "INGEST_TS" in config.invalid_configs[0]
+    assert "TIMESTAMP_START" in config.invalid_configs[0]
 
 
 @mock.patch("os.path.isfile")
-def test_validate_ingest_delta_invalid(mock_isfile):
+def test_validate_timestamp_delta_invalid(mock_isfile):
     mock_isfile.return_value = True
-    test_ingest_delta = -1
+    test_timestamp_delta = -1
     config = mkconfig()
-    config.ingest_delta = test_ingest_delta
+    config.timestamp_delta = test_timestamp_delta
     assert not config.validate_config()
     assert len(config.invalid_configs) == 1
-    assert "INGEST_DELTA" in config.invalid_configs[0]
+    assert "TIMESTAMP_DELTA" in config.invalid_configs[0]
 
 
 @mock.patch("os.path.isfile")
@@ -283,14 +283,14 @@ def test_validate_adapter_invalid(mock_isfile):
 
 
 @mock.patch("os.path.isfile")
-def test_validate_stat_delta_invalid(mock_isfile):
+def test_validate_statistics_interval_invalid(mock_isfile):
     mock_isfile.return_value = True
-    test_stat_delta = -1
+    test_statistics_interval = -1
     config = mkconfig()
-    config.stat_delta = test_stat_delta
+    config.statistics_interval = test_statistics_interval
     assert not config.validate_config()
     assert len(config.invalid_configs) == 1
-    assert "STAT_DELTA" in config.invalid_configs[0]
+    assert "STATISTICS_INTERVAL" in config.invalid_configs[0]
 
 
 @mock.patch("os.path.isfile")

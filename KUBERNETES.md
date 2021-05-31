@@ -66,7 +66,7 @@ spec:
           value: "2400000"
         - name: SCHEMA
           value: "tsperf.schema.basic:environment.json"
-        - name: INGEST_DELTA
+        - name: TIMESTAMP_DELTA
           value: "0.5"
         - name: SHARDS
           value: "28"

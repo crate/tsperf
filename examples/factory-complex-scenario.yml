@@ -11,7 +11,7 @@ services:
       ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
-      INGEST_DELTA: 1
+      TIMESTAMP_DELTA: 1
       SCHEMA: "tsperf.schema.factory.complex:base1.json"
       ADAPTER: cratedb
 
@@ -25,7 +25,7 @@ services:
       ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 1000
-      INGEST_DELTA: 1
+      TIMESTAMP_DELTA: 1
       SCHEMA: "tsperf.schema.factory.complex:base2.json"
       ADAPTER: cratedb
 
@@ -39,7 +39,7 @@ services:
       ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 100
-      INGEST_DELTA: 10
+      TIMESTAMP_DELTA: 10
       SCHEMA: "tsperf.schema.factory.complex:upper.json"
       ADAPTER: cratedb
 
@@ -53,6 +53,6 @@ services:
       ADDRESS: "address.docker.internal:4200"
       INGEST_MODE: 1
       INGEST_SIZE: 100
-      INGEST_DELTA: 10
+      TIMESTAMP_DELTA: 10
       SCHEMA: "tsperf.schema.factory.complex:lower.json"
       ADAPTER: cratedb

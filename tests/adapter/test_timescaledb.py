@@ -93,7 +93,7 @@ def test_prepare_database_auth(mock_connect, config):
         port=5432,
         user="postgres",
         password=None,
-        dbname="",
+        dbname=None,
     )
 
     # Test Case 1:

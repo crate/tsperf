@@ -1,5 +1,4 @@
 import dataclasses
-import os
 from typing import Dict
 
 from tsperf.adapter import AdapterManager
@@ -22,7 +21,7 @@ class DatabaseConnectionConfiguration:
     database: str = None
     table: str = None
 
-    partition: str = None
+    partition: str = "week"
 
     # The concurrency level.
     concurrency: int = 1
@@ -50,9 +49,7 @@ class DatabaseConnectionConfiguration:
         return cls(**options)
 
     def __post_init__(self):
-        self.database = self.database or os.getenv("DATABASE", "")
-        self.table = self.table or os.getenv("TABLE", "")
-        self.partition = self.partition or os.getenv("PARTITION", "week")
+        pass
 
     def validate(self):
         if self.adapter is not None:

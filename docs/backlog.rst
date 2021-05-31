@@ -14,6 +14,7 @@ Prio 1
 - [o] Add "humidity" to "environment.json" schema
 - [o] CrateDB over PostgreSQL protocol
 - [o] List schemas: ``tsperf schema list``
+- [o] Probe connectivity on Amazon Timestream before running job
 
 Prio 2
 ======

@@ -79,11 +79,19 @@ class TimescaleDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         self.conn.close()
 
     def prepare_database(self):
-        columns = self._get_tags_and_fields()
-        stmt = f"""CREATE TABLE IF NOT EXISTS {self.table_name} (
+
+        # Drop table.
+        stmt = f"DROP TABLE IF EXISTS {self.table_name}"
+        self.cursor.execute(stmt)
+        self.conn.commit()
+
+        # Create table.
+        stmt = f"""CREATE TABLE {self.table_name} (
 ts TIMESTAMP NOT NULL,
 ts_{self.partition} TIMESTAMP NOT NULL,
 """
+
+        columns = self._get_tags_and_fields()
         for key, value in columns.items():
             stmt += f"""{key} {value},"""
         stmt = stmt.rstrip(",") + ");"

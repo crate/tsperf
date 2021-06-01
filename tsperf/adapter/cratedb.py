@@ -66,12 +66,19 @@ class CrateDbAdapter(AbstractDatabaseInterface):
         self.conn.close()
 
     def prepare_database(self):
-        stmt = f"""CREATE TABLE IF NOT EXISTS {self.table_name} ("ts" TIMESTAMP WITH TIME ZONE,
+
+        # Drop table.
+        stmt = f"DROP TABLE IF EXISTS {self.table_name}"
+        self.cursor.execute(stmt)
+
+        # Create table.
+        stmt = f"""CREATE TABLE {self.table_name} ("ts" TIMESTAMP WITH TIME ZONE,
  "g_ts_{self.partition}" TIMESTAMP WITH TIME ZONE GENERATED ALWAYS AS date_trunc('{self.partition}', "ts"),
  "payload" OBJECT(DYNAMIC))
  CLUSTERED INTO {self.shards} SHARDS
  PARTITIONED BY ("g_ts_{self.partition}")
  WITH (number_of_replicas = {self.replicas})"""  # noqa:S608
+        logger.info(f"Preparing database with statement:\n{stmt}")
         self.cursor.execute(stmt)
 
     @timed_function()

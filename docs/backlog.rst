@@ -11,8 +11,6 @@ Backlog
 Prio 1
 ======
 - [o] Verify functionality on all cloud offerings
-- [o] Clarify how database / table / collection would be dropped in order to
-      recreate it with different shards/partitions/replicas parameters.
 - [o] Adjust documentation
 - [o] Python PyPI & Docker image release recipes for GHA
 - [o] Implement fixed set of queries per use case
@@ -45,3 +43,5 @@ Done
 - [x] CrateDB over PostgreSQL protocol
 - [x] List schemas: ``tsperf schema --list``
 - [x] Fix Docker-related stuff
+- [x] Clarify how database / table / collection would be dropped in order to
+      recreate it with different shards/partitions/replicas parameters.

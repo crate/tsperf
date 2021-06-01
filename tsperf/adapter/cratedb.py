@@ -77,13 +77,13 @@ class CrateDbAdapter(AbstractDatabaseInterface):
  "payload" OBJECT(DYNAMIC))
  CLUSTERED INTO {self.shards} SHARDS
  PARTITIONED BY ("g_ts_{self.partition}")
- WITH (number_of_replicas = {self.replicas})"""  # noqa:S608
+ WITH (number_of_replicas = {self.replicas})"""
         logger.info(f"Preparing database with statement:\n{stmt}")
         self.cursor.execute(stmt)
 
     @timed_function()
     def insert_stmt(self, timestamps: list, batch: list):
-        stmt = f"""INSERT INTO {self.table_name} (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"""  # noqa:S608
+        stmt = f"""INSERT INTO {self.table_name} (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"""
         self.cursor.execute(stmt, (timestamps, batch))
 
     @timed_function()

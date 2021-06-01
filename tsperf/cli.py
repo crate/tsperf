@@ -160,7 +160,7 @@ performance_options = cloup.option_group(
             case_sensitive=False,
         ),
         default="week",
-        help="Is used to partition table by a specified value. Used with CrateDB, Postgresql and TimescaleDB.",
+        help="Is used to partition table by a specified value. Used with CrateDB, PostgreSQL and TimescaleDB.",
     ),
     click.option(
         "--shards",

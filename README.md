@@ -91,6 +91,7 @@ against a database instance running on a decently powered machine.
 docker run -it --rm --publish=4200:4200 --publish=5432:5432 crate:4.5.1
 
 # Feed data into CrateDB table.
+# Adjust write parameters like `--partition=day --shards=6 --replicas=3`.
 tsperf write --adapter=cratedb --schema=tsperf.schema.basic:environment.json
 tsperf write --schema=tsperf.schema.basic:environment.json --adapter=cratedb --address=cratedb.example.org:4200
 
@@ -195,9 +196,8 @@ docker run -it --rm --env="POSTGRES_HOST_AUTH_METHOD=trust" --publish=5432:5432 
 export ADAPTER=timescaledb
 
 # Feed data into TimescaleDB hypertable.
+# Adjust write parameters like `--timescaledb-distributed --timescaledb-pgcopy`.
 tsperf write --schema=tsperf.schema.basic:environment.json
-tsperf write --schema=tsperf.schema.basic:environment.json --timescaledb-distributed
-tsperf write --schema=tsperf.schema.basic:environment.json --timescaledb-pgcopy
 
 # Query data from TimescaleDB hypertable.
 tsperf read --iterations=3000 --query="SELECT * FROM environment LIMIT 10;"

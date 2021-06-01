@@ -71,16 +71,22 @@ class InfluxDbAdapter(AbstractDatabaseInterface):
             if self.client.__class__.__name__ == "Mock":
                 org_id = "Mock12345"
             else:
-                org = list(
-                    filter(
-                        lambda it: it.name == self.organization,
-                        self.client.organizations_api().find_organizations(),
-                    )
-                )[0]
+                org = self._get_first_organization()
                 org_id = org.id
+            logger.info(
+                f"Creating InfluxDB bucket {bucket.name} in organization {org_id}"
+            )
             bucket = Bucket(name=self.database_name, org_id=org_id, retention_rules=[])
-            logger.info(f"Creating InfluxDB bucket {bucket.name}")
             self.bucket = self.client.buckets_api().create_bucket(bucket)
+
+    def _get_first_organization(self):
+        org = list(
+            filter(
+                lambda it: it.name == self.organization,
+                self.client.organizations_api().find_organizations(),
+            )
+        )[0]
+        return org
 
     @timed_function()
     def insert_stmt(self, timestamps: list, batch: list):

@@ -38,12 +38,14 @@ flake8-black = ["-BLK901"]
 flake8-isort = ["-I003"]
 flake8-bugbear = ["-B007"]
 
-
 [tool.flakehell.exceptions."tests"]
 flake8-bandit = ["-S101", "-S105", "-S106"]
 
 [tool.flakehell.exceptions."tsperf/adapter/__init__.py"]
 pyflakes = ["-F401"]
+
+[tool.flakehell.exceptions."tsperf/adapter"]
+flake8-bandit = ["-S608"]
 
 [tool.flakehell.exceptions."tsperf/util/float_simulator/__init__.py"]
 flake8-bandit = ["-S311"]

@@ -48,18 +48,23 @@ class MongoDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         super().__init__()
         self.schema = schema
 
-        # Compute credentials.
-        credentials = ""
-        if self.username:
-            credentials += self.username
-            if config.password:
-                credentials += ":" + config.password
-            credentials += "@"
+        if "://" in self.config.address:
+            connection_string = self.config.address
 
-        if self.host == "localhost":
-            connection_string = f"""mongodb://{credentials}{self.host}"""
         else:
-            connection_string = f"""mongodb+srv://{credentials}{self.host}"""
+
+            # Compute credentials.
+            credentials = ""
+            if self.username:
+                credentials += self.username
+                if config.password:
+                    credentials += ":" + config.password
+                credentials += "@"
+
+            if self.host == "localhost":
+                connection_string = f"""mongodb://{credentials}{self.host}"""
+            else:
+                connection_string = f"""mongodb+srv://{credentials}{self.host}"""
 
         self.collection_name = self._get_schema_collection_name()
 

@@ -16,6 +16,7 @@ requires = [
     "psycopg2-binary==2.8.6",
     "influxdb_client==1.17.0",
     "pymongo==3.11.4",
+    "dnspython==2.1.0",
     "numpy==1.20.3",
     "pgcopy==1.5.0",
     "pyodbc==4.0.30",

@@ -162,6 +162,9 @@ tsperf write --adapter=mongodb --schema=tsperf.schema.basic:environment.json
 
 # Query data from MongoDB collection.
 tsperf read --adapter=mongodb --schema=tsperf.schema.basic:environment.json
+
+# For connecting to MongoDB Atlas, use:
+export ADDRESS="mongodb+srv://username:password@testdrive.fkpkw.mongodb.net/tsperf?retryWrites=true&w=majority"
 ```
 
 

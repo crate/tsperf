@@ -11,8 +11,8 @@ Backlog
 Prio 1
 ======
 - [o] Verify functionality on all cloud offerings
-- [o] Adjust documentation
 - [o] Python PyPI & Docker image release recipes for GHA
+- [o] Reflect Docker updates within documentation
 - [o] Implement fixed set of queries per use case
 - [o] Improve report output
 
@@ -23,7 +23,7 @@ Prio 2
 - [o] Automatically derive read query from schema, like it already works for MongoDB
 - [o] Parallelize using Dask
 - [o] Add more databases like CitusDB, PolarDB, CockroachDB, QuestDB(+PostgreSQL,InfluxDB), Yugabyte, Clickhouse, MontyDB
-- [o] Emit data to message brokers like MQTT, RabbitMQ, Azure IoTHub
+- [o] Emit data to message brokers like MQTT, RabbitMQ, Azure IoTHub, AWS Aurora, ScyllaDB.
 - [o] Consolidate names: sensor, device, machine, edge, factory, plant
 - [o] Implement parameter validation with Pydantic
 
@@ -45,3 +45,4 @@ Done
 - [x] Fix Docker-related stuff
 - [x] Clarify how database / table / collection would be dropped in order to
       recreate it with different shards/partitions/replicas parameters.
+- [x] Adjust documentation

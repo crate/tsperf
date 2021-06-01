@@ -29,7 +29,7 @@ test_requires = [
     "pytest-cov==2.12.0",
     "dotmap==1.3.23",
     "flakehell==0.9.0",
-    "flake8==3.9.2",
+    "flake8==3.8.4",
     "flake8-black==0.2.1",
     "flake8-bugbear==21.4.3",
     "flake8-bandit==2.1.2",

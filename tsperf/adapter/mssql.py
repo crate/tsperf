@@ -63,12 +63,19 @@ class MsSQLDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         ]
 
     def prepare_database(self):
+
+        # Drop table.
+        stmt = f"IF EXISTS " \
+               f"   (SELECT * FROM sysobjects " \
+               f"   WHERE id = object_id(N'{self.table_name}') AND OBJECTPROPERTY(id, N'IsUserTable') = 1) " \
+               f"DROP TABLE {self.table_name}"
+        self.cursor.execute(stmt)
+        self.conn.commit()
+
+        # Create table.
+        stmt = f"CREATE TABLE {self.table_name} (ts DATETIME NOT NULL,"  # noqa:S608
+
         columns = self._get_tags_and_fields()
-        stmt = f"""
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE id = object_id(N'{self.table_name}')
-AND OBJECTPROPERTY(id, N'IsUserTable') = 1) CREATE TABLE {self.table_name} (
-ts DATETIME NOT NULL,
-"""  # noqa:S608
         for key, value in columns.items():
             stmt += f"""{key} {value},"""
 

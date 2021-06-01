@@ -134,6 +134,14 @@ tsperf write --schema=tsperf.schema.basic:environment.json
 tsperf read --query='from(bucket:"environment") |> range(start:-2h, stop:2h) |> limit(n: 10)'
 ```
 
+On InfluxDB Cloud, after generating an "All Access Token", configure `tsperf` like:
+```shell
+export ADAPTER=influxdb
+export ADDRESS="https://eu-central-1-1.aws.cloud2.influxdata.com/"
+export INFLUXDB_ORGANIZATION=a05test6edtest2d
+export INFLUXDB_TOKEN="wpNtestfeNUveYitDLk8Ld47vrSVUTKB_vEaEwWC7qXj_ZqvOwYCRhQTB4EDty3uLFMXWP2C195gtestt4XGFQ=="
+```
+
 
 ### Microsoft SQL Server
 ```shell
@@ -225,3 +233,21 @@ tsperf write --schema=tsperf.schema.basic:environment.json
 # Query data from Timestream table.
 tsperf read --iterations=3000 --query="SELECT * FROM environment LIMIT 10;"
 ```
+
+
+## Contributing
+We are always happy to receive code contributions, ideas, suggestions and problem reports from the community.
+
+So, if you’d like to contribute you’re most welcome. Spend some time taking a look around, locate a bug, design
+issue or spelling mistake and then send us a pull request or open an issue on GitHub.
+
+Thanks in advance for your efforts, we really appreciate any help or feedback.
+
+
+## Acknowledgements
+Thanks to all the contributors who helped to co-create and conceive `tsperf`
+in one way or another and kudos to all authors of the foundational libraries.
+
+
+## License
+This project is licensed under the terms of the Apache 2.0 license.

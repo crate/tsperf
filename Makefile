@@ -23,7 +23,7 @@ setup-virtualenv:
 
 # Install requirements for development.
 virtualenv-dev: setup-virtualenv
-	@test -e $(tsperf) || $(pip) install --editable=.[testing]
+	@test -e $(tsperf) || $(pip) install --editable='.[testing]'
 
 
 # ====

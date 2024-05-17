@@ -10,6 +10,7 @@ Backlog
 
 Prio 1
 ======
+- [o] Re-add pyodbc on CI
 - [o] Verify functionality on all cloud offerings
 - [o] Python PyPI & Docker image release recipes for GHA
 - [o] Reflect Docker updates within documentation

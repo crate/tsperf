@@ -1,12 +1,13 @@
 from unittest import mock
 
-import pyodbc
 import pytest
 
 from tests.write.schema import test_schema1, test_schema3
 from tsperf.adapter.mssql import MsSQLDbAdapter
 from tsperf.model.configuration import DatabaseConnectionConfiguration
 from tsperf.model.interface import DatabaseInterfaceType
+
+pyodbc = pytest.importorskip("pyodbc")
 
 
 @pytest.fixture

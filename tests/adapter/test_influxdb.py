@@ -41,7 +41,7 @@ def test_close_connection(mock_client, config):
     client = mock.Mock()
     mock_client.return_value = client
     db_writer = InfluxDbAdapter(config=config, schema=test_schema1)
-    mock_client.assert_called_with("http://localhost:8086/", token="token")
+    mock_client.assert_called_with("http://localhost:8086/", token="token", org="acme")
     # Test Case 1
     db_writer.close_connection()
     client.close.assert_called()

@@ -45,7 +45,15 @@ class InfluxDbAdapter(AbstractDatabaseInterface):
     ):
         super().__init__()
 
-        self.client = InfluxDBClient(url=config.address, token=config.influxdb_token)
+        logger.info(
+            f"Connecting to InfluxDB at {config.address} with organization "
+            f"{config.influxdb_organization} and token {config.influxdb_token}"
+        )
+        self.client = InfluxDBClient(
+            url=config.address,
+            token=config.influxdb_token,
+            org=config.influxdb_organization,
+        )
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
         self.query_api = self.client.query_api()
         self.organization = config.influxdb_organization

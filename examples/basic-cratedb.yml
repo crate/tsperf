@@ -5,7 +5,7 @@ version: "2.3"
 services:
 
   datagen1:
-    image: tsperf
+    image: ghcr.io/crate/tsperf:latest
     command: [ "tsperf", "write" ]
     ports:
       - 8000:8000
@@ -20,7 +20,7 @@ services:
       SCHEMA: "tsperf.schema.basic:environment.json"
 
   datagen2:
-    image: tsperf
+    image: ghcr.io/crate/tsperf:latest
     command: [ "tsperf", "write" ]
     ports:
       - 8001:8000

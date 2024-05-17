@@ -2,7 +2,7 @@ version: "2.3"
 services:
 
   datagen_base1:
-    image: tsperf
+    image: ghcr.io/crate/tsperf:latest
     command: [ "tsperf", "write" ]
     ports:
       - 8000:8000
@@ -17,7 +17,7 @@ services:
       ADAPTER: cratedb
 
   datagen_base2:
-    image: tsperf
+    image: ghcr.io/crate/tsperf:latest
     command: [ "tsperf", "write" ]
     ports:
       - 8001:8000
@@ -32,7 +32,7 @@ services:
       ADAPTER: cratedb
 
   datagen_upper:
-    image: tsperf
+    image: ghcr.io/crate/tsperf:latest
     command: [ "tsperf", "write" ]
     ports:
       - 8002:8000
@@ -47,7 +47,7 @@ services:
       ADAPTER: cratedb
 
   datagen_lower:
-    image: tsperf
+    image: ghcr.io/crate/tsperf:latest
     command: [ "tsperf", "write" ]
     ports:
       - 8003:8000

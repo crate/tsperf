@@ -49,5 +49,5 @@ jobs:
             password: ${{ secrets.REGISTRY_PASSWORD }}
         - if: steps.get_tag.outputs.tag != steps.get_tag.outputs.last_tag
           run: |
-            docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/data-generator:${{ steps.get_tag.outputs.tag }} .
-            docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/data-generator:${{ steps.get_tag.outputs.tag }}
+            docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/tsperf:${{ steps.get_tag.outputs.tag }} .
+            docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/tsperf:${{ steps.get_tag.outputs.tag }}

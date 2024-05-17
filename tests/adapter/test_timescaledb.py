@@ -200,7 +200,7 @@ def test_prepare_database_test_schema(mock_connect, config):
 
     # Test Case 1:
     db_writer.prepare_database()
-    stmt = str(cursor.execute.call_args_list[0])
+    stmt = str(cursor.execute.call_args_list[1])
     assert "plant TEXT" in stmt
     assert "line TEXT" in stmt
     conn.commit.assert_called()

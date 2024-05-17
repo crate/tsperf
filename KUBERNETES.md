@@ -42,7 +42,7 @@ spec:
       - name: image-pull-cr8
       containers:
       - name: datagenerator
-        image: registry.cr8.net/data-generator:{{ version }}
+        image: ghcr.io/crate/tsperf:latest
         ports:
         - containerPort: 8000
           protocol: TCP

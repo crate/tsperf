@@ -93,7 +93,7 @@ The *Time Series Data Generator* `tsperf` package and can be installed using `pi
 
 #### Docker image
 
-Another way to use the Data Generator is to build the Docker Image:
+Another way to use the Data Generator is to build the Docker image `tsperf`.
 
 + navigate to root directory of this repository
 + build docker image with `docker build -t tsperf -f Dockerfile .`
@@ -1089,7 +1089,7 @@ The resulting yml file could look like this:
 version: "2.3"
 services:
   datagen:
-    image: tsperf
+    image: ghcr.io/crate/tsperf:latest
     ports:
       - 8000:8000
     environment:

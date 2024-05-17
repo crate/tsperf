@@ -22,8 +22,6 @@ import logging
 from datetime import datetime
 from typing import Dict, Optional, Tuple, Union
 
-import pyodbc
-
 from tsperf.adapter import AdapterManager, DatabaseInterfaceMixin
 from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceType
 from tsperf.read.config import QueryTimerConfig
@@ -45,6 +43,8 @@ class MsSQLDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         config: Union[DataGeneratorConfig, QueryTimerConfig],
         schema: Optional[Dict] = None,
     ):
+        import pyodbc
+
         DatabaseInterfaceMixin.__init__(self, config=config)
         super().__init__()
 

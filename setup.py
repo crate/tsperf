@@ -28,7 +28,7 @@ test_requires = [
     "pytest-cov<6",
     "dotmap<1.4",
     "flakehell==0.9.0",
-    "flake8==3.8.4",
+    "flake8==7.0.0",
     # FIXME: Does not work per 2024-05-18
     # "flake8-bandit==2.1.2",
     "flake8-black<0.4",

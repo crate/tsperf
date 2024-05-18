@@ -1,0 +1,62 @@
+version: "2.3"
+services:
+  datagen_base1:
+    image: data_gen
+    ports:
+      - 8000:8000
+    environment:
+      ID_START: 1
+      ID_END: 500
+      HOST: "host.docker.internal:4200"
+      INGEST_MODE: 1
+      INGEST_SIZE: 1000
+      INGEST_DELTA: 1
+      MODEL_PATH: "/example_complex_base1.json"
+      DATABASE: 0
+    volumes:
+      - ./example_complex_base1.json:/example_complex_base1.json
+  datagen_base2:
+    image: data_gen
+    ports:
+      - 8001:8000
+    environment:
+      ID_START: 501
+      ID_END: 1000
+      HOST: "host.docker.internal:4200"
+      INGEST_MODE: 1
+      INGEST_SIZE: 1000
+      INGEST_DELTA: 1
+      MODEL_PATH: "/example_complex_base2.json"
+      DATABASE: 0
+    volumes:
+      - ./example_complex_base2.json:/example_complex_base2.json
+  datagen_H:
+    image: data_gen
+    ports:
+      - 8002:8000
+    environment:
+      ID_START: 1001
+      ID_END: 1100
+      HOST: "host.docker.internal:4200"
+      INGEST_MODE: 1
+      INGEST_SIZE: 100
+      INGEST_DELTA: 10
+      MODEL_PATH: "/example_complex_U.json"
+      DATABASE: 0
+    volumes:
+      - ./example_complex_U.json:/example_complex_U.json
+  datagen_L:
+    image: data_gen
+    ports:
+      - 8003:8000
+    environment:
+      ID_START: 1101
+      ID_END: 1200
+      HOST: "host.docker.internal:4200"
+      INGEST_MODE: 1
+      INGEST_SIZE: 100
+      INGEST_DELTA: 10
+      MODEL_PATH: "/example_complex_L.json"
+      DATABASE: 0
+    volumes:
+      - ./example_complex_L.json:/example_complex_L.json

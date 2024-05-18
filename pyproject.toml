@@ -1,35 +1,3 @@
-[tool.pytest.ini_options]
-minversion = "2.0"
-addopts = """
-  -rfsEX -p pytester --strict-markers --verbosity=3
-  --cov --cov-report=term-missing --cov-report=xml
-  --capture=no
-  """
-log_level = "DEBUG"
-log_cli_level = "DEBUG"
-testpaths = ["tests"]
-xfail_strict = true
-markers = [
-]
-
-[tool.coverage.run]
-branch = false
-source = ["tsdg", "tsperf", "tsqt"]
-omit = [
-    "tests/*",
-    "tsperf/write/cli.py",
-    "tsperf/read/cli.py",
-]
-
-[tool.coverage.report]
-fail_under = 0
-show_missing = true
-omit = [
-    "tests/*",
-    "tsperf/write/cli.py",
-    "tsperf/read/cli.py",
-]
-
 [tool.ruff]
 line-length = 120
 
@@ -70,14 +38,56 @@ lint.extend-ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
-  # Use of `assert` detected.
+  # Use of `assert` detected
   "S101",
+  # Possible hardcoded password assigned to: "password"
+  "S105",
+  # Possible hardcoded password assigned to argument: "password"
+  "S106",
+  # Standard pseudo-random generators are not suitable for cryptographic purposes
+  "S311",
+]
+"tsperf/util/float_simulator/__init__.py" = [
+  # Standard pseudo-random generators are not suitable for cryptographic purposes
+  "S311",
 ]
 
 
 # ===================
 # Tasks configuration
 # ===================
+
+[tool.pytest.ini_options]
+minversion = "2.0"
+addopts = """
+  -rfsEX -p pytester --strict-markers --verbosity=3
+  --cov --cov-report=term-missing --cov-report=xml
+  --capture=no
+  """
+log_level = "DEBUG"
+log_cli_level = "DEBUG"
+testpaths = ["tests"]
+xfail_strict = true
+markers = [
+]
+
+[tool.coverage.run]
+branch = false
+source = ["tsdg", "tsperf", "tsqt"]
+omit = [
+    "tests/*",
+    "tsperf/write/cli.py",
+    "tsperf/read/cli.py",
+]
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
+omit = [
+    "tests/*",
+    "tsperf/write/cli.py",
+    "tsperf/read/cli.py",
+]
 
 [tool.poe.tasks]
 

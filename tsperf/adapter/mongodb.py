@@ -35,7 +35,6 @@ logger = logging.getLogger(__name__)
 
 
 class MongoDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
-
     default_address = "localhost:27017"
     default_database = "tsperf"
 
@@ -52,7 +51,6 @@ class MongoDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
             connection_string = self.config.address
 
         else:
-
             # Compute credentials.
             credentials = ""
             if self.username:
@@ -86,7 +84,7 @@ class MongoDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         https://stackoverflow.com/a/12014215
         """
         logger.info("dbstats:   %s", self.db.command("dbstats"))
-        # logger.info("collstats: %s", self.db.command("collstats", self.collection_name))
+        # TODO: logger.info("collstats: %s", self.db.command("collstats", self.collection_name))
 
     @timed_function()
     def insert_stmt(self, timestamps: list, batch: list):
@@ -144,6 +142,7 @@ class MongoDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         for key in self.schema.keys():
             if key != "description":
                 return key
+        raise ValueError("Unable to determine collection name")
 
 
 AdapterManager.register(interface=DatabaseInterfaceType.MongoDB, factory=MongoDbAdapter)

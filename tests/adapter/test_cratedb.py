@@ -45,9 +45,7 @@ def test_close_connection(mock_connect):
         password="password",
     )
     db_writer = CrateDbAdapter(config=config, schema=test_schema1)
-    mock_connect.assert_called_with(
-        "localhost:4200", username="crate", password="password"
-    )
+    mock_connect.assert_called_with("localhost:4200", username="crate", password="password")
     # Test Case 1:
     db_writer.close_connection()
     conn.close.assert_called()
@@ -88,9 +86,7 @@ def test_prepare_database1(mock_connect):
     )
     db_writer = CrateDbAdapter(config=config, schema=test_schema1)
 
-    mock_connect.assert_called_with(
-        "localhost:8200", username="crate2", password="password2"
-    )
+    mock_connect.assert_called_with("localhost:8200", username="crate2", password="password2")
     # Test Case 1:
     db_writer.prepare_database()
     stmt = cursor.execute.call_args.args[0]
@@ -181,10 +177,7 @@ def test_insert_stmt(mock_connect, config):
     call_arguments = cursor.execute.call_args.args
     stmt = call_arguments[0]
     values = call_arguments[1]
-    assert (
-        stmt
-        == "INSERT INTO temperature (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"
-    )
+    assert stmt == "INSERT INTO temperature (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"
     assert values == (
         [1586327807000],
         [{"plant": 1, "line": 1, "sensor_id": 1, "value": 6.7, "button_press": False}],

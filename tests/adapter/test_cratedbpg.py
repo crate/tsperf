@@ -192,10 +192,7 @@ def test_insert_stmt(mock_connect, config):
     call_arguments = cursor.execute.call_args.args
     stmt = call_arguments[0]
     values = call_arguments[1]
-    assert (
-        stmt
-        == "INSERT INTO temperature (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"
-    )
+    assert stmt == "INSERT INTO temperature (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"
     assert values == (
         [1586327807000],
         [{"plant": 1, "line": 1, "sensor_id": 1, "value": 6.7, "button_press": False}],

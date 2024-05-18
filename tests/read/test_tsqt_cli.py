@@ -17,7 +17,7 @@ def test_read_cli():
         catch_exceptions=False,
     )
     assert result.exit_code == 0
-    # assert result.output == 'Hello Peter!\n'
+    assert result.output == "Hello Peter!\n"
 
 
 def test_read_cli_dryrun():

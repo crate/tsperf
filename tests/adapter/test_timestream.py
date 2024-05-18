@@ -12,7 +12,7 @@ from tsperf.model.interface import DatabaseInterfaceType
 def config():
     config = DatabaseConnectionConfiguration(
         adapter=DatabaseInterfaceType.Timestream,
-        # address="ingest-cell1.timestream.us-west-2.amazonaws.com",
+        # TODO: address="ingest-cell1.timestream.us-west-2.amazonaws.com",
     )
     return config
 
@@ -33,16 +33,14 @@ def test_close_connection(mock_boto, config):
 
     config = DatabaseConnectionConfiguration(
         adapter=DatabaseInterfaceType.Timestream,
-        # address="ingest-cell1.timestream.us-west-2.amazonaws.com",
+        # TODO: address="ingest-cell1.timestream.us-west-2.amazonaws.com",
         aws_access_key_id="foobar",
         aws_secret_access_key="bazqux",
         aws_region_name="us-west-2",
     )
     _ = AmazonTimestreamAdapter(config=config, schema=test_schema1)
 
-    mock_boto.session.Session.assert_called_with(
-        "foobar", aws_secret_access_key="bazqux", region_name="us-west-2"
-    )
+    mock_boto.session.Session.assert_called_with("foobar", aws_secret_access_key="bazqux", region_name="us-west-2")
 
 
 @mock.patch("tsperf.adapter.timestream.boto3", autospec=True)

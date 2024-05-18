@@ -146,9 +146,7 @@ def test_wrapper_print_not_save(mock_print):
     def foo(a, b):
         return a + b
 
-    return_value = tictrack.execute_timed_function(
-        foo, 1, 2, do_print=True, save_result=False
-    )
+    return_value = tictrack.execute_timed_function(foo, 1, 2, do_print=True, save_result=False)
     assert return_value == 3
     assert mock_print.call_count == 1
     assert "foo" not in tictrack.tic_toc
@@ -265,9 +263,7 @@ def test_stats_args_kwargs_delta():
         return sum(a) + (c / b) - d
 
     tictrack.tic_toc_delta["foo"] = [1, 2, 3, 4, 5, 6, 7]
-    return_value = tictrack.timed_function_statistics(
-        "foo", bar, 2, delta=True, d=4, c=2
-    )
+    return_value = tictrack.timed_function_statistics("foo", bar, 2, delta=True, d=4, c=2)
     assert return_value == 25
 
 

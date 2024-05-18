@@ -32,10 +32,9 @@ logger = logging.getLogger(__name__)
 
 
 class MsSQLDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
-
     default_address = "127.0.0.1:1433"  # "localhost" does not work here
     default_username = "sa"
-    default_password = "yayRirr3"  # noqa:-S105
+    default_password = "yayRirr3"  # noqa: S105
     default_query = "SELECT 1;"
 
     def __init__(
@@ -58,15 +57,12 @@ class MsSQLDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         self.cursor = self.conn.cursor()
         self.cursor.fast_executemany = True
         self.schema = schema
-        self.table_name = (config.table, self._get_schema_table_name())[
-            config.table is None or config.table == ""
-        ]
+        self.table_name = (config.table, self._get_schema_table_name())[config.table is None or config.table == ""]
 
     def prepare_database(self):
-
         # Drop table.
         stmt = (
-            f"IF EXISTS "
+            f"IF EXISTS "  # noqa: S608
             f"   (SELECT * FROM sysobjects "
             f"   WHERE id = object_id(N'{self.table_name}') AND OBJECTPROPERTY(id, N'IsUserTable') = 1) "
             f"DROP TABLE {self.table_name}"
@@ -151,11 +147,10 @@ class MsSQLDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         for key in self.schema.keys():
             if key != "description":
                 return key
+        raise ValueError("Unable to determine table name")
 
     def close_connection(self):
         self.conn.close()
 
 
-AdapterManager.register(
-    interface=DatabaseInterfaceType.MicrosoftSQL, factory=MsSQLDbAdapter
-)
+AdapterManager.register(interface=DatabaseInterfaceType.MicrosoftSQL, factory=MsSQLDbAdapter)

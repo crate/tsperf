@@ -8,7 +8,6 @@ from tsperf.write.model import IngestMode
 
 @dataclasses.dataclass
 class DatabaseConnectionConfiguration:
-
     # The database interface type.
     adapter: DatabaseInterfaceType
 

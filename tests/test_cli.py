@@ -8,7 +8,7 @@ import tsperf.cli
 def test_schema_list():
     runner = CliRunner()
     result = runner.invoke(
-        tsperf.cli.schema_list,
+        tsperf.cli.schema,
         [
             "--list",
         ],

@@ -17,7 +17,6 @@ def config() -> QueryTimerConfig:
 @pytest.mark.parametrize("adapter", list(DatabaseInterfaceType))
 @mock.patch("tsperf.adapter.AdapterManager.create", autospec=True)
 def test_get_database_adapter(factory_mock, adapter, config):
-
     config.adapter = adapter
     engine = TsPerfEngine(config=config)
     engine.bootstrap()
@@ -52,7 +51,6 @@ def test_percentage_to_rgb():
 
 @mock.patch("tsperf.read.core.engine", autospec=True)
 def test_start_query_run(mock_engine, config):
-
     mock_db_writer = mock.MagicMock()
     mock_db_writer.execute_query.side_effect = [[1, 2, 3], Exception("mocked failure")]
     mock_engine.create_adapter.return_value = mock_db_writer

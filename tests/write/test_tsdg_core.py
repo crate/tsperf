@@ -52,7 +52,6 @@ def test_get_database_adapter_dummy(adapter_mock, config):
 @pytest.mark.parametrize("adapter", list(DatabaseInterfaceType))
 @mock.patch("tsperf.adapter.AdapterManager.create", autospec=True)
 def test_get_database_adapter(factory_mock, adapter, config):
-
     start_engine(config, adapter)
 
     factory_mock.assert_called_once()
@@ -178,7 +177,6 @@ def test_get_insert_values():
 
 @mock.patch("tsperf.write.core.engine", autospec=True)
 def test_insert_routine_auto_batch_mode(mock_engine):
-
     # Immediately signal stop to not run indefinitely.
     dg.stop_queue.put(True)
     config = DataGeneratorConfig(
@@ -272,7 +270,6 @@ def test_consecutive_insert_queue_empty(mock_current_values_queue, mock_engine, 
 
 @mock.patch("tsperf.write.core.engine", autospec=True)
 def test_consecutive_insert(mock_engine, config):
-
     dg.stop_queue.put(True)  # we signal stop to not run indefinitely
 
     config.ingest_mode = 0
@@ -306,9 +303,7 @@ def test_stop_process():
 def test_load_schema_from_file_valid():
     import pkg_resources
 
-    schema_location = pkg_resources.resource_filename(
-        "tsperf.schema.basic", "demo.json"
-    )
+    schema_location = pkg_resources.resource_filename("tsperf.schema.basic", "demo.json")
     schema = load_schema(schema_location)
     assert schema["demo"]
     assert "tags" in schema["demo"]

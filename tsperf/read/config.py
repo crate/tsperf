@@ -30,7 +30,6 @@ from tsperf.model.configuration import DatabaseConnectionConfiguration
 
 @dataclasses.dataclass
 class QueryTimerConfig(DatabaseConnectionConfiguration):
-
     # The query to invoke against the database.
     query: str = None
 
@@ -46,7 +45,6 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
     invalid_configs: dataclasses.InitVar[List] = None
 
     def __post_init__(self, invalid_configs):
-
         super().__post_init__()
 
         if isinstance(self.quantiles, str):
@@ -55,7 +53,6 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
         self.invalid_configs = []
 
     def validate_config(self) -> bool:  # noqa
-
         super().validate()
 
         if self.query is None:
@@ -67,9 +64,7 @@ class QueryTimerConfig(DatabaseConnectionConfiguration):
 
         if "PYTEST_CURRENT_TEST" not in os.environ:
             if self.address is None or self.address.strip() == "":
-                self.invalid_configs.append(
-                    "--address parameter or ADDRESS environment variable required"
-                )
+                self.invalid_configs.append("--address parameter or ADDRESS environment variable required")
 
         if self.concurrency * self.iterations < 100:
             self.invalid_configs.append(

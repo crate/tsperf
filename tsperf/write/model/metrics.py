@@ -21,12 +21,12 @@
 """
 Define Prometheus metrics published to port config.prometheus_port
 """
+
 from prometheus_client import Counter, Gauge
 
 c_values_queue_was_empty = Counter(
     "tsperf_values_queue_empty",
-    "How many times the values_queue was empty when "
-    "insert_routine needed more values",
+    "How many times the values_queue was empty when " "insert_routine needed more values",
 )
 c_inserts_performed_success = Counter(
     "tsperf_inserts_performed_success",
@@ -36,18 +36,10 @@ c_inserts_failed = Counter(
     "tsperf_inserts_failed",
     "How many times an insert operation failed due to an error",
 )
-c_generated_values = Counter(
-    "tsperf_generated_values", "How many values have been generated"
-)
-c_inserted_values = Counter(
-    "tsperf_inserted_values", "How many values have been inserted"
-)
-g_insert_percentage = Gauge(
-    "tsperf_insert_percentage", "Percentage of values that have been inserted"
-)
-g_batch_size = Gauge(
-    "tsperf_batch_size", "The currently used batch size", labelnames=("thread",)
-)
+c_generated_values = Counter("tsperf_generated_values", "How many values have been generated")
+c_inserted_values = Counter("tsperf_inserted_values", "How many values have been inserted")
+g_insert_percentage = Gauge("tsperf_insert_percentage", "Percentage of values that have been inserted")
+g_batch_size = Gauge("tsperf_batch_size", "The currently used batch size", labelnames=("thread",))
 g_insert_time = Gauge(
     "tsperf_insert_time",
     "The average time it took to insert the current batch into the " "database",

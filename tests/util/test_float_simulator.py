@@ -41,9 +41,7 @@ def test_calculate_next_value_float_no_error():
         results.append(float_sensor.calculate_next_value())
     mean = statistics.mean(results)
     stdev = statistics.stdev(results)
-    error_rate = float_sensor.error_count / (
-        float_sensor.value_count + float_sensor.error_count
-    )
+    error_rate = float_sensor.error_count / (float_sensor.value_count + float_sensor.error_count)
     assert mean == pytest.approx(float_schema["mean"], abs=0.3)
     assert stdev == pytest.approx(float_schema["stdev"], abs=0.15)
     assert error_rate == 0
@@ -77,9 +75,7 @@ def test_calculate_next_value_float_with_error():
         results.append(float_sensor.calculate_next_value())
     mean = statistics.mean(results)
     stdev = statistics.stdev(results)
-    error_rate = float_sensor.error_count / (
-        float_sensor.value_count + float_sensor.error_count
-    )
+    error_rate = float_sensor.error_count / (float_sensor.value_count + float_sensor.error_count)
     assert mean == pytest.approx(float_schema["mean"], abs=0.3)
     assert stdev == pytest.approx(float_schema["stdev"], abs=0.15)
     assert error_rate == pytest.approx(float_schema["error_rate"], abs=0.001)

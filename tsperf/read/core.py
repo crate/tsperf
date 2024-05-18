@@ -114,9 +114,7 @@ def percentage_to_rgb(percentage):
 
 
 @timed_function()
-def print_progressbar(
-    iteration, total, prefix="", suffix="", decimals=1, length=100, fill="█"
-):
+def print_progressbar(iteration, total, prefix="", suffix="", decimals=1, length=100, fill="█"):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -132,9 +130,7 @@ def print_progressbar(
     screen_position_y = 30
 
     duration = time.time() - start_time
-    percentage = ("{0:." + str(decimals) + "f}").format(
-        100 * (iteration / float(total))
-    )
+    percentage = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     # Prevent "division by zero" errors.
     percent = max(float(percentage), 0.1)
 
@@ -146,15 +142,14 @@ def print_progressbar(
         values = tic_toc["execute_query"]
 
         f = io.StringIO()
+        # ruff: noqa: T201
         with redirect_stdout(f):
             print(
                 terminal.move_y(screen_position_y)
                 + f"{prefix} |{terminal.color_rgb(r, g, b)}{bar}{terminal.normal}| {percentage}% "
                 f"{suffix} {round(duration, 2)}s"
             )
-            print(
-                f"time left: {round(((duration / percent) * 100) - duration, 2)}s                              "
-            )
+            print(f"time left: {round(((duration / percent) * 100) - duration, 2)}s                              ")
             if len(values) > 1:
                 print(
                     terminal.move_y(screen_position_y + 3)
@@ -207,7 +202,6 @@ def print_progress_thread():
 
 
 def run_qt():
-
     logger.info(f"Starting query timer with {config} and schema {config.schema}")
     global start_time
     start_time = time.time()
@@ -247,9 +241,7 @@ def start(configuration: QueryTimerConfig):
     if not probe_query():
         raise RuntimeError("Error probing database. Not starting machinery.")
 
-    logger.info(
-        f"Running {config.iterations} iterations with concurrency {config.concurrency}"
-    )
+    logger.info(f"Running {config.iterations} iterations with concurrency {config.concurrency}")
 
     with terminal.hidden_cursor():
         terminal_size = shutil.get_terminal_size()

@@ -37,7 +37,6 @@ logger = logging.getLogger(__name__)
 
 
 class AmazonTimestreamAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
-
     default_database = "tsperf"
 
     def __init__(
@@ -52,9 +51,7 @@ class AmazonTimestreamAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin)
         self.database_name = self.database
         self.table_name = self._get_schema_collection_name()
 
-        logger.info(
-            f"Connecting to AWS region »{config.aws_region_name}« with key id »{config.aws_access_key_id}«"
-        )
+        logger.info(f"Connecting to AWS region »{config.aws_region_name}« with key id »{config.aws_access_key_id}«")
         self.session = boto3.session.Session(
             config.aws_access_key_id,
             aws_secret_access_key=config.aws_secret_access_key,
@@ -64,9 +61,7 @@ class AmazonTimestreamAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin)
         logger.info("Creating database session objects")
         self.write_client = self.session.client(
             "timestream-write",
-            config=Config(
-                read_timeout=20, max_pool_connections=5000, retries={"max_attempts": 10}
-            ),
+            config=Config(read_timeout=20, max_pool_connections=5000, retries={"max_attempts": 10}),
         )
         self.query_client = self.session.client("timestream-query")
 
@@ -80,9 +75,7 @@ class AmazonTimestreamAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin)
         data = self._prepare_timestream_stmt(timestamps, batch)
         for values in data.values():
             common_attributes = values["common_attributes"]
-            records = numpy.array_split(
-                values["records"], math.ceil(len(values["records"]) / 100)
-            )
+            records = numpy.array_split(values["records"], math.ceil(len(values["records"]) / 100))
             for record in records:
                 record_list = list(record)
                 try:
@@ -103,9 +96,7 @@ class AmazonTimestreamAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin)
             record = {"Time": str(timestamps[i])}
             common_attributes = {"Dimensions": []}
             for tag in tags:
-                common_attributes["Dimensions"].append(
-                    {"Name": tag, "Value": str(batch[i][tag])}
-                )
+                common_attributes["Dimensions"].append({"Name": tag, "Value": str(batch[i][tag])})
             if str(common_attributes) not in data:
                 data[str(common_attributes)] = {
                     "common_attributes": common_attributes,
@@ -134,11 +125,11 @@ class AmazonTimestreamAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin)
             page_iterator = paginator.paginate(QueryString=query)
             for page in page_iterator:
                 result.append(page)
-        except Exception as e:
+        except Exception as ex:
             if retry:
                 result = self.execute_query(query, False)
             else:
-                raise RuntimeError(e)
+                raise RuntimeError(ex) from ex
         return result
 
     def _get_tags_and_fields(self) -> Tuple[dict, dict]:
@@ -155,9 +146,7 @@ class AmazonTimestreamAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin)
                 fields.append(
                     {
                         "name": value["key"]["value"],
-                        "type": self._convert_to_timestream_type(
-                            value["type"]["value"]
-                        ),
+                        "type": self._convert_to_timestream_type(value["type"]["value"]),
                     }
                 )
         return tags, fields
@@ -178,13 +167,14 @@ class AmazonTimestreamAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin)
         for key in self.schema.keys():
             if key != "description":
                 return key
+        raise ValueError("Unable to determine collection name")
 
     def prepare_database(self):
         try:
             self.write_client.create_database(DatabaseName=self.database_name)
-            print("Database [%s] created successfully." % self.database_name)
-        except Exception as err:
-            print("Create database failed:", err)
+            logger.info("Database [%s] created successfully." % self.database_name)
+        except Exception as ex:
+            logger.error(f"Creating database failed: {ex}")
 
         retention_properties = {
             "MemoryStoreRetentionPeriodInHours": 24,
@@ -196,14 +186,12 @@ class AmazonTimestreamAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin)
                 TableName=self.table_name,
                 RetentionProperties=retention_properties,
             )
-            print("Table [%s] successfully created." % self.table_name)
-        except Exception as err:
-            print("Create table failed:", err)
+            logger.info("Table [%s] successfully created." % self.table_name)
+        except Exception as ex:
+            logger.error(f"Creating table failed: {ex}")
 
     def close_connection(self):
         pass
 
 
-AdapterManager.register(
-    interface=DatabaseInterfaceType.Timestream, factory=AmazonTimestreamAdapter
-)
+AdapterManager.register(interface=DatabaseInterfaceType.Timestream, factory=AmazonTimestreamAdapter)

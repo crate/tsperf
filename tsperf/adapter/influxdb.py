@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 class InfluxDbAdapter(AbstractDatabaseInterface):
     default_address = "http://localhost:8086/"
+    default_database = "tsperf"
 
     def __init__(
         self,

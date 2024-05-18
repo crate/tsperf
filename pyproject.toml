@@ -51,9 +51,32 @@ flake8-bandit = ["-S608"]
 flake8-bandit = ["-S311"]
 
 
+[tool.pytest.ini_options]
+minversion = "2.0"
+addopts = """
+  -rfsEX -p pytester --strict-markers --verbosity=3
+  --cov --cov-report=term-missing --cov-report=xml
+  --capture=no
+  """
+log_level = "DEBUG"
+log_cli_level = "DEBUG"
+testpaths = ["tests"]
+xfail_strict = true
+markers = [
+]
+
+[tool.coverage.run]
+branch = false
+source = ["tsdg", "tsperf", "tsqt"]
+omit = [
+    "tests/*",
+    "tsperf/write/cli.py",
+    "tsperf/read/cli.py",
+]
+
 [tool.coverage.report]
-show_missing = true
 fail_under = 0
+show_missing = true
 omit = [
     "tests/*",
     "tsperf/write/cli.py",

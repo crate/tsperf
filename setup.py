@@ -32,7 +32,7 @@ test_requires = [
     # FIXME: Does not work per 2024-05-18
     # "flake8-bandit==2.1.2",
     "flake8-black<0.4",
-    "flake8-bugbear<22",
+    "flake8-bugbear<25",
     "flake8-isort<5",
     "black==21.5b1",
     "isort<5.9",

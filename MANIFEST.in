@@ -2,6 +2,5 @@ include README.md
 include LICENSE
 include CHANGES.md
 exclude .gitignore
-exclude Makefile
 exclude MANIFEST.in
 recursive-include tsperf *.json *.md

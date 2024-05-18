@@ -134,7 +134,9 @@ class FloatSimulator:
             change_direction = 1
         chance = (50 * self.standard_deviation) - distance
 
-        return continue_direction if random.randint(0, (100 * self.standard_deviation)) < chance else change_direction
+        return (
+            continue_direction if random.randint(0, int(100 * self.standard_deviation)) < chance else change_direction
+        )
 
     def _new_error_value(self):
         self.error_count += 1

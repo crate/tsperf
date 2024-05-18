@@ -34,4 +34,4 @@ class BoolSensor(Sensor):
         self.true_ratio = self.schema["true_ratio"]["value"]
 
     def calculate_next_value(self) -> bool:
-        return random.randint(0, (1 / self.true_ratio)) < 1  # noqa:S311
+        return random.randint(0, int(1 / self.true_ratio)) < 1  # noqa:S311

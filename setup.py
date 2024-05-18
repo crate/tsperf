@@ -18,7 +18,7 @@ requires = [
     "dnspython<3",
     "numpy<1.27",
     "pgcopy<1.7",
-    # "pyodbc<5",
+    "pyodbc<6",
     "tqdm<5",
     "cloup<1",
 ]

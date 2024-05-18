@@ -14,6 +14,7 @@ def test_read_cli():
         [
             "--adapter=dummy",
         ],
+        catch_exceptions=False,
     )
     assert result.exit_code == 0
     # assert result.output == 'Hello Peter!\n'

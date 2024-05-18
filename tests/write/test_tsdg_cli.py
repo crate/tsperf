@@ -17,6 +17,7 @@ def test_write_cli():
             "--id-end=3",
             "--ingest-size=3",
         ],
+        catch_exceptions=False,
     )
     assert result.exit_code == 0
     # assert result.output == 'Hello Peter!\n'

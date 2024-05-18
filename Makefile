@@ -2,7 +2,7 @@
 # Configuration
 # =============
 
-$(eval venv         := .venv)
+$(eval venv         := .venv311)
 $(eval pip          := $(venv)/bin/pip)
 $(eval python       := $(venv)/bin/python)
 $(eval pytest       := $(venv)/bin/pytest)
@@ -19,7 +19,7 @@ $(eval tsperf       := $(venv)/bin/tsperf)
 
 # Setup Python virtualenv
 setup-virtualenv:
-	@test -e $(python) || python3 -m venv $(venv)
+	@test -e $(python) || python3.11 -m venv $(venv)
 
 # Install requirements for development.
 virtualenv-dev: setup-virtualenv

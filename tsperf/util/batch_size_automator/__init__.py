@@ -117,9 +117,7 @@ class BatchSizeAutomator:
         }
         self.alpha = 1.0
         # smaller steps than data_batch_size make no sense at this is the smallest batch_size
-        self.step_size = (
-            step_size if step_size > self.data_batch_size else self.data_batch_size
-        )
+        self.step_size = step_size if step_size > self.data_batch_size else self.data_batch_size
         self.test_size = test_size
         self.default_test_size = test_size
         self.surveillance_mode = False
@@ -153,9 +151,7 @@ class BatchSizeAutomator:
         else:
             # the batch_size must always be a multitude of self.data_batch_size
             if batch_size % self.data_batch_size != 0:
-                batch_size = self.data_batch_size * round(
-                    batch_size / self.data_batch_size
-                )
+                batch_size = self.data_batch_size * round(batch_size / self.data_batch_size)
             self.batch_size = batch_size
 
     def _calc_better_batch_time(self):
@@ -170,9 +166,7 @@ class BatchSizeAutomator:
                 self._stop_surveillance_mode()
                 self._adjust_batch_size(True)
             else:
-                self.alpha -= (
-                    self.alpha / 10
-                )  # reduce step_size by 10% each calculation
+                self.alpha -= self.alpha / 10  # reduce step_size by 10% each calculation
                 # if step_size is smaller than 100 no more adjustment necessary. batch_size_automator will go into
                 # surveillance mode and only check periodically if batch_performance has gotten worse
                 if self.step_size * self.alpha < 100:
@@ -180,9 +174,7 @@ class BatchSizeAutomator:
                 else:
                     # if we didn't change into surveillance mode we change the direction of the batch_size adjustment
                     # and let the automator run with a new batch_size
-                    self.bigger_batch_size = (
-                        not self.bigger_batch_size
-                    )  # change direction of batch_size adjustment
+                    self.bigger_batch_size = not self.bigger_batch_size  # change direction of batch_size adjustment
                     self._adjust_batch_size(False)
         # reset current batch_times for next batch_size
         self.batch_times["current"] = {
@@ -194,18 +186,12 @@ class BatchSizeAutomator:
     def _adjust_batch_size(self, take_current: bool):
         if take_current:
             self.batch_times["best"] = self.batch_times["current"]
-        batch_size_change = (
-            self.factors[self.bigger_batch_size] * self.alpha * self.step_size
-        )
+        batch_size_change = self.factors[self.bigger_batch_size] * self.alpha * self.step_size
         # there would be no change in real batch size if the change was less than data_batch_size
         if abs(batch_size_change) < self.data_batch_size:
             # we got to preserve the direction
-            batch_size_change = self.data_batch_size * (
-                batch_size_change / abs(batch_size_change)
-            )
-        self._set_batch_size(
-            round(self.batch_times["best"]["size"] + batch_size_change)
-        )
+            batch_size_change = self.data_batch_size * (batch_size_change / abs(batch_size_change))
+        self._set_batch_size(round(self.batch_times["best"]["size"] + batch_size_change))
 
     def _start_surveillance_mode(self):
         self.test_size = 1000
@@ -223,9 +209,7 @@ class BatchSizeAutomator:
         best_avg = self.batch_times["best"]["avg_time"]
         best_per_second = self.batch_times["best"]["size"] / best_avg
         current_per_second = self.batch_times["current"]["size"] / current_avg
-        self.batch_times["best"][
-            "batch_per_second"
-        ] = best_per_second  # this is not really necessary
+        self.batch_times["best"]["batch_per_second"] = best_per_second  # this is not really necessary
         self.batch_times["current"]["batch_per_second"] = current_per_second
         current_was_better = current_per_second > best_per_second
         # if best_avg is -1 no best batch_size has been calculated yet

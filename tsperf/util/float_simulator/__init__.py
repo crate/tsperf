@@ -69,9 +69,7 @@ class FloatSimulator:
         self.current_error_length = error_length
         self.variance = variance
         self.current_error = False
-        self.value = round(
-            random.uniform(self.mean - self.variance, self.mean + self.variance), 2
-        )
+        self.value = round(random.uniform(self.mean - self.variance, self.mean + self.variance), 2)
         self.factors = [-1, 1]
 
     def calculate_next_value(self) -> float:
@@ -136,11 +134,7 @@ class FloatSimulator:
             change_direction = 1
         chance = (50 * self.standard_deviation) - distance
 
-        return (
-            continue_direction
-            if random.randint(0, (100 * self.standard_deviation)) < chance
-            else change_direction
-        )
+        return continue_direction if random.randint(0, (100 * self.standard_deviation)) < chance else change_direction
 
     def _new_error_value(self):
         self.error_count += 1
@@ -150,13 +144,9 @@ class FloatSimulator:
         # otherwise a new error is calculated and chosen randomly from the upper or lower values
         if not self.current_error:
             if self.value < self.mean:
-                self.value = round(
-                    random.uniform(self.minimum, self.mean - self.standard_deviation), 2
-                )
+                self.value = round(random.uniform(self.minimum, self.mean - self.standard_deviation), 2)
             else:
-                self.value = round(
-                    random.uniform(self.mean + self.standard_deviation, self.maximum), 2
-                )
+                self.value = round(random.uniform(self.mean + self.standard_deviation, self.maximum), 2)
             self.current_error = True
         else:
             value_change = round(random.uniform(0, self.variance), 2)

@@ -35,7 +35,6 @@ logger = logging.getLogger(__name__)
 
 
 class InfluxDbAdapter(AbstractDatabaseInterface):
-
     default_address = "http://localhost:8086/"
 
     def __init__(
@@ -81,9 +80,7 @@ class InfluxDbAdapter(AbstractDatabaseInterface):
             else:
                 org = self._get_first_organization()
                 org_id = org.id
-            logger.info(
-                f"Creating InfluxDB bucket {bucket.name} in organization {org_id}"
-            )
+            logger.info(f"Creating InfluxDB bucket {bucket.name} in organization {org_id}")
             bucket = Bucket(name=self.database_name, org_id=org_id, retention_rules=[])
             self.bucket = self.client.buckets_api().create_bucket(bucket)
 
@@ -99,9 +96,7 @@ class InfluxDbAdapter(AbstractDatabaseInterface):
     @timed_function()
     def insert_stmt(self, timestamps: list, batch: list):
         data = self._prepare_influx_stmt(timestamps, batch)
-        self.write_api.write(
-            bucket=self.database_name, org=self.organization, record=data
-        )
+        self.write_api.write(bucket=self.database_name, org=self.organization, record=data)
 
     @timed_function()
     def _prepare_influx_stmt(self, timestamps: list, batch: list) -> list:
@@ -143,8 +138,7 @@ class InfluxDbAdapter(AbstractDatabaseInterface):
         for key in self.schema.keys():
             if key != "description":
                 return key
+        raise ValueError("Unable to determine database name")
 
 
-AdapterManager.register(
-    interface=DatabaseInterfaceType.InfluxDB, factory=InfluxDbAdapter
-)
+AdapterManager.register(interface=DatabaseInterfaceType.InfluxDB, factory=InfluxDbAdapter)

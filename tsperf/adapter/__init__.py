@@ -24,7 +24,6 @@ from tsperf.model.interface import AbstractDatabaseInterface, DatabaseInterfaceT
 
 
 class AdapterManager:
-
     registry: Dict[DatabaseInterfaceType, object] = {}
 
     @classmethod
@@ -42,7 +41,8 @@ class AdapterManager:
         return factory(config, schema)
 
 
-def load_adapters():  # noqa:-F401
+# ruff: noqa: F401
+def load_adapters():
     """
     Importing each adapter module will make the respective adapter
     self-register with the adapter manager.
@@ -76,21 +76,15 @@ class DatabaseInterfaceMixin:
 
     @property
     def username(self):
-        username = (
-            self.config.username and self.config.username or self.default_username
-        )
+        username = self.config.username and self.config.username or self.default_username
         return username
 
     @property
     def password(self):
-        username = (
-            self.config.password and self.config.password or self.default_password
-        )
+        username = self.config.password and self.config.password or self.default_password
         return username
 
     @property
     def database(self):
-        username = (
-            self.config.database and self.config.database or self.default_database
-        )
+        username = self.config.database and self.config.database or self.default_database
         return username

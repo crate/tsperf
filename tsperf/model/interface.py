@@ -35,7 +35,6 @@ class DatabaseInterfaceType(Enum):
 
 
 class AbstractDatabaseInterface:
-
     default_address = None
     default_username = None
     default_database = None

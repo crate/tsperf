@@ -28,7 +28,6 @@ from tsperf.write.model import IngestMode
 
 @dataclasses.dataclass
 class DataGeneratorConfig(DatabaseConnectionConfiguration):
-
     # The concurrency level.
     concurrency: int = 2
 
@@ -51,7 +50,6 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
     statistics_interval: int = 30
 
     def __post_init__(self):
-
         super().__post_init__()
 
         # How the write behaves.
@@ -61,7 +59,6 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
         self.invalid_configs = []
 
     def validate_config(self) -> bool:  # noqa
-
         super().validate()
 
         if self.concurrency < 1:
@@ -71,25 +68,19 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
         if self.id_end < 0:
             self.invalid_configs.append(f"ID_END: {self.id_end} < 0")
         if self.id_end < self.id_start:
-            self.invalid_configs.append(
-                f"ID_START: {self.id_start} > ID_END: {self.id_end}"
-            )
+            self.invalid_configs.append(f"ID_START: {self.id_start} > ID_END: {self.id_end}")
         if self.timestamp_start < 0:
             self.invalid_configs.append(f"TIMESTAMP_START: {self.timestamp_start} < 0")
         if self.timestamp_delta <= 0:
             self.invalid_configs.append(f"TIMESTAMP_DELTA: {self.timestamp_delta} <= 0")
 
         if not IngestMode(self.ingest_mode):
-            self.invalid_configs.append(
-                f"INGEST_MODE: {self.ingest_mode} not in {IngestMode}"
-            )
+            self.invalid_configs.append(f"INGEST_MODE: {self.ingest_mode} not in {IngestMode}")
         if self.ingest_size < 0:
             self.invalid_configs.append(f"INGEST_SIZE: {self.ingest_size} < 0")
 
         if self.statistics_interval <= 0:
-            self.invalid_configs.append(
-                f"STATISTICS_INTERVAL: {self.statistics_interval} <= 0"
-            )
+            self.invalid_configs.append(f"STATISTICS_INTERVAL: {self.statistics_interval} <= 0")
         if self.partition.lower() not in [
             "second",
             "minute",
@@ -101,8 +92,7 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
             "year",
         ]:
             self.invalid_configs.append(
-                f"PARTITION: {self.partition} not one of second, minute, hour, day, week, "
-                f"month, quarter or year"
+                f"PARTITION: {self.partition} not one of second, minute, hour, day, week, " f"month, quarter or year"
             )
         if self.shards <= 0:
             self.invalid_configs.append(f"SHARDS: {self.shards} <= 0")
@@ -117,9 +107,7 @@ class DataGeneratorConfig(DatabaseConnectionConfiguration):
                 port = self.prometheus_listen
             port = int(port)
             if port < 1 or port > 65535:
-                self.invalid_configs.append(
-                    f"PROMETHEUS_PORT: {port} not in valid port range"
-                )
+                self.invalid_configs.append(f"PROMETHEUS_PORT: {port} not in valid port range")
             else:
                 self.prometheus_host = host
                 self.prometheus_port = port

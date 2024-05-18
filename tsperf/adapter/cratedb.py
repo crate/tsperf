@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 
 
 class CrateDbAdapter(AbstractDatabaseInterface):
-
     default_address = "localhost:4200"
     default_username = "crate"
     default_query = "SELECT 1;"
@@ -45,19 +44,13 @@ class CrateDbAdapter(AbstractDatabaseInterface):
     ):
         super().__init__()
 
-        self.conn = client.connect(
-            config.address, username=config.username, password=config.password
-        )
+        self.conn = client.connect(config.address, username=config.username, password=config.password)
         self.cursor = self.conn.cursor()
         self.schema = schema
-        self.table_name = (config.table, self._get_schema_table_name())[
-            config.table is None or config.table == ""
-        ]
+        self.table_name = (config.table, self._get_schema_table_name())[config.table is None or config.table == ""]
         self.partition = config.partition
 
-        logger.info(
-            f"Configuring CrateDB with {config.shards} shards and {config.replicas} replicas"
-        )
+        logger.info(f"Configuring CrateDB with {config.shards} shards and {config.replicas} replicas")
         self.shards = config.shards
         self.replicas = config.replicas
 
@@ -66,7 +59,6 @@ class CrateDbAdapter(AbstractDatabaseInterface):
         self.conn.close()
 
     def prepare_database(self):
-
         # Drop table.
         stmt = f"DROP TABLE IF EXISTS {self.table_name}"
         self.cursor.execute(stmt)
@@ -83,7 +75,7 @@ class CrateDbAdapter(AbstractDatabaseInterface):
 
     @timed_function()
     def insert_stmt(self, timestamps: list, batch: list):
-        stmt = f"""INSERT INTO {self.table_name} (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"""
+        stmt = f"""INSERT INTO {self.table_name} (ts, payload) (SELECT col1, col2 FROM UNNEST(?,?))"""  # noqa: S608
         self.cursor.execute(stmt, (timestamps, batch))
 
     @timed_function()
@@ -98,6 +90,7 @@ class CrateDbAdapter(AbstractDatabaseInterface):
         for key in self.schema.keys():
             if key != "description":
                 return key
+        raise ValueError("Unable to determine table name")
 
 
 AdapterManager.register(interface=DatabaseInterfaceType.CrateDB, factory=CrateDbAdapter)

@@ -169,9 +169,7 @@ def get_next_value(channels: dict):
             timestamp_factor = 1 / config.timestamp_delta
             last_ts = round(ts * timestamp_factor) / timestamp_factor
             timestamps = [int(last_ts * 1000)] * len(channel_values)
-            current_values_queue.put(
-                {"timestamps": timestamps, "batch": channel_values}
-            )
+            current_values_queue.put({"timestamps": timestamps, "batch": channel_values})
         else:
             current_values_queue.put(channel_values)
 
@@ -261,12 +259,8 @@ def insert_routine():
                 duration = time.time() - start
                 g_insert_time.labels(thread=name).set(duration)
                 g_rows_per_second.labels(thread=name).set(len(batch) / duration)
-                g_best_batch_size.labels(thread=name).set(
-                    insert_bsa.batch_times["best"]["size"]
-                )
-                g_best_batch_rps.labels(thread=name).set(
-                    insert_bsa.batch_times["best"]["batch_per_second"]
-                )
+                g_best_batch_size.labels(thread=name).set(insert_bsa.batch_times["best"]["size"])
+                g_best_batch_rps.labels(thread=name).set(insert_bsa.batch_times["best"]["batch_per_second"])
                 insert_bsa.insert_batch_time(duration)
 
     adapter.close_connection()
@@ -348,11 +342,7 @@ def prometheus_insert_percentage():
             inserted_values = inserted_values_queue.get_nowait()
             c_inserted_values.inc(inserted_values)
             g_insert_percentage.set(
-                (
-                    c_inserted_values._value.get()
-                    / (config.ingest_size * (config.id_end - config.id_start + 1))
-                )
-                * 100
+                (c_inserted_values._value.get() / (config.ingest_size * (config.id_end - config.id_start + 1))) * 100
             )
         except Empty:
             # get_nowait throws Empty exception which might happen if the inserted_values_queue
@@ -362,9 +352,7 @@ def prometheus_insert_percentage():
 
 @tictrack.timed_function()
 def run_dg():
-    logger.info(
-        f"Starting data generator with config »{config}« and schema »{config.schema}«"
-    )
+    logger.info(f"Starting data generator with config »{config}« and schema »{config.schema}«")
 
     logger.info("Starting database writer subsystem")
     if config.ingest_mode == IngestMode.CONSECUTIVE:
@@ -376,9 +364,7 @@ def run_dg():
     adapter_thread.start()
 
     logger.info("Starting metrics collector thread")
-    prometheus_insert_percentage_thread = Thread(
-        target=prometheus_insert_percentage, name="PrometheusThread"
-    )
+    prometheus_insert_percentage_thread = Thread(target=prometheus_insert_percentage, name="PrometheusThread")
     prometheus_insert_percentage_thread.start()
 
     try:
@@ -429,12 +415,10 @@ def wait_for_thread(thread: Thread, error_channel: Optional[Queue] = None):
         thread.join(0.1)
         if thread.is_alive():
             continue
-        else:
-            break
+        break
 
 
 def start(configuration: DataGeneratorConfig):
-
     # TODO: Get rid of global variables.
     global engine, config
     global schema, last_ts
@@ -448,14 +432,10 @@ def start(configuration: DataGeneratorConfig):
     config = engine.config
 
     if not probe_insert():
-        raise Exception(
-            f"Failure communicating with or preparing database at {config.address}"
-        )
+        raise Exception(f"Failure communicating with or preparing database at {config.address}")
 
     if config.prometheus_enable:
-        logger.info(
-            f"Starting Prometheus HTTP server on {config.prometheus_host}:{config.prometheus_port}"
-        )
+        logger.info(f"Starting Prometheus HTTP server on {config.prometheus_host}:{config.prometheus_port}")
         start_http_server(config.prometheus_port, addr=config.prometheus_host)
 
     data_batch_size = config.id_end - config.id_start + 1

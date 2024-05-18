@@ -63,9 +63,7 @@ class TsPerfEngine:
             logger.error(f"Invalid configuration: {self.config.invalid_configs}")
             sys.exit(-1)
 
-        logger.info(
-            f"Connecting to database at »{self.config.address}« using adapter »{self.config.adapter}«"
-        )
+        logger.info(f"Connecting to database at »{self.config.address}« using adapter »{self.config.adapter}«")
 
 
 def load_schema(schema_reference: Union[str, Path]):

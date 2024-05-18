@@ -59,7 +59,7 @@ adapter_options = cloup.option_group(
         "--adapter",
         envvar="ADAPTER",
         type=click.Choice(
-            list(map(lambda p: p.name.lower(), DatabaseInterfaceType)),
+            [item.name.lower() for item in DatabaseInterfaceType],
             case_sensitive=False,
         ),
         required=True,
@@ -104,8 +104,7 @@ authentication_options = cloup.option_group(
         "--influxdb-organization",
         envvar="INFLUXDB_ORGANIZATION",
         type=click.STRING,
-        help="Organization name for InfluxDB V2. "
-        "See also: https://v2.docs.influxdata.com/v2.0/organizations/.",
+        help="Organization name for InfluxDB V2. " "See also: https://v2.docs.influxdata.com/v2.0/organizations/.",
     ),
     click.option(
         "--influxdb-token",
@@ -237,7 +236,7 @@ write_options = cloup.option_group(
         "--ingest-mode",
         envvar="INGEST_MODE",
         type=click.Choice(
-            list(map(lambda p: p.name.lower(), IngestMode)),
+            [item.name.lower() for item in IngestMode],
             case_sensitive=False,
         ),
         default="fast",
@@ -314,9 +313,7 @@ misc_options = cloup.option_group(
 )
 
 
-@cloup.group(
-    "tsperf", help=f"See documentation for further details: {TSPERF_README_URL}"
-)
+@cloup.group("tsperf", help=f"See documentation for further details: {TSPERF_README_URL}")
 def main():
     setup_logging()
 
@@ -336,7 +333,6 @@ def main():
 )
 @misc_options
 def write(**kwargs):
-
     # Run workload.
     adapter = kwargs["adapter"]
     logger.info(f"Invoking write workload on time-series database »{adapter}«")
@@ -359,7 +355,6 @@ def write(**kwargs):
 )
 @misc_options
 def read(**kwargs):
-
     # Clear screen.
     terminal = Terminal()
     sys.stdout.write(terminal.home + terminal.clear + "\n")
@@ -374,15 +369,16 @@ def read(**kwargs):
 @main.command("schema")
 @click.option(
     "--list",
+    "as_list",
     is_flag=True,
     default=False,
     help="List all built-in schemas",
 )
-def schema_list(list: bool):
-    if list:
+def schema(as_list: bool):
+    if as_list:
         module_path = Path(__file__).parent / "schema"
         pattern = str(module_path / "**" / "*.json")
         json_files = glob.glob(pattern, recursive=True)
-        print(json.dumps(json_files, indent=4))
+        print(json.dumps(json_files, indent=4))  # noqa: T201
     else:
-        pass
+        raise ValueError("Currently only implements --list")

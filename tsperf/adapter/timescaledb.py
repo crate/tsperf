@@ -37,7 +37,6 @@ logger = logging.getLogger(__name__)
 
 
 class TimescaleDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
-
     default_address = "localhost:5432"
     default_username = "postgres"
     default_query = "SELECT 1;"
@@ -59,15 +58,11 @@ class TimescaleDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         )
         self.cursor = self.conn.cursor()
         self.schema = schema
-        self.table_name = (config.table, self._get_schema_table_name())[
-            config.table is None or config.table == ""
-        ]
+        self.table_name = (config.table, self._get_schema_table_name())[config.table is None or config.table == ""]
         self.partition = config.partition
 
         self.distributed = config.timescaledb_distributed
-        self.use_pgcopy = (
-            config.timescaledb_pgcopy is not None and config.timescaledb_pgcopy or False
-        )
+        self.use_pgcopy = config.timescaledb_pgcopy is not None and config.timescaledb_pgcopy or False
 
         if self.use_pgcopy:
             logger.info("Using strategy »pgcopy«")
@@ -79,7 +74,6 @@ class TimescaleDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         self.conn.close()
 
     def prepare_database(self):
-
         # Drop table.
         stmt = f"DROP TABLE IF EXISTS {self.table_name}"
         self.cursor.execute(stmt)
@@ -169,6 +163,7 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         for key in self.schema.keys():
             if key != "description":
                 return key
+        raise ValueError("Unable to determine table name")
 
     def _get_partition_tag(self, top_level: bool = False) -> str:
         key = self._get_schema_table_name()
@@ -178,6 +173,4 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         return tags[0] if top_level else tags[-1]
 
 
-AdapterManager.register(
-    interface=DatabaseInterfaceType.TimescaleDB, factory=TimescaleDbAdapter
-)
+AdapterManager.register(interface=DatabaseInterfaceType.TimescaleDB, factory=TimescaleDbAdapter)

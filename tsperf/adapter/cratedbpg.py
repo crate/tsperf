@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 
 
 class CrateDbPgWireAdapter(CrateDbAdapter, DatabaseInterfaceMixin):
-
     default_address = "localhost:5432"
     default_username = "crate"
     default_query = "SELECT 1;"
@@ -54,18 +53,12 @@ class CrateDbPgWireAdapter(CrateDbAdapter, DatabaseInterfaceMixin):
         )
         self.cursor = self.conn.cursor()
         self.schema = schema
-        self.table_name = (config.table, self._get_schema_table_name())[
-            config.table is None or config.table == ""
-        ]
+        self.table_name = (config.table, self._get_schema_table_name())[config.table is None or config.table == ""]
         self.partition = config.partition
 
-        logger.info(
-            f"Configuring CrateDB with {config.shards} shards and {config.replicas} replicas"
-        )
+        logger.info(f"Configuring CrateDB with {config.shards} shards and {config.replicas} replicas")
         self.shards = config.shards
         self.replicas = config.replicas
 
 
-AdapterManager.register(
-    interface=DatabaseInterfaceType.CrateDBpg, factory=CrateDbPgWireAdapter
-)
+AdapterManager.register(interface=DatabaseInterfaceType.CrateDBpg, factory=CrateDbPgWireAdapter)

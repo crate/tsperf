@@ -34,7 +34,6 @@ from tsperf.write.config import DataGeneratorConfig
 
 
 class PostgreSQLAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
-
     default_address = "localhost:5432"
     default_username = "postgres"
     default_query = "SELECT 1;"
@@ -56,9 +55,7 @@ class PostgreSQLAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         )
         self.cursor = self.conn.cursor()
         self.schema = schema
-        self.table_name = (config.table, self._get_schema_table_name())[
-            config.table is None or config.table == ""
-        ]
+        self.table_name = (config.table, self._get_schema_table_name())[config.table is None or config.table == ""]
         self.partition = config.partition
 
     def close_connection(self):
@@ -66,7 +63,6 @@ class PostgreSQLAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
         self.conn.close()
 
     def prepare_database(self):
-
         # Drop table.
         stmt = f"DROP TABLE IF EXISTS {self.table_name}"
         self.cursor.execute(stmt)
@@ -115,17 +111,15 @@ ts_{self.partition} TIMESTAMP NOT NULL,
         return self.run_query(query)
 
     def run_query(self, query: str) -> list:
-        # print("query:", query)
         self.cursor.execute(query)
-        # self.conn.commit()
+        # self.conn.commit()  # noqa: ERA001
         return self.cursor.fetchall()
 
     def _get_schema_table_name(self) -> str:
         for key in self.schema.keys():
             if key != "description":
                 return key
+        raise ValueError("Unable to determine table name")
 
 
-AdapterManager.register(
-    interface=DatabaseInterfaceType.PostgreSQL, factory=PostgreSQLAdapter
-)
+AdapterManager.register(interface=DatabaseInterfaceType.PostgreSQL, factory=PostgreSQLAdapter)

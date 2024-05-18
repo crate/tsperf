@@ -41,18 +41,14 @@ def timed_function(do_print: bool = False, save_result: bool = True) -> Callable
 
     def decorator(func: Callable) -> Callable:
         def wrapper(*args, **kwargs) -> Any:
-            return execute_timed_function(
-                func, *args, **kwargs, do_print=do_print, save_result=save_result
-            )
+            return execute_timed_function(func, *args, **kwargs, do_print=do_print, save_result=save_result)
 
         return wrapper
 
     return decorator
 
 
-def execute_timed_function(
-    func: Callable, *args, do_print: bool = False, save_result: bool = True, **kwargs
-) -> Any:
+def execute_timed_function(func: Callable, *args, do_print: bool = False, save_result: bool = True, **kwargs) -> Any:
     """
     function that takes another function as an argument and measures its execution time and saves it to a dictionary
     so statistical functions can be used for many executions of the given function
@@ -84,7 +80,7 @@ def execute_timed_function(
             tic_toc_delta[func.__name__].append(toc)
 
     if do_print:
-        print(f"{func.__name__} took: {toc} seconds")
+        print(f"{func.__name__} took: {toc} seconds")  # noqa: T201
     return function_return
 
 
@@ -113,10 +109,8 @@ def timed_function_statistics(
     if function_name in times:
         try:
             return func(times[function_name], *args, **kwargs)
-        except Exception as e:
-            raise SyntaxError(
-                f"calling {func.__name__} on result raises an exception: {e}\n"
-            )
+        except Exception as ex:
+            raise SyntaxError(f"calling {func.__name__} on result raises an exception: {ex}") from ex
     else:
         raise ValueError(f"no execution times saved for {function_name}")
 
@@ -146,18 +140,14 @@ def consolidate(
     if function_name in times:
         try:
             consolidated_value = func(times[function_name], *args, **kwargs)
-        except Exception as e:
-            raise SyntaxError(
-                f"calling {func.__name__} on result raises an exception: {e}\n"
-            )
+        except Exception as ex:
+            raise SyntaxError(f"calling {func.__name__} on result raises an exception: {ex}") from ex
         if _valid_value(consolidated_value):
-            if type(consolidated_value) == int or type(consolidated_value) == float:
+            if isinstance(consolidated_value, int) or isinstance(consolidated_value, float):
                 consolidated_value = [consolidated_value]
             times[function_name] = consolidated_value
         else:
-            raise SyntaxError(
-                f"{func.__name__} must return either int, float, list<int> or list<float>"
-            )
+            raise SyntaxError(f"{func.__name__} must return either int, float, list<int> or list<float>")
     else:
         raise ValueError(f"no execution times saved for {function_name}")
 

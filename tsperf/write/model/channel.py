@@ -40,9 +40,7 @@ class Channel:
             elif sensor_type == "bool":
                 self.sensors.append(BoolSensor(value))
             else:
-                raise NotImplementedError(
-                    "only FLOAT and BOOL Type have been implemented"
-                )
+                raise NotImplementedError("only FLOAT and BOOL Type have been implemented")
 
     def calculate_next_value(self) -> dict:
         if self.payload == {}:
@@ -71,8 +69,6 @@ class Channel:
                 if elements_identifier == 0:
                     self.payload[key] = identifiers[(self.id - 1) % len(identifiers)]
                 else:
-                    self.payload[key] = identifiers[
-                        int((self.id - 1) / elements_identifier) % len(identifiers)
-                    ]
+                    self.payload[key] = identifiers[int((self.id - 1) / elements_identifier) % len(identifiers)]
 
                 elements_identifier += len(identifiers)

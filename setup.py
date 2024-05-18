@@ -18,22 +18,22 @@ requires = [
     "dnspython<3",
     "numpy<1.27",
     "pgcopy<1.7",
-    #"pyodbc<5",
+    # "pyodbc<5",
     "tqdm<5",
     "cloup<1",
 ]
 
 develop_requires = [
-  "mypy<1.10",
-  "poethepoet<0.26",
-  "pyproject-fmt<1.8",
-  "ruff<0.5",
-  "validate-pyproject<0.17",
+    "mypy<1.10",
+    "poethepoet<0.26",
+    "pyproject-fmt<1.8",
+    "ruff<0.5",
+    "validate-pyproject<0.17",
 ]
 
 release_requires = [
-  "build<2",
-  "twine<6",
+    "build<2",
+    "twine<6",
 ]
 
 test_requires = [
@@ -76,7 +76,7 @@ setuptools.setup(
         "Topic :: Utilities",
         "Operating System :: POSIX",
         "Operating System :: Unix",
-        "Operating System :: MacOS"
+        "Operating System :: MacOS",
     ],
     entry_points={
         "console_scripts": [

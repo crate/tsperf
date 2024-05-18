@@ -31,7 +31,6 @@ logger = logging.getLogger(__name__)
 
 
 class DummyDbAdapter(AbstractDatabaseInterface):
-
     default_address = "localhost:12345"
     default_query = "SELECT 42;"
 

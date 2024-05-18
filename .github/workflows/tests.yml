@@ -1,38 +1,52 @@
 name: Tests
 
 on:
-  pull_request:
-    branches:
-      - main
+  pull_request: ~
+  push:
+    branches: [ main ]
+
+  # Allow job to be triggered manually.
+  workflow_dispatch:
+
+  # Run job each night after CrateDB nightly has been published.
+  schedule:
+    - cron: '0 3 * * *'
+
+# Cancel in-progress jobs when pushing to the same branch.
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-    lint:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v2
-        - name: Set up Python
-          uses: actions/setup-python@v2
-          with:
-            python-version: '3.11'
-        - name: Run linter
-          run: make lint
-    tests:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v2
-        - name: Set up Python
-          uses: actions/setup-python@v2
-          with:
-            python-version: '3.11'
-        - name: Run software tests
-          run: make test
-    coverage:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v2
-        - name: Set up Python
-          uses: actions/setup-python@v2
-          with:
-            python-version: '3.11'
-        - name: Measure code coverage
-          run: make coverage
+
+  tests:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        python-version: ["3.8", "3.11"]
+
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON: ${{ matrix.python-version }}
+
+    steps:
+
+    - name: Acquire sources
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: x64
+        cache: 'pip'
+        cache-dependency-path: 'pyproject.toml'
+
+    - name: Run linters
+      run: make lint
+
+    - name: Run software tests
+      run: make coverage

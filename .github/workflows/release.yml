@@ -10,7 +10,7 @@ jobs:
         if: false
         runs-on: ubuntu-latest
         steps:
-        - uses: actions/checkout@master
+        - uses: actions/checkout@v4
           with:
             fetch-depth: '0'
 
@@ -25,7 +25,7 @@ jobs:
         - name: Bump version and push tag
           if: steps.get_tag.outputs.tag != steps.get_tag.outputs.last_tag
           id: bumptag
-          uses: anothrNick/github-tag-action@master
+          uses: anothrNick/github-tag-action@v1
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             CUSTOM_TAG: ${{ steps.get_tag.outputs.tag }}
@@ -38,20 +38,22 @@ jobs:
             python setup.py sdist bdist_wheel
 
         - name: Publish package to PyPI
-          uses: pypa/gh-action-pypi-publish@v1.8.14
+          uses: pypa/gh-action-pypi-publish@v1
           if: steps.get_tag.outputs.tag != steps.get_tag.outputs.last_tag
           with:
             user: __token__
             password: ${{ secrets.PYPI_TOKEN }}
 
-        - name: Build and push Docker image
+        - name: Login to OCI registry
           if: steps.get_tag.outputs.tag != steps.get_tag.outputs.last_tag
           uses: azure/docker-login@v1
           with:
             login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
             username: ${{ secrets.REGISTRY_USERNAME }}
             password: ${{ secrets.REGISTRY_PASSWORD }}
-        - if: steps.get_tag.outputs.tag != steps.get_tag.outputs.last_tag
+
+        - name: Build and push OCI image
+          if: steps.get_tag.outputs.tag != steps.get_tag.outputs.last_tag
           run: |
             docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/tsperf:${{ steps.get_tag.outputs.tag }} .
             docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/tsperf:${{ steps.get_tag.outputs.tag }}

@@ -35,7 +35,7 @@ test_requires = [
     "flake8-bugbear<25",
     "flake8-isort<5",
     "black==21.5b1",
-    "isort<5.9",
+    "isort<5.14",
 ]
 
 setuptools.setup(

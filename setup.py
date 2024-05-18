@@ -14,7 +14,7 @@ requires = [
     "datetime-truncate<2",
     "psycopg2-binary<2.10",
     "influxdb-client<2",
-    "pymongo<4",
+    "pymongo<5",
     "dnspython<3",
     "numpy<1.27",
     "pgcopy<1.7",

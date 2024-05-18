@@ -43,13 +43,23 @@ jobs:
         python-version: ${{ matrix.python-version }}
         architecture: x64
         cache: 'pip'
-        cache-dependency-path: 'pyproject.toml'
+        cache-dependency-path: |
+          pyproject.toml
+          setup.py
 
-    - name: Run linters
-      run: make lint
+    - name: Set up project
+      run: |
 
-    - name: Run software tests
-      run: make test
+        # `setuptools 0.64.0` adds support for editable install hooks (PEP 660).
+        # https://github.com/pypa/setuptools/blob/main/CHANGES.rst#v6400
+        pip install "setuptools>=64" --upgrade
+
+        # Install package in editable mode.
+        pip install --use-pep517 --prefer-binary --editable='.[develop,test]'
+
+    - name: Run linters and software tests
+      run: |
+        poe check
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4

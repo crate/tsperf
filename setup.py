@@ -23,19 +23,24 @@ requires = [
     "cloup<1",
 ]
 
+develop_requires = [
+  "mypy<1.10",
+  "poethepoet<0.26",
+  "pyproject-fmt<1.8",
+  "ruff<0.5",
+  "validate-pyproject<0.17",
+]
+
+release_requires = [
+  "build<2",
+  "twine<6",
+]
+
 test_requires = [
+    "dotmap<1.4",
     "pytest<7",
     "pytest-cov<6",
-    "dotmap<1.4",
-    "flakehell==0.9.0",
-    "flake8==3.8.4",
-    # FIXME: Does not work per 2024-05-18
-    # "flake8-bandit==2.1.2",
-    "flake8-black<0.4",
-    "flake8-bugbear<25",
-    "flake8-isort<5",
-    "black==21.5b1",
-    "isort<5.14",
+    "ruff<0.5",
 ]
 
 setuptools.setup(
@@ -79,8 +84,11 @@ setuptools.setup(
         ]
     },
     install_requires=requires,
-    extras_require={"testing": test_requires},
-    python_requires='>=3.7',
+    extras_require={
+        "develop": develop_requires,
+        "release": release_requires,
+        "test": test_requires,
+    },
     include_package_data=True,
     package_data={
         "": ["*.md", "*.json"],

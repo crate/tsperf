@@ -6,37 +6,36 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 requires = [
-    "blessed==1.18.0",
-    "boto3==1.17.84",
-    "botocore~=1.20.84",
+    "blessed<1.21",
+    "boto3<1.35",
     "crate==0.26.0",
-    "prometheus_client==0.10.1",
-    "urllib3==1.26.5",
-    "datetime_truncate==1.1.1",
+    "prometheus-client<0.11",
+    "urllib3<2",
+    "datetime-truncate<2",
     "psycopg2-binary<2.10",
-    "influxdb_client==1.17.0",
-    "pymongo==3.11.4",
-    "dnspython==2.1.0",
+    "influxdb-client<2",
+    "pymongo<4",
+    "dnspython<3",
     "numpy<1.27",
-    "pgcopy==1.5.0",
+    "pgcopy<1.7",
     #"pyodbc<5",
-    "tqdm==4.61.0",
-    "cloup==0.8.2",
+    "tqdm<5",
+    "cloup<1",
 ]
 
 test_requires = [
-    "pytest==6.2.4",
-    "pytest-cov==2.12.0",
-    "dotmap==1.3.23",
+    "pytest<7",
+    "pytest-cov<6",
+    "dotmap<1.4",
     "flakehell==0.9.0",
     "flake8==3.8.4",
     # FIXME: Does not work per 2024-05-18
     # "flake8-bandit==2.1.2",
-    "flake8-black==0.2.1",
+    "flake8-black<0.4",
     "flake8-bugbear<22",
     "flake8-isort<5",
     "black==21.5b1",
-    "isort==5.8.0",
+    "isort<5.9",
 ]
 
 setuptools.setup(

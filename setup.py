@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 requires = [
     "blessed<1.21",
     "boto3<1.35",
-    "crate==0.26.0",
+    "crate==0.35.2",
     "prometheus-client<0.11",
     "urllib3<2",
     "datetime-truncate<2",

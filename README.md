@@ -1,6 +1,24 @@
-![Tests](https://github.com/crate/tsperf/workflows/Tests/badge.svg)
+# TSPERF Time Series Database Benchmark Suite
 
-# `tsperf` - A tool to test performance of time-series databases
+TSPERF is a tool for evaluating and comparing the performance of time series databases,
+in the spirit of TimescaleDB's Time Series Benchmark Suite (TSBS). 
+
+» [Documentation]
+| [Changelog]
+| [PyPI]
+| [Issues]
+| [Source code]
+| [License]
+
+
+[![CI][badge-tests]][project-tests]
+[![Coverage Status][badge-coverage]][project-codecov]
+[![License][badge-license]][project-license]
+[![Downloads per month][badge-downloads-per-month]][project-downloads]
+
+[![Supported Python versions][badge-python-versions]][project-pypi]
+[![Status][badge-status]][project-pypi]
+[![Package version][badge-package-version]][project-pypi]
 
 
 ## About
@@ -251,3 +269,24 @@ in one way or another and kudos to all authors of the foundational libraries.
 
 ## License
 This project is licensed under the terms of the Apache 2.0 license.
+
+
+[Changelog]: https://github.com/crate/tsperf/blob/main/CHANGES.md
+[Documentation]: https://tsperf.readthedocs.io/
+[Issues]: https://github.com/crate/tsperf/issues
+[License]: https://github.com/crate/tsperf/blob/main/LICENSE
+[PyPI]: https://pypi.org/project/tsperf/
+[Source code]: https://github.com/crate/tsperf
+
+[badge-coverage]: https://codecov.io/gh/crate/tsperf/branch/main/graph/badge.svg
+[badge-downloads-per-month]: https://pepy.tech/badge/tsperf/month
+[badge-license]: https://img.shields.io/github/license/crate/tsperf.svg
+[badge-package-version]: https://img.shields.io/pypi/v/tsperf.svg
+[badge-python-versions]: https://img.shields.io/pypi/pyversions/tsperf.svg
+[badge-status]: https://img.shields.io/pypi/status/tsperf.svg
+[badge-tests]: https://github.com/crate/tsperf/actions/workflows/tests.yml/badge.svg
+[project-codecov]: https://codecov.io/gh/crate/tsperf
+[project-downloads]: https://pepy.tech/project/tsperf/
+[project-license]: https://github.com/crate/tsperf/blob/main/LICENSE
+[project-pypi]: https://pypi.org/project/tsperf
+[project-tests]: https://github.com/crate/tsperf/actions/workflows/tests.yml

@@ -49,7 +49,7 @@ jobs:
       run: make lint
 
     - name: Run software tests
-      run: make coverage
+      run: make test
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4

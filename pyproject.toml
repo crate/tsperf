@@ -47,6 +47,12 @@ lint.extend-ignore = [
   # Standard pseudo-random generators are not suitable for cryptographic purposes
   "S311",
 ]
+"docs/conf.py" = [
+  # Variable `copyright` is shadowing a Python builtin
+  "A001",
+  # Found commented-out code
+  "ERA001",
+]
 "tsperf/util/float_simulator/__init__.py" = [
   # Standard pseudo-random generators are not suitable for cryptographic purposes
   "S311",
@@ -90,6 +96,16 @@ omit = [
 ]
 
 [tool.poe.tasks]
+
+docs-autobuild = [
+  { cmd = "sphinx-autobuild --open-browser --watch tsperf docs docs/_build" }
+]
+docs-html = [
+  { cmd = "sphinx-build -W --keep-going docs docs/_build" }
+]
+docs-linkcheck = [
+  { cmd = "sphinx-build -W --keep-going -b linkcheck docs docs/_build" }
+]
 
 check = [
   "lint",

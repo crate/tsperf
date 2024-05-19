@@ -28,7 +28,18 @@ develop_requires = [
     "poethepoet<0.26",
     "pyproject-fmt<1.8",
     "ruff<0.5",
+    "sphinx-autobuild==2021.3.14",  # Newer versions stopped "watching" appropriately?
     "validate-pyproject<0.17",
+]
+
+docs_requires = [
+    "furo",
+    "myst-parser[linkify]<3,>=0.18",
+    "sphinx<7",
+    "sphinx-copybutton",
+    "sphinx-design-elements<1",
+    "sphinxcontrib-mermaid<1",
+    "sphinxext-opengraph<1",
 ]
 
 release_requires = [
@@ -87,6 +98,7 @@ setuptools.setup(
     install_requires=requires,
     extras_require={
         "develop": develop_requires,
+        "docs": docs_requires,
         "release": release_requires,
         "test": test_requires,
     },

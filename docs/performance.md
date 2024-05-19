@@ -1,20 +1,23 @@
-## How to achieve maximum ingest performance?
-The datagenerator implements batch inserts where possible. A back-pressure
+# Ingest Performance
+
+## Introduction
+
+The data generator uses batch inserts where possible. A back-pressure
 mechanism is built-in, to adjust for the best possible batch size by
-setting the batch size dynamically.
+reconfiguring it dynamically.
 
-A single instance of the datagenerator might do up to 20-40k events per second
-for cratedb (depending on the cluster size). To find the maximum ingest
-possible, **multiple instances** are required.
+A single instance of the data generator might do up to 20-40k events per second
+for CrateDB, depending on the cluster size. To find the maximum possible ingest
+rate, **multiple instances** are required.
 
-For this purpose we created kubernetes jobs, which allows an easy scale and
-distribution of multiple nodes.
+## Kubernetes
 
-While some of the target databases reach their maximum ingest by running 6-8
-datagenerators in parallel, others might required much more concurrency until
-they max out.
+For the purpose of parallelizing the ingest, Kubernetes jobs allow to easily
+deploy multiple instances of the data generator.
 
-## kubernetes to the rescue
+While some target databases reach their maximum ingest by running 6-8
+data generator instances in parallel, others might require a higher
+concurrency until they max out.
 
 ```yaml
 apiVersion: batch/v1
@@ -82,4 +85,4 @@ spec:
               key: crate_password
       restartPolicy: Never
 ```
-*) secrets, configmap **NOT** shown here.
+Remark: Secrets and configmap are **NOT** shown here.

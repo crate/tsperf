@@ -314,6 +314,7 @@ misc_options = cloup.option_group(
 
 
 @cloup.group("tsperf", help=f"See documentation for further details: {TSPERF_README_URL}")
+@click.version_option()
 def main():
     setup_logging()
 

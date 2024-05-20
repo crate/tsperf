@@ -1,5 +1,6 @@
 *
 !tsperf
+!release
 !setup.py
 !MANIFEST.in
 !pyproject.toml

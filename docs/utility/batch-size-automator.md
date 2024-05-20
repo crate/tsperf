@@ -1,13 +1,42 @@
-# Batch size automator
+(bsa)=
+(batch-size-automator)=
+# Batch Size Automator
 
-`batch_size_automator` is a Python library that allows to automatically detect the best 
-`batch_size` for optimized batch data operations (e.g. database ingest).
+A utility to automatically detect the best batch size for optimized data insert operations.
 
-## Why use batch_size_automator instead of other libraries
+## Features
+The BSA utility provides two modes:
 
-What other libraries?
++ Finding best batch size
++ Surveillance
 
-## Using batch_size_automator
+### Finding best batch size
+
+1. The BSA calculates how many rows were inserted per second during the last
+   test cycle (`test_size` inserts).
+2. The BSA compares if the current result is better than the best.
+
+   a. If current was better, the batch size is adjusted by the step size.
+
+   b. If current was worse, the batch size is adjusted in the opposite direction
+      of the last adjustment and the step size is reduced.
+
+3. Repeat steps 1 to 2 until step size is below a threshold. This means that we
+   entered 2.b. often and should have found our optimum batch size.
+4. Change to surveillance mode.
+
+### Surveillance
+
+1. The BSA increases the length of the test cycle to 1000 inserts.
+2. After 1000 inserts, the BSA calculates if performance got worse.
+
+   a. if performance is worse test cycle length is set to 20, and we switch to
+      finding best batch size mode.
+
+   b. If performance is the same or better repeat steps 1 to 2.
+
+
+## Usage
 
 The most basic version on how to use the BSA. This will take care of your batch size and over time optimize it for maximum performance.
 
@@ -118,29 +147,3 @@ while True:
     duration = time.monotonic() - start
     bsa.insert_batch_time(duration)
 ```
-
-## Simplified functionality
-
-This chapter show how the BSA works in a simplified explanation.
-
-### Modes
-
-The BSA consists of two modes:
-+ finding best batch size
-+ surveillance
-
-#### Finding best batch size
-
-1. The BSA calculates how many rows where inserted per second during the last test cycle (`test_size` inserts)
-2. The BSA compares if the current result is better than the best
-    2.a. If current was better the batch size is adjusted by the step size
-    2.b. If current was worse the batch size is adjusted in the opposite direction of the last adjustment and the step size is reduced
-3. Repeat steps 1 to 2 until step size is below a threshold (this means that we entered 2.b. often and should have found our optimum batch size)
-4. Change to surveillance mode
-
-#### Surveillance mode
-
-1. The BSA increases the length of the test cycle to 1000 inserts
-2. After 1000 inserts the BSA calculates if performance has gotten worse
-    2.a. if performance is worse test cycle length is set to 20 and we switch to finding best batch size mode
-    2.b. If performance is the same or better repeat steps 1 to 2

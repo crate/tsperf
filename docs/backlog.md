@@ -4,6 +4,11 @@
 - [o] Documentation: Convert documents to Markdown, and publish to RTD
 - [o] Improve OCI image building, using modern recipe
 - [o] Bring version numbers up to speed (in docs, for OCI images)
+- [o] Query Timer's documentation says MongoDB adapter needs a patch!?
+
+## Iteration +1.5
+- [o] Fix typo `stdev`?
+- [o] Active voice
 
 ## Iteration +2
 - [o] Verify functionality on all cloud offerings

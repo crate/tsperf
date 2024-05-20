@@ -1,13 +1,16 @@
+(tictrack)=
 # tictrack
 
-`tictrack` is a Python library to measure function execution times and apply statistical functions on the results.
+A utility to measure function execution times, and apply statistical functions on the results.
 
-## Why using tictrack instead of other libraries
+## Why?
+Other libraries that measure function execution times require the same
+repetitive code for each time you want to use it. This reduces readability
+and code needs to be changed when execution times no longer want to be
+tracked. Also, if an average (or other statistical value) execution time
+needs to be calculated time keeping needs to be implemented again.
 
-Other libraries that measure function execution times require the same repetitive code for each time you want to use it.
-This reduces readability and code needs to be changed when execution times no longer want to be tracked. Also, if an
-average (or other statistical value) execution time needs to be calculated time keeping needs to be implemented again.
-
+## Features
 `tictrack` solves this with the following features:
 + [decorator](#decorator) for function to automatically track the execution time of each function call
 + [wrapper](#wrapper) function that can be put around each function call that should be tracked
@@ -17,9 +20,9 @@ average (or other statistical value) execution time needs to be calculated time 
 + [function](#consolidating-the-result) to consolidate large result sets
 + additional [`delta`](#delta) time tracking so two results can be kept at the same time
 
-## Using tictrack
+## Usage
 
-There are two ways to use `tictrack`, the optimal one depending on your specific use case.
+There are two ways to use `tictrack`, the optimal one depends on your specific use case.
 
 - If you want to track every execution of one or more function, using the decorator is the easiest solution.
 - If you only want to track certain executions of one or more functions, the wrapper function is the better solution.
@@ -126,6 +129,20 @@ could set `do_print=True` and `save_result=False`.
 
 **Note:** these arguments must be passed before any function `**kwargs` as keyword arguments to
 `tictrack.execute_timed_function` as described in the function documentation.
+
+### Disabling tictrack
+
+To disable tictrack on a global scale this line needs to be added to you code before any measurements happen:
+
+```python
+tictrack.enabled = False
+```
+
+This will reduce the influence of `tictrack` on the runtime to a minimum with no additional code changes necessary. This
+makes it easy to switch `tictrack` on and off without searching the whole code base where it is used.
+
+
+## Result Processing
 
 ### Delta
 
@@ -252,14 +269,3 @@ from tsperf.util import tictrack
 tictrack.reset("foo")
 # "foo" in tictrack.tic_toc is False
 ```
-
-### Disabling tictrack
-
-To disable tictrack on a global scale this line needs to be added to you code before any measurements happen:
-
-```python
-tictrack.enabled = False
-```
-
-This will reduce the influence of `tictrack` on the runtime to a minimum with no additional code changes necessary. This
-makes it easy to switch `tictrack` on and off without searching the whole code base where it is used.

@@ -1,31 +1,44 @@
-# Float value simulator
+(float-value-simulator)=
+# Float Value Simulator
 
-`float_simulator` is a Python library that allows to generate float values that look like real world data. The data is
-modeled after provided arguments and will have normal distribution.
+A utility to generate floating point values that look like real world data. The
+data is modeled after provided arguments and will have normal distribution.
 
-## Why use float_simulator instead of other libraries
+## Why not use Numpy?
 
-As each generated value is based on the previous value the result set will look and measure like real world sensor data.
-Libraries like `numpy` offer also normal distributed values but these values are unordered. E.g. we have a temperature
-sensor with an average value of 6.4° and a standard deviation of 0.2. The order of values are completely different when
-simulating those values with the `float_simulator` and `numpy`.
+Each generated value is based on the previous value, so the result set will
+look and measure like real world sensor data.
+
+Libraries like `numpy` also offer normal distributed values, but these values are
+unordered. E.g. we have a temperature sensor with an average value of 6.4° and a
+standard deviation of 0.2. The order of values are completely different when
+simulating those values with the `float_simulator` vs. `numpy`.
 
 ### Order of values
 
-`float_simulator` 10.000 values, with `mean=6.4`, `stdev=0.2`:
+:::{rubric} Float Simulator
+:::
+10.000 values, with `mean=6.4`, `stdev=0.2`:
 
-![float_simulator_values](https://user-images.githubusercontent.com/453543/118516727-e0a5a080-b736-11eb-800f-be3caf77b195.png)
+![float_simulator_values](https://user-images.githubusercontent.com/453543/118516727-e0a5a080-b736-11eb-800f-be3caf77b195.png){width=480}
 
-`numpy` 10.000 values, with `loc=6.4`, `scale=0.2`:
+:::{rubric} Numpy
+:::
+10.000 values, with `loc=6.4`, `scale=0.2`:
 
-![numpy_values](https://user-images.githubusercontent.com/453543/118516831-f7e48e00-b736-11eb-8a5c-047590767f7f.png)
+![numpy_values](https://user-images.githubusercontent.com/453543/118516831-f7e48e00-b736-11eb-8a5c-047590767f7f.png){width=480}
 
 ### Distribution
 
-![float_simulator_distribution](https://user-images.githubusercontent.com/453543/118516654-cf5c9400-b736-11eb-8069-3ef85f22d5f4.png) 
-![numpy_distribution](https://user-images.githubusercontent.com/453543/118516782-ed29f900-b736-11eb-8c69-47db9c5ab6a0.png)
+:::{rubric} Float Simulator
+:::
+![float_simulator_distribution](https://user-images.githubusercontent.com/453543/118516654-cf5c9400-b736-11eb-8069-3ef85f22d5f4.png){width=480}
 
-## Using float_simulator
+:::{rubric} Numpy
+:::
+![numpy_distribution](https://user-images.githubusercontent.com/453543/118516782-ed29f900-b736-11eb-8c69-47db9c5ab6a0.png){width=480}
+
+## Usage
 
 Instantiate a `FloatSimulator` object and calculate a number of values for it:
 

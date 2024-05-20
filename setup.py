@@ -38,7 +38,7 @@ release_requires = [
 
 test_requires = [
     "dotmap<1.4",
-    "pytest<7",
+    "pytest<9",
     "pytest-cov<6",
     "ruff<0.5",
 ]

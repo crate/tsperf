@@ -20,7 +20,7 @@ requires = [
     "pgcopy<1.7",
     "pyodbc<6",
     "tqdm<5",
-    "cloup<1",
+    "cloup<4",
 ]
 
 develop_requires = [

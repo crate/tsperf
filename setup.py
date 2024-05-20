@@ -10,7 +10,7 @@ requires = [
     "boto3<1.35",
     "crate==0.35.2",
     "prometheus-client<0.11",
-    "urllib3<2",
+    "urllib3<3",
     "datetime-truncate<2",
     "psycopg2-binary<2.10",
     "influxdb-client<2",

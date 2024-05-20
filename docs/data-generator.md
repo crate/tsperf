@@ -18,10 +18,8 @@ pip install tsperf
 :::{rubric} OCI image
 :::
 
-Another way to use the Data Generator is to build the OCI image `tsperf`.
+Another way to run the Data Generator is to use the OCI image `ghcr.io/crate/tsperf`.
 
-+ Navigate to root directory of this repository.
-+ Build docker image with `docker build -t tsperf -f Dockerfile .`.
 + Adapt one of the example docker-compose files in the [example folder].
 + Start (e.g. CrateDB example) with `docker-compose -f examples/basic-cratedb.yml up`.
 
@@ -457,8 +455,8 @@ The value of `TIMESTAMP_DELTA` defines the interval between timestamps of the ge
         [Data Generator Schemas](#data-generator-schemas) for more information on schemas.
 :Default: empty string
 
-When using a relative path with the docker image, be sure to check out the
-`Dockerfile` to make sure to use the correct path.
+When using a relative path with the OCI image, be sure to check out the
+`Dockerfile`, and build a custom OCI image, in order to use the correct path.
 
 (setting-dg-batch-size)=
 #### BATCH_SIZE
@@ -982,11 +980,16 @@ set the following environment variables:
 + ID_START: 1
 + ID_END: 100
 
-As we want to use CrateDB running on localhost we set the following environment variables:
+As we want to use CrateDB running on `localhost`, we set the following environment variables:
 + ADAPTER: "cratedb"
-+ ADDRESS: "host.docker.internal:4200" (this is the host when trying to access localhost from inside a docker container)
++ ADDRESS: "host.docker.internal:4200"
 + USERNAME: "aValidUsername"
 + PASSWORD: "PasswordForTheValidUsername"
+
+:::{note}
+`host.docker.internal:4200` is the correct database address when trying to access
+CrateDB running on `localhost`, from inside a Docker container.
+:::
 
 As we want to have a consistent insert every 5 seconds for one hour we set the
 following environment variables:
@@ -994,8 +997,7 @@ following environment variables:
 + INGEST_SIZE: 720 (an hour has 3600 seconds divided by 5 seconds)
 + TIMESTAMP_DELTA: 5
 
-
-And finally we want to signal using the appropriate schema:
+Finally, we want to signal using the appropriate schema:
 + SCHEMA: "tsperf.schema.factory.simple:machine.json"
 
 The resulting yml file could look like this:
@@ -1026,13 +1028,17 @@ services:
 
 To run this example follow the following steps:
 
-+ navigate to root directory of this repository
-+ build docker image with `docker build -t tsperf -f Dockerfile .`
-+ start an instance of CrateDB on localhost with `docker run -p "4200:4200" crate`
-+ Enter USERNAME and PASSWORD in the [simple factory compose file]
++ Start an instance of CrateDB on `localhost`.
+  ```shell
+  docker run --rm -it --publish="4200:4200" crate
+  ```
++ Enter USERNAME and PASSWORD in the [simple factory compose file].
     + If no user was created, you can just delete both environment variables.
       CrateDB will use a default user.
-+ start the docker-compose file with `docker-compose -f examples/factory-simple-machine.yml up`
++ Start TSPERF using Docker Compose.
+  ```shell
+  docker-compose -f examples/factory-simple-machine.yml up
+  ```
 
 You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the raw data of the Data Generator.
 
@@ -1066,15 +1072,20 @@ this can obviously be adjusted to create a bigger dataset.**
 
 To run this example follow the following steps:
 
-+ navigate to root directory of this repository
-+ build docker image with `docker build -t tsperf -f Dockerfile .`
-+ start an instance of CrateDB on localhost with `docker run -p "4200:4200" crate`
-+ Adjust USERNAME and PASSWORD within the docker-compose file
++ Start an instance of CrateDB on `localhost`.
+  ```shell
+  docker run --rm -it --publish="4200:4200" crate
+  ```
++ Adjust USERNAME and PASSWORD in the [complex factory compose file].
     + If no user was created, you can just ignore both environment variables.
       CrateDB will use a default user.
-+ start the docker-compose file with `docker-compose -f examples/factory-complex-scenario.yml up`
++ Start TSPERF using Docker Compose.
+  ```shell
+  docker-compose -f examples/factory-complex-scenario.yml up
+  ```
 
-You can now navigate to localhost:4200 to look at CrateDB or to localhost:8000 to look at the raw data of the Data Generator.
+You can now navigate to `http://localhost:4200/` to look at CrateDB,
+or to `http://localhost:8000/` to look at the raw data of the Data Generator.
 
 
 ## Glossary

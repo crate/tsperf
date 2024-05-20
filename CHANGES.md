@@ -1,9 +1,11 @@
 # Changelog
 
 ## Unreleased
+
+## 2024/05/21 1.2.1
 - Fix documentation flaw in README
 
-## 2024/05/19 1.2.0
+## 2024/05/21 1.2.0
 - Refactored modules
 - Naming things
 - Improved logging

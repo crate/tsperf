@@ -73,7 +73,7 @@ pip install --user tsperf
 
 ### Docker image
 ```shell
-alias tsperf="docker run -it --rm --network=host tsperf tsperf"
+alias tsperf="docker run -it --rm --network=host ghcr.io/crate/tsperf:latest tsperf"
 tsperf --help
 ```
 

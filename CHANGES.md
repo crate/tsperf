@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Fix documentation flaw in README
 
 ## 2024/05/19 1.2.0
 - Refactored modules

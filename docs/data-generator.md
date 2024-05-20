@@ -454,7 +454,7 @@ The value of `TIMESTAMP_DELTA` defines the interval between timestamps of the ge
 
 :Type: String
 :Value: Either relative or absolute path to a schema in JSON format. See
-         [Data Generator Schemas](#data-generator-schemas) for more information on schemas.
+        [Data Generator Schemas](#data-generator-schemas) for more information on schemas.
 :Default: empty string
 
 When using a relative path with the docker image, be sure to check out the
@@ -690,6 +690,7 @@ The environment variables in this chapter are only used to configure AWS Timestr
 :Default: empty string
 
 
+(data-generator-schemas)=
 ## Schemas
 
 The Data Generator uses schemas to determine what kind of values to generate.

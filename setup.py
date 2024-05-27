@@ -29,7 +29,7 @@ develop_requires = [
     "pyproject-fmt<1.8",
     "ruff<0.5",
     "sphinx-autobuild==2021.3.14",  # Newer versions stopped "watching" appropriately?
-    "validate-pyproject<0.17",
+    "validate-pyproject<0.19",
 ]
 
 docs_requires = [

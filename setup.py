@@ -35,7 +35,7 @@ develop_requires = [
 docs_requires = [
     "furo",
     "myst-parser[linkify]>=0.18,<4",
-    "sphinx<7",
+    "sphinx<8",
     "sphinx-copybutton",
     "sphinx-design-elements<1",
     "sphinxcontrib-mermaid<1",

@@ -9,7 +9,7 @@ requires = [
     "blessed<1.21",
     "boto3<1.35",
     "crate==0.35.2",
-    "prometheus-client<0.11",
+    "prometheus-client<0.21",
     "urllib3<3",
     "datetime-truncate<2",
     "psycopg2-binary<2.10",

@@ -16,7 +16,7 @@ requires = [
     "influxdb-client<2",
     "pymongo<5",
     "dnspython<3",
-    "numpy<1.27",
+    "numpy<2.1",
     "pgcopy<1.7",
     "pyodbc<6",
     "tqdm<5",

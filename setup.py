@@ -24,7 +24,7 @@ requires = [
 ]
 
 develop_requires = [
-    "mypy<1.11",
+    "mypy<1.12",
     "poethepoet<0.28",
     "pyproject-fmt<2.2",
     "ruff<0.5",

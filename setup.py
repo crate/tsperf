@@ -27,7 +27,7 @@ develop_requires = [
     "mypy<1.12",
     "poethepoet<0.28",
     "pyproject-fmt<2.2",
-    "ruff<0.5",
+    "ruff<0.6",
     "sphinx-autobuild==2021.3.14",  # Newer versions stopped "watching" appropriately?
     "validate-pyproject<0.19",
 ]
@@ -51,7 +51,7 @@ test_requires = [
     "dotmap<1.4",
     "pytest<9",
     "pytest-cov<6",
-    "ruff<0.5",
+    "ruff<0.6",
 ]
 
 setuptools.setup(

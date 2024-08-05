@@ -26,7 +26,7 @@ requires = [
 develop_requires = [
     "mypy<1.12",
     "poethepoet<0.28",
-    "pyproject-fmt<2.2",
+    "pyproject-fmt<2.3",
     "ruff<0.5",
     "sphinx-autobuild==2021.3.14",  # Newer versions stopped "watching" appropriately?
     "validate-pyproject<0.19",

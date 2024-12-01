@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 class TimescaleDbAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
     default_address = "localhost:5432"
     default_username = "postgres"
+    default_database = "tsperf"
     default_query = "SELECT 1;"
 
     def __init__(

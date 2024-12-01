@@ -36,6 +36,7 @@ from tsperf.write.config import DataGeneratorConfig
 class PostgreSQLAdapter(AbstractDatabaseInterface, DatabaseInterfaceMixin):
     default_address = "localhost:5432"
     default_username = "postgres"
+    default_database = "tsperf"
     default_query = "SELECT 1;"
 
     def __init__(

@@ -1,0 +1,71 @@
+{
+    "description": "this json file contains a tables and it's structure and how the values in this structure are calculated. The key represents the table name (in case the database uses tables)",
+    "temperature": {
+        "tags": {
+            "description": "describes the database structure, tags are indexed columns for most dbs containing information about the 'edge' reporting values but not containing measured values.",
+            "plant": 100,
+            "line": 5,
+            "sensor_id": "id"
+        },
+        "metrics": {
+            "description": "metrics contain all measured values associated with a tag",
+            "temperature": {
+                "description": "temperature measured in a fridge",
+                "key": {
+                    "description": "key used in the database to store this measurement",
+                    "value": "value"
+                },
+                "type": {
+                    "description": "some databases (e.g. timescaleDB) need a column type because they don't have a schema less approach, calculation also differs for different types",
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 6.0,
+                    "unit": "°C",
+                    "description": "the minimum value reported by a temperature sensor"
+                },
+                "max": {
+                    "value": 7.4,
+                    "unit": "°C",
+                    "description": "the maximum value reported by a temperature sensor"
+                },
+                "mean": {
+                    "value": 6.4,
+                    "unit": "°C",
+                    "description": "the average value reported by a temperature sensor"
+                },
+                "stdev": {
+                    "value": 0.2,
+                    "description": "the standard deviation in a set of temperature measurements"
+                },
+                "variance": {
+                    "value": 0.03,
+                    "description": "the expectation of the squared deviation of a temperature measurement from its mean"
+                },
+                "error_rate": {
+                    "value": 0.005,
+                    "description": "the chance that the value is outside of the expected range"
+                },
+                "error_length": {
+                    "value": 1.08,
+                    "description": "the average consecutive values that are outside the stdev"
+                }
+            },
+            "button": {
+                "description": "indicating a pressed button",
+                "key": {
+                    "description": "key used in the database to store this measurement",
+                    "value": "button_press"
+                },
+                "type": {
+                    "description": "some databases (e.g. timescaleDB) need a column type because they don't have a schema less approach, calculation also differs for different types",
+                    "value": "BOOL"
+                },
+                "true_ratio": {
+                    "description": "how high is the change of this boolean to be true, e.g. 0,001 means it is on average true for one in a thousand values, or 1 means it's true every time",
+                    "value": 0.001
+                }
+            }
+        }
+    }
+}

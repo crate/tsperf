@@ -1,0 +1,80 @@
+{
+    "sensor_values": {
+        "tags": {
+            "factory": 2,
+            "line": 10,
+            "sensor": "id"
+        },
+        "metrics": {
+            "speed": {
+                "key": {
+                    "value": "speed"
+                },
+                "type": {
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 0
+                },
+                "max": {
+                    "value": 3
+                },
+                "mean": {
+                    "value": 1.5
+                },
+                "stdev": {
+                    "value": 0.3
+                },
+                "variance": {
+                    "value": 0.01
+                },
+                "error_rate": {
+                    "value": 0.0001
+                },
+                "error_length": {
+                    "value": 1.04
+                }
+            },
+            "temperature": {
+                "key": {
+                    "value": "temperature"
+                },
+                "type": {
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 0
+                },
+                "max": {
+                    "value": 200
+                },
+                "mean": {
+                    "value": 50
+                },
+                "stdev": {
+                    "value": 5
+                },
+                "variance": {
+                    "value": 0.01
+                },
+                "error_rate": {
+                    "value": 0.00001
+                },
+                "error_length": {
+                    "value": 2.07
+                }
+            },
+            "vibration": {
+                "key": {
+                    "value": "vibration"
+                },
+                "type": {
+                    "value": "BOOL"
+                },
+                "true_ratio": {
+                    "value": 0.01
+                }
+            }
+        }
+    }
+}

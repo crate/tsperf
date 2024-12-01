@@ -1,0 +1,19 @@
+version: "2.3"
+services:
+  datagen:
+    image: data_gen
+    ports:
+      - 8000:8000
+    environment:
+      ID_START: 1
+      ID_END: 150
+      HOST: "host.docker.internal:4200"
+      # USERNAME: ""
+      # PASSWORD: ""
+      INGEST_MODE: 0
+      INGEST_SIZE: 720 # 1h, 3600secs / 5
+      INGEST_DELTA: 5 # every 5 seconds one insert
+      MODEL_PATH: "/grafana_demo_model.json"
+      DATABASE: 0
+    volumes:
+      - ./grafana_demo_model.json:/grafana_demo_model.json

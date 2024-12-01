@@ -1,0 +1,8 @@
+crate
+prometheus_client
+urllib3
+datetime_truncate
+psycopg2-binary
+influxdb_client
+pymongo
+requests

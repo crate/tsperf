@@ -1,0 +1,15 @@
+kubernetes:
+  name: grafana-demo-data
+  namespace: 00768a8e-14ea-4daa-bc38-592bf1486d85
+
+version: v0.1.2
+
+ID_START: 1
+ID_END: 150
+
+db:
+  crateuri: https://grafana-demo-1.westeurope.azure.cratedb.net:4200
+
+credentials:
+  username: admin
+  password_k8s_secret: user-password-35e75e5f-5308-4e98-999d-2be9d2fa47af-0

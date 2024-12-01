@@ -1,0 +1,40 @@
+{
+    "sensor_values": {
+        "tags": {
+            "factory": ["AT", "BE", "CH", "DE", "ES", "FR", "GB", "HU", "IT", "JP"],
+            "line": ["L1", "L2", "L3", "L4", "L5"],
+            "sensor": "id"
+        },
+        "metrics": {
+            "temperature": {
+                "key": {
+                    "value": "temperature"
+                },
+                "type": {
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 0
+                },
+                "max": {
+                    "value": 200
+                },
+                "mean": {
+                    "value": 50
+                },
+                "stdev": {
+                    "value": 5
+                },
+                "variance": {
+                    "value": 0.01
+                },
+                "error_rate": {
+                    "value": 0.00001
+                },
+                "error_length": {
+                    "value": 2.07
+                }
+            }
+        }
+    }
+}

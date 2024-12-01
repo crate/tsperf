@@ -1,0 +1,182 @@
+{
+    "description": "this json file contains a tables and it's structure and how the values in this structure are calculated. The key represents the table name (in case the database uses tables)",
+    "motor": {
+        "tags": {
+            "description": "describes the database structure, tags are indexed columns for most dbs containing information about the 'sensor' reporting values but not containing measured values",
+            "plant": 100,
+            "line": 5,
+            "drive_id": "id"
+        },
+        "metrics": {
+            "description": "metrics contain all measured values associated with a tag",
+            "temperature": {
+                "description": "the temperature of a drive",
+                "key": {
+                    "description": "key used in the database to store this measurement",
+                    "value": "temperature"
+                },
+                "type": {
+                    "description": "some databases (e.g. timescaleDB) need a column type because they don't have a schema less approach, calculation also differs for different types",
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 70.0,
+                    "unit": "°C",
+                    "description": "the minimum value reported by a temperature sensor"
+                },
+                "max": {
+                    "value": 120.0,
+                    "unit": "°C",
+                    "description": "the maximum value reported by a temperature sensor"
+                },
+                "mean": {
+                    "value": 80.0,
+                    "unit": "°C",
+                    "description": "the average value reported by a temperature sensor"
+                },
+                "stdev": {
+                    "value": 5.0,
+                    "description": "the standard deviation in a set of temperature measurements"
+                },
+                "variance": {
+                    "value": 0.03,
+                    "description": "the expectation of the squared deviation of a temperature measurement from its mean"
+                },
+                "error_rate": {
+                    "value": 0.001,
+                    "description": "the chance that the value is outside of the expected range"
+                },
+                "error_length": {
+                    "value": 300,
+                    "description": "the average consecutive values that are outside the stdev"
+                }
+            },
+            "voltage": {
+                "description": "the voltage input of a drive",
+                "key": {
+                    "description": "key used in the database to store this measurement",
+                    "value": "voltage"
+                },
+                "type": {
+                    "description": "some databases (e.g. timescaleDB) need a column type because they don't have a schema less approach, calculation also differs for different types",
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 100.0,
+                    "unit": "V",
+                    "description": "the minimum value reported by a temperature sensor"
+                },
+                "max": {
+                    "value": 250.0,
+                    "unit": "V",
+                    "description": "the maximum value reported by a temperature sensor"
+                },
+                "mean": {
+                    "value": 240.0,
+                    "unit": "V",
+                    "description": "the average value reported by a temperature sensor"
+                },
+                "stdev": {
+                    "value": 10.0,
+                    "description": "the standard deviation in a set of temperature measurements"
+                },
+                "variance": {
+                    "value": 0.01,
+                    "description": "the expectation of the squared deviation of a temperature measurement from its mean"
+                },
+                "error_rate": {
+                    "value": 0.00001,
+                    "description": "the chance that the value is outside of the expected range"
+                },
+                "error_length": {
+                    "value": 200,
+                    "description": "the average consecutive values that are outside the stdev"
+                }
+            },
+            "current": {
+                "description": "the current input of a drive",
+                "key": {
+                    "description": "key used in the database to store this measurement",
+                    "value": "current"
+                },
+                "type": {
+                    "description": "some databases (e.g. timescaleDB) need a column type because they don't have a schema less approach, calculation also differs for different types",
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 0.5,
+                    "unit": "A",
+                    "description": "the minimum value reported by a temperature sensor"
+                },
+                "max": {
+                    "value": 2.0,
+                    "unit": "A",
+                    "description": "the maximum value reported by a temperature sensor"
+                },
+                "mean": {
+                    "value": 1.0,
+                    "unit": "A",
+                    "description": "the average value reported by a temperature sensor"
+                },
+                "stdev": {
+                    "value": 0.1,
+                    "description": "the standard deviation in a set of temperature measurements"
+                },
+                "variance": {
+                    "value": 0.0001,
+                    "description": "the expectation of the squared deviation of a temperature measurement from its mean"
+                },
+                "error_rate": {
+                    "value": 0.00001,
+                    "description": "the chance that the value is outside of the expected range"
+                },
+                "error_length": {
+                    "value": 200,
+                    "description": "the average consecutive values that are outside the stdev"
+                }
+            },
+            "power": {
+                "description": "the power output of a drive",
+                "key": {
+                    "description": "key used in the database to store this measurement",
+                    "value": "power"
+                },
+                "type": {
+                    "description": "some databases (e.g. timescaleDB) need a column type because they don't have a schema less approach, calculation also differs for different types",
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 0.0,
+                    "unit": "W",
+                    "description": "the minimum value reported by a temperature sensor"
+                },
+                "max": {
+                    "value": 300.0,
+                    "unit": "W",
+                    "description": "the maximum value reported by a temperature sensor"
+                },
+                "mean": {
+                    "value": 240.0,
+                    "unit": "W",
+                    "description": "the average value reported by a temperature sensor"
+                },
+                "stdev": {
+                    "value": 5.0,
+                    "description": "the standard deviation in a set of temperature measurements"
+                },
+                "variance": {
+                    "value": 0.001,
+                    "description": "the expectation of the squared deviation of a temperature measurement from its mean"
+                },
+                "error_rate": {
+                    "value": 0.00001,
+                    "description": "the chance that the value is outside of the expected range"
+                },
+                "error_length": {
+                    "value": 200,
+                    "description": "the average consecutive values that are outside the stdev"
+                }
+            }
+        }
+    }
+}

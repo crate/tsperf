@@ -1,0 +1,40 @@
+{
+    "example": {
+        "tags": {
+            "plant": 50,
+            "line": 5,
+            "edge": "id"
+        },
+        "metrics": {
+            "voltage": {
+                "key": {
+                    "value": "voltage"
+                },
+                "type": {
+                    "value": "FLOAT"
+                },
+                "min": {
+                    "value": 200
+                },
+                "max": {
+                    "value": 260
+                },
+                "mean": {
+                    "value": 230
+                },
+                "stdev": {
+                    "value": 10
+                },
+                "variance": {
+                    "value": 0.5
+                },
+                "error_rate": {
+                    "value": 0.001
+                },
+                "error_length": {
+                    "value": 2.5
+                }
+            }
+        }
+    }
+}
